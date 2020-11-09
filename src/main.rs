@@ -7,6 +7,6 @@ use std::rc::Rc;
 
 
 fn main() {
-	let mut app = Ui::new();
-	app.start();
+	let app = Ui::new();
+	app.start(Rc::clone(&app));
 }

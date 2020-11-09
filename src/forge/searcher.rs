@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::cell::{Cell, RefCell};
 
 enum Sign {
     GE,
@@ -6,7 +7,7 @@ enum Sign {
 }
 
 pub struct Searcher {
-    skills: HashMap<u16, u8>,
+    skills: RefCell<HashMap<u16, u8>>,
 }
 
 impl Searcher {
@@ -16,7 +17,19 @@ impl Searcher {
         }
     }
 
-    pub fn add_skill(&mut self, id: u16, lev:u8 ) {  // Add Sign
-        self.skills.insert(id, lev);
+    pub fn add_skill(&self, id: u16, lev:u8 ) {  // Add Sign
+        println!("Skill: {} lev: {}", id, lev);
+        if lev == 0 {
+            self.skills.borrow_mut().remove(&id);
+        } else {
+            self.skills.borrow_mut().insert(id, lev);
+        }
+    }
+
+    pub fn print(&self) {
+        println!("Requirements: ");
+        for (id, lev) in self.skills.borrow().iter() {
+            println!("Skill: {} lev: {}", id, lev);
+        }
     }
 }

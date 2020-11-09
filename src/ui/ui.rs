@@ -13,6 +13,7 @@ pub struct Ui {
 	application: gtk::Application,
 	window: gtk::ApplicationWindow,
 	skill_list: gtk::FlowBox,
+	skill_set: gtk::FlowBox,
 	rank_set: [gtk::ListBox; 3],
 	find_btn: gtk::Button,
 	lang_combo: gtk::ComboBox,
@@ -33,7 +34,7 @@ impl Ui {
 		gtk::Builder::from_file(glade)  // ToDo: Use new_from_resurces with some cargo tricks
 	}
 
-	pub fn new() -> Self {
+	pub fn new() -> Rc<Self> {
 		gtk::init().unwrap_or_else(|_| panic!("Failed to initialize GTK."));
 		let builder = Ui::get_builder("gui/main.glade".to_string());
 
@@ -45,6 +46,7 @@ impl Ui {
 		let window = builder.get_object("main window").unwrap();
 		let find_btn = builder.get_object("find btn").unwrap();
 		let skill_list = builder.get_object("skill list").unwrap();
+		let skill_set = builder.get_object("skill set").unwrap();
 		let lang_combo = builder.get_object("lang combo").unwrap();
 		let rank_set = [
 			builder.get_object("lr list").unwrap(),
@@ -58,30 +60,34 @@ impl Ui {
 			application,
 			window,
 			skill_list,
+			skill_set,
 			rank_set,
 			find_btn,
 			lang_combo,
 			forge,
 			searcher: forge::searcher::Searcher::new(),
 		};
-		app.setup_signals();
-		app
+		let tmp = Rc::new(app);
+		tmp.setup_signals(tmp.clone());
+		tmp
 	}
 
-	fn setup_signals(&self) {
+	fn setup_signals(&self, me: Rc<Self>) {
 		let window = self.window.clone();
 		self.application.connect_activate(move |app| {
 			app.add_window(&window);
 			window.present();
 		});
 
+		let app = Rc::clone(&me);
 		self.find_btn.connect_clicked(move |_btn| {
-			//app.get_constraints();  // Start thread
+			app.searcher.print();
 		});
 	}
 
-	fn show_skills(&self) {
-		for (_, skill) in &self.forge.skills {
+	fn show_skills(&self, me: Rc<Self>) {
+		let dio = me.forge.skills.borrow();
+		for (id, skill) in dio.iter() {
 			let builder = Ui::get_builder("gui/skill box.glade".to_string());
 			let skill_box: gtk::Box = builder.get_object("box").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();
@@ -92,23 +98,27 @@ impl Ui {
 			let provider = gtk::CssProvider::new();
 			provider.load_from_path("gui/style.css").unwrap();
 			style.add_provider(&provider, gtk::STYLE_PROVIDER_PRIORITY_USER);
-			style.add_class("skillBox");  // TODO: Better implementation using glade
+			style.add_class("skillBox");  // TODO: Better implementation using glades => Add this feature in glade
 
 			name.set_text(skill.name.as_str());
 			name.set_tooltip_text(Some(skill.description.as_str()));
 			adjustment.set_upper(skill.max_level as f64);
-/*
-			let app = Rc::clone(&self);
-			level.connect_change_value(move |lev, _tmp| {
-				app.searcher.add_skill(skill.id, lev.get_value() as u8);
+
+			let id = *id;
+			let app = Rc::clone(&me);
+			level.connect_value_changed(move |lev| {
+				app.searcher.add_skill(id, lev.get_value() as u8);
 			});
-*/
-			self.skill_list.insert(&skill_box, -1);
+			if id % 2 == 0 {
+				self.skill_list.insert(&skill_box, -1);
+			}else {
+				self.skill_set.insert(&skill_box, -1);
+			}
 		}
 	}
 
 	fn show_sets(&self) {
-		for (_, set) in &self.forge.sets {
+		for (_, set) in self.forge.sets.borrow().iter() {
 			let builder = Ui::get_builder("gui/set box.glade".to_string());
 			let set_row: gtk::ListBoxRow = builder.get_object("row").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();
@@ -119,15 +129,15 @@ impl Ui {
 		}
 	}
 
-	fn show_all(&self) {
-		self.show_skills();
+	fn show_all(&self, me: Rc<Self>) {
+		self.show_skills(me);
 		self.show_sets();
 	}
 
-	pub fn start(&mut self) {
+	pub fn start(&self, me: Rc<Self> ) {
 		let lang = "it";
 		self.forge.load_all(lang);
-		self.show_all();
+		self.show_all(me);
 		self.window.show_all();
 		let args: Vec<String> = args().collect();
 		self.application.run(&args);
