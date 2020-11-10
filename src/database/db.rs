@@ -14,7 +14,7 @@ pub struct DB {
 
 impl DB {
     pub fn new() -> Self {
-        let conn = Connection::open_with_flags("data/mhw.db", rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY).unwrap();
+        let conn = Connection::open_with_flags("MHWorldData/mhw.db", rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY).unwrap();
         DB {
             connection: conn,
             lang: RefCell::new(String::from("en")),

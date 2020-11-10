@@ -1,0 +1,3 @@
+[submodule "MHWorldData"]
+	path = MHWorldData
+	url = https://github.com/gatheringhallstudios/MHWorldData.git
