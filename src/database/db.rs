@@ -3,9 +3,8 @@ use std::collections::HashMap;
 use crate::forge;
 use std::rc::Rc;
 use crate::forge::armor::{tr_armor_type, tr_rank};
-use std::cell::{Cell, RefCell};
+use std::cell::{RefCell};
 use std::borrow::{BorrowMut, Borrow};
-use std::ops::Deref;
 
 pub struct DB {
     connection: rusqlite::Connection,

@@ -3,11 +3,11 @@ use gtk::prelude::*;
 use gtk::{Application};
 use std::env::args;
 use std::env;
-
-use crate::forge;
-use std::cell::RefCell;
 use std::rc::Rc;
 use std::borrow::Borrow;
+
+use crate::forge;
+use crate::ui::found::Found;
 
 pub struct Skills {
 	skill_list: gtk::FlowBox,
@@ -26,7 +26,7 @@ pub struct Ui {
 	lang_combo: gtk::ComboBox,
 	forge: forge::forge::Forge,
 	searcher: forge::searcher::Searcher,
-
+	found: Found,
 }
 
 impl Ui {
@@ -80,6 +80,7 @@ impl Ui {
 			lang_combo,
 			forge,
 			searcher: forge::searcher::Searcher::new(),
+			found: Found::new(&builder),
 		};
 		let tmp = Rc::new(app);
 		tmp.setup_signals(tmp.clone());
@@ -149,14 +150,12 @@ impl Ui {
 			let deco_box: gtk::Box = builder.get_object("box").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();
 
-
 			let style = deco_box.get_style_context();
 			let provider = gtk::CssProvider::new();
 			provider.load_from_path("gui/style.css").unwrap();
 			style.add_provider(&provider, gtk::STYLE_PROVIDER_PRIORITY_USER);
 			style.add_class("skillBox");  // TODO: Better implementation using glades => Add this feature in glade
 
-			println!("Added {}", deco.name);
 			name.set_text(deco.name.as_str());
 			self.deco_list[deco.size as usize - 1].insert(&deco_box, -1);
 		}

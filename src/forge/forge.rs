@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use crate::database;
 use crate::forge;
 use std::rc::Rc;
-use std::cell::{Cell, RefCell};
+use std::cell::{RefCell};
 
 pub struct Forge {
     db: database::db::DB,
