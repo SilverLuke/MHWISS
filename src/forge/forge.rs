@@ -28,9 +28,14 @@ impl Forge {
     pub fn load_all(&self, lang: &str) {
         self.db.set_lang(lang.to_string());
         self.db.load_skills(&self.skills);
+        println!("Loaded {} skills", self.skills.borrow().len());
         self.db.load_armors( &self.armors, &self.skills);
+        println!("Loaded {} armors", self.armors.borrow().len());
         self.db.load_set(&self.sets, &self.armors);
+        println!("Loaded {} sets", self.sets.borrow().len());
         self.db.load_charms(&self.charms, &self.skills);
+        println!("Loaded {} charms", self.charms.borrow().len());
         self.db.load_decorations(&self.decorations, &self.skills);
+        println!("Loaded {} decorations", self.decorations.borrow().len());
     }
 }

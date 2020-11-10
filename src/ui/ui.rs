@@ -9,12 +9,19 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::borrow::Borrow;
 
+pub struct Skills {
+	skill_list: gtk::FlowBox,
+	skill_set: gtk::FlowBox,
+}
+
+
 pub struct Ui {
 	application: gtk::Application,
 	window: gtk::ApplicationWindow,
 	skill_list: gtk::FlowBox,
 	skill_set: gtk::FlowBox,
 	rank_set: [gtk::ListBox; 3],
+	deco_list: [gtk::FlowBox; 4],
 	find_btn: gtk::Button,
 	lang_combo: gtk::ComboBox,
 	forge: forge::forge::Forge,
@@ -53,6 +60,12 @@ impl Ui {
 			builder.get_object("hr list").unwrap(),
 			builder.get_object("mr list").unwrap(),
 		];
+		let deco_list = [
+			builder.get_object("deco lev1").unwrap(),
+			builder.get_object("deco lev2").unwrap(),
+			builder.get_object("deco lev3").unwrap(),
+			builder.get_object("deco lev4").unwrap(),
+		];
 
 		let forge = forge::forge::Forge::new();
 
@@ -62,6 +75,7 @@ impl Ui {
 			skill_list,
 			skill_set,
 			rank_set,
+			deco_list,
 			find_btn,
 			lang_combo,
 			forge,
@@ -129,9 +143,29 @@ impl Ui {
 		}
 	}
 
+	fn show_deco(&self) {
+		for (_, deco) in self.forge.decorations.borrow().iter() {
+			let builder = Ui::get_builder("gui/deco box.glade".to_string());
+			let deco_box: gtk::Box = builder.get_object("box").unwrap();
+			let name: gtk::Label = builder.get_object("name").unwrap();
+
+
+			let style = deco_box.get_style_context();
+			let provider = gtk::CssProvider::new();
+			provider.load_from_path("gui/style.css").unwrap();
+			style.add_provider(&provider, gtk::STYLE_PROVIDER_PRIORITY_USER);
+			style.add_class("skillBox");  // TODO: Better implementation using glades => Add this feature in glade
+
+			println!("Added {}", deco.name);
+			name.set_text(deco.name.as_str());
+			self.deco_list[deco.size as usize - 1].insert(&deco_box, -1);
+		}
+	}
+
 	fn show_all(&self, me: Rc<Self>) {
 		self.show_skills(me);
 		self.show_sets();
+		self.show_deco();
 	}
 
 	pub fn start(&self, me: Rc<Self> ) {

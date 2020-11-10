@@ -201,6 +201,7 @@ WHERE lang_id == ?1").unwrap();
             deco.borrow_mut().insert(id, Rc::new(forge::skill::Decoration::new(
                 id,
                 row.get(row.column_index("name").unwrap()).unwrap(),
+                row.get(row.column_index("slot").unwrap()).unwrap(),
                 deco_skills,
             )));
         }

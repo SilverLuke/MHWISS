@@ -33,11 +33,12 @@ impl Charm{
 pub struct Decoration {
     pub id: u16,
     pub name: String,
+    pub size: u8,
     pub skills: [Option<(Rc<Skill>, u8)>; 2],
 }
 
 impl Decoration {
-    pub fn new(id: u16, name: String, skills: [Option<(Rc<Skill>, u8)>; 2]) -> Self {
-        Decoration { id, name, skills }
+    pub fn new(id: u16, name: String, size: u8, skills: [Option<(Rc<Skill>, u8)>; 2]) -> Self {
+        Decoration { id, name, size, skills }
     }
 }
