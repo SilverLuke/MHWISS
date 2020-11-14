@@ -1,8 +1,8 @@
 use gtk::prelude::*;
 use gdk_pixbuf::{Pixbuf};
 
-const IMAGE_SIZE: i32 = 50;
-const SMALL_SIZE: i32 = IMAGE_SIZE / 2;
+const IMAGE_SIZE: i32 = 60;
+const SMALL_SIZE: i32 = 25;
 
 struct Weapon {
 	name: gtk::Label,
@@ -56,7 +56,6 @@ impl Found {
 		};
 		f.set_images(builder);
 		f.set_weapon();
-
 		f
 	}
 
@@ -76,13 +75,17 @@ impl Found {
 	fn set_images(&self, builder: &gtk::Builder) {
 		self.load(builder, "weapon affinity image", "ui/ic_ui_affinity.svg", SMALL_SIZE);
 		self.load(builder, "weapon attack image", "ui/ic_ui_attack.svg", SMALL_SIZE);
+		let armor = ["head", "chest", "arm", "waist", "leg"];
 		for i in 1..=5 {
+			self.load(builder, &format!("image {}", i), &format!("equipment/ic_equipment_{}_base.svg", armor[i-1]), IMAGE_SIZE );
 			self.load(builder, &format!("defense image {}", i), "ui/ic_ui_defense.svg", SMALL_SIZE);
-
 			for j in ["fire", "ice", "thunder", "water", "dragon"].iter() {
 				self.load(builder, &format!("{} image {}", j, i), &format!("ui/ic_element_{}.svg", j), SMALL_SIZE);
 			}
 		}
+		self.load(builder, "charm image", "equipment/ic_equipment_charm_base.svg", IMAGE_SIZE);
+		self.load(builder, "tool image 1", "equipment/ic_equipment_mantle_base.svg", IMAGE_SIZE);
+		self.load(builder, "tool image 2", "equipment/ic_equipment_mantle_base.svg", IMAGE_SIZE);
 	}
 
 }

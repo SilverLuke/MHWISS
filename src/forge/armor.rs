@@ -1,5 +1,7 @@
 use crate::forge::skill::Skill;
 use std::rc::Rc;
+use std::collections::HashMap;
+use std::fmt;
 
 
 #[derive(Debug)]
@@ -40,6 +42,7 @@ pub fn tr_rank (rank: String ) -> Rank {
 pub struct Armor {
     pub id: u16,
     pub name: String,
+    class: ArmorType,
     skills: Vec<(Rc<Skill>, u8)>,
     decorations: [u8; 3],
     defense_base: u8,
@@ -47,15 +50,40 @@ pub struct Armor {
     defense_arg: u16,
 }
 
+impl fmt::Display for Armor {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut str = String::new();
+        for (skill, lev) in self.skills.iter() {
+            str = format!("{} <{}, {}>", str, *skill, lev);
+        }
+        write!(f, "name: {}[{}] skills: {}", self.name, self.id, str)
+    }
+}
+
 impl Armor {
-    pub fn new(id: u16, name: String, decorations: [u8; 3], defense_base: u8, defense_max: u16, defense_arg: u16) -> Self {
-        Armor { id, name, skills: Vec::new(), decorations, defense_base, defense_max, defense_arg }
+    pub fn new(id: u16, name: String, class_str: String, decorations: [u8; 3], defense_base: u8, defense_max: u16, defense_arg: u16) -> Self {
+        let class = tr_armor_type(class_str);
+        Armor { id, name, class, skills: Vec::new(), decorations, defense_base, defense_max, defense_arg }
     }
 
     pub fn add_skill(&mut self, skill: &Rc<Skill>, level: u8) {
         self.skills.push((Rc::clone(skill), level));
     }
+
+    pub fn get_skills_rank(&self, query: &HashMap<u16, (Rc<Skill>, u8)>) -> Option<u8> {
+        let mut rank: u8 = 0;
+        for (skill, lev) in self.skills.iter() {
+            if query.get(&skill.id).is_some() {
+                rank += lev;
+            }
+        }
+        if rank == 0 {
+            return None;
+        }
+        Some(rank)
+    }
 }
+
 
 pub struct Set {
     pub id: u16,

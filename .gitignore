@@ -2,5 +2,5 @@ Cargo.lock
 /target
 **/*.rs.bk
 .idea
-seafile-ignore.txt
 gui/*.glade~
+.tokeignore

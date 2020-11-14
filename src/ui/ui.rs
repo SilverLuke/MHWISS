@@ -5,6 +5,7 @@ use std::env::args;
 use std::env;
 use std::rc::Rc;
 use std::borrow::Borrow;
+use itertools::Itertools;
 
 use crate::forge;
 use crate::ui::found::Found;
@@ -24,7 +25,7 @@ pub struct Ui {
 	deco_list: [gtk::FlowBox; 4],
 	find_btn: gtk::Button,
 	lang_combo: gtk::ComboBox,
-	forge: forge::forge::Forge,
+	forge: Rc<forge::forge::Forge>,
 	searcher: forge::searcher::Searcher,
 	found: Found,
 }
@@ -67,8 +68,8 @@ impl Ui {
 			builder.get_object("deco lev4").unwrap(),
 		];
 
-		let forge = forge::forge::Forge::new();
-
+		let forge = Rc::new(forge::forge::Forge::new());
+		let searcher = forge::searcher::Searcher::new(Rc::clone(&forge));
 		let app = Self {
 			application,
 			window,
@@ -79,7 +80,7 @@ impl Ui {
 			find_btn,
 			lang_combo,
 			forge,
-			searcher: forge::searcher::Searcher::new(),
+			searcher,
 			found: Found::new(&builder),
 		};
 		let tmp = Rc::new(app);
@@ -96,13 +97,12 @@ impl Ui {
 
 		let app = Rc::clone(&me);
 		self.find_btn.connect_clicked(move |_btn| {
-			app.searcher.print();
+			app.searcher.show_requirements();
 		});
 	}
 
-	fn show_skills(&self, me: Rc<Self>) {
-		let dio = me.forge.skills.borrow();
-		for (id, skill) in dio.iter() {
+	fn show_skills(&self, me: Rc<Self>) {  // TODO: Add skill dependecy and separe skill from set skills
+		for (id, skill) in self.forge.skills.borrow().iter() {
 			let builder = Ui::get_builder("gui/skill box.glade".to_string());
 			let skill_box: gtk::Box = builder.get_object("box").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();
@@ -119,11 +119,12 @@ impl Ui {
 			name.set_tooltip_text(Some(skill.description.as_str()));
 			adjustment.set_upper(skill.max_level as f64);
 
-			let id = *id;
 			let app = Rc::clone(&me);
+			let skill_req = Rc::clone(&skill);
 			level.connect_value_changed(move |lev| {
-				app.searcher.add_skill(id, lev.get_value() as u8);
+				app.searcher.add_skill_requirement(skill_req.clone(), lev.get_value() as u8);
 			});
+
 			if id % 2 == 0 {
 				self.skill_list.insert(&skill_box, -1);
 			}else {
@@ -133,19 +134,19 @@ impl Ui {
 	}
 
 	fn show_sets(&self) {
-		for (_, set) in self.forge.sets.borrow().iter() {
+		for (_, set) in self.forge.sets.borrow().iter().sorted_by(|(_, a), (_,b)| {a.id.cmp(&b.id)}) {
 			let builder = Ui::get_builder("gui/set box.glade".to_string());
 			let set_row: gtk::ListBoxRow = builder.get_object("row").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();
 
-			name.set_text(set.name.as_str());
+			name.set_text(&set.name);
 			let i = set.rank_index();
 			self.rank_set[i].insert(&set_row, -1);
 		}
 	}
 
 	fn show_deco(&self) {
-		for (_, deco) in self.forge.decorations.borrow().iter() {
+		for (_, deco) in self.forge.decorations.borrow().iter().sorted_by(|(_, a), (_,b)| {a.name.cmp(&b.name)}) {
 			let builder = Ui::get_builder("gui/deco box.glade".to_string());
 			let deco_box: gtk::Box = builder.get_object("box").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();
