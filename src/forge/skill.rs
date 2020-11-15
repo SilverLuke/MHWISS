@@ -1,7 +1,9 @@
 use std::rc::Rc;
 use std::fmt;
 use std::collections::HashMap;
+use crate::forge::types::ID;
 
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Skill {
     pub id: u16,
     pub name: String,
@@ -21,6 +23,8 @@ impl Skill {
     }
 }
 
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Charm {
     pub id: u16,
     pub name: String,
@@ -45,10 +49,10 @@ impl Charm{
         self.skills.push((Rc::clone(skill), level));
     }
 
-    pub fn get_skills_rank(&self, query: &HashMap<u16, (Rc<Skill>, u8)>) -> Option<u8> {
+    pub fn get_skills_rank(&self, query: &HashMap<Rc<Skill>, u8>) -> Option<u8> {
         let mut rank: u8 = 0;
         for (skill, lev) in self.skills.iter() {
-            if query.get(&skill.id).is_some() {
+            if query.get(skill).is_some() {
                 rank += lev;
             }
         }
@@ -59,8 +63,10 @@ impl Charm{
     }
 }
 
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Decoration {
-    pub id: u16,
+    pub id: ID,
     pub name: String,
     pub size: u8,
     pub skills: Vec<(Rc<Skill>, u8)>,
@@ -79,10 +85,10 @@ impl Decoration {
         Decoration { id, name, size, skills }
     }
 
-    pub fn get_skills_rank(&self, query: &HashMap<u16, (Rc<Skill>, u8)>) -> Option<u8> {
+    pub fn get_skills_rank(&self, query: &HashMap<Rc<Skill>, u8>) -> Option<u8> {
         let mut rank: u8 = 0;
         for (skill, lev) in self.skills.iter() {
-            if query.get(&skill.id).is_some() {
+            if query.get(skill).is_some() {
                 rank += lev;
             }
         }

@@ -1,20 +1,19 @@
 use std::collections::HashMap;
-use crate::database;
-use crate::forge;
 use std::rc::Rc;
 use std::cell::{RefCell};
-use crate::forge::skill::{Skill, Charm, Decoration};
-use crate::forge::armor::{Armor, Set};
 use std::borrow::Borrow;
 
-type ID = u16;
+use crate::forge::types::{ID, Armors, Skills, Sets, Charms, Decorations};
+use crate::database;
+use crate::forge::skill::{Skill, Charm, Decoration};
+use crate::forge::armor::{Armor, Set, ArmorClass};
 
 pub struct Forge {
-    pub skills: RefCell<HashMap<ID, Rc<Skill>>>,  // Len 168
-    pub armors: RefCell<HashMap<ID, Rc<Armor>>>,
-    pub sets: RefCell<HashMap<ID, Set>>,  // Len 343
-    pub decorations: RefCell<HashMap<ID, Rc<Decoration>>>,
-    pub charms: RefCell<HashMap<ID, Rc<Charm>>>,
+    pub skills: Skills,  // Len 168
+    pub armors: Armors,
+    pub sets: Sets,  // Len 343
+    pub decorations: Decorations,
+    pub charms: Charms,
 }
 
 impl Forge {
@@ -37,35 +36,39 @@ impl Forge {
         None
     }
 
-    pub fn get_armors_filtered(&self, skills_req: &RefCell<HashMap<ID, (Rc<Skill>, u8)>>) -> HashMap<ID, (Rc<Armor>, u8)> {
-        let mut ret: HashMap<ID, (Rc<Armor>, u8)>  = Default::default();
+    pub fn get_armors_filtered(&self, skills_req: &RefCell<HashMap<Rc<Skill>, u8>>) -> Vec<(Rc<Armor>, u8)> {
+        let mut ret: Vec<(Rc<Armor>, u8)>  = Default::default();
         let skills = skills_req.borrow();
-        for (id, armor) in self.armors.borrow().iter() {
-            let rank = armor.get_skills_rank(&skills);
-            if  rank.is_some() {
-                ret.insert(*id, (Rc::clone(armor), rank.unwrap()));
+            for (_id, armor) in self.armors.borrow().iter() {
+                let rank = armor.get_skills_rank(&skills);
+                if  rank.is_some() {
+                    ret.push((Rc::clone(armor), rank.unwrap()));
+                }
             }
-        }
+        ret.shrink_to_fit();
         ret
     }
-    pub fn get_charms_filtered(&self, skills_req: &RefCell<HashMap<ID, (Rc<Skill>, u8)>>) -> HashMap<ID, (Rc<Charm>, u8)> {
-        let mut ret: HashMap<ID, (Rc<Charm>, u8)>  = Default::default();
+
+    pub fn get_charms_filtered(&self, skills_req: &RefCell<HashMap<Rc<Skill>, u8>>) -> HashMap<Rc<Charm>, u8> {
+        let mut ret: HashMap<Rc<Charm>, u8>  = Default::default();
         let skills = skills_req.borrow();
+
         for (id, charm) in self.charms.borrow().iter() {
             let rank = charm.get_skills_rank(&skills);
             if  rank.is_some() {
-                ret.insert(*id, (Rc::clone(charm), rank.unwrap()));
+                ret.insert(Rc::clone(charm), rank.unwrap());
             }
         }
         ret
     }
-    pub fn get_decorations_filtered(&self, skills_req: &RefCell<HashMap<ID, (Rc<Skill>, u8)>>) -> HashMap<ID, (Rc<Decoration>, u8)> {
-        let mut ret: HashMap<ID, (Rc<Decoration>, u8)>  = Default::default();
+
+    pub fn get_decorations_filtered(&self, skills_req: &RefCell<HashMap<Rc<Skill>, u8>>) -> HashMap<Rc<Decoration>, u8> {
+        let mut ret: HashMap<Rc<Decoration>, u8>  = Default::default();
         let skills = skills_req.borrow();
         for (id, deco) in self.decorations.borrow().iter() {
             let rank = deco.get_skills_rank(&skills);
             if  rank.is_some() {
-                ret.insert(*id, (Rc::clone(deco), rank.unwrap()));
+                ret.insert(Rc::clone(deco), rank.unwrap());
             }
         }
         ret

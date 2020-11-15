@@ -98,11 +98,12 @@ impl Ui {
 		let app = Rc::clone(&me);
 		self.find_btn.connect_clicked(move |_btn| {
 			app.searcher.show_requirements();
+			let res = app.searcher.calculate();
 		});
 	}
 
 	fn show_skills(&self, me: Rc<Self>) {  // TODO: Add skill dependecy and separe skill from set skills
-		for (id, skill) in self.forge.skills.borrow().iter() {
+		for skill in self.forge.skills.borrow().values().sorted_by(|a, b| {a.name.cmp(&b.name)}) {
 			let builder = Ui::get_builder("gui/skill box.glade".to_string());
 			let skill_box: gtk::Box = builder.get_object("box").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();
@@ -125,7 +126,7 @@ impl Ui {
 				app.searcher.add_skill_requirement(skill_req.clone(), lev.get_value() as u8);
 			});
 
-			if id % 2 == 0 {
+			if skill.id % 2 == 0 {
 				self.skill_list.insert(&skill_box, -1);
 			}else {
 				self.skill_set.insert(&skill_box, -1);
@@ -134,14 +135,13 @@ impl Ui {
 	}
 
 	fn show_sets(&self) {
-		for (_, set) in self.forge.sets.borrow().iter().sorted_by(|(_, a), (_,b)| {a.id.cmp(&b.id)}) {
+		for set in self.forge.sets.borrow().values().sorted_by(|a, b| {a.id.cmp(&b.id)}) {
 			let builder = Ui::get_builder("gui/set box.glade".to_string());
 			let set_row: gtk::ListBoxRow = builder.get_object("row").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();
 
 			name.set_text(&set.name);
-			let i = set.rank_index();
-			self.rank_set[i].insert(&set_row, -1);
+			self.rank_set[set.rank as usize].insert(&set_row, -1);
 		}
 	}
 

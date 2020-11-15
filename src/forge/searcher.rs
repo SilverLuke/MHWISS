@@ -2,110 +2,203 @@ use std::collections::HashMap;
 use std::cell::{RefCell, RefMut};
 
 use crate::forge::{
-    armor::Armor,
-    skill::{Charm, Decoration, Skill},
-    forge::Forge,
+	armor::Armor,
+	skill::{Charm, Decoration, Skill},
+	forge::Forge,
 };
 use std::rc::Rc;
 use itertools::Itertools;
 use std::fmt;
+use crate::forge::types::{SkillsLev, ID};
+use crate::forge::armor::{class_to_string, ArmorClass};
+use std::collections::hash_map::Entry;
+use std::ops::Not;
 
 enum Sign {
-    GE,
-    EQ
+	GE,
+	EQ
 }
 
-pub struct Searcher {
-    forge: Rc<Forge>,
-    skills_req:  RefCell<HashMap<u16, (Rc<Skill>, u8)>>,
-    armours:     RefCell<HashMap<u16, (Rc<Armor>, u8)>>,
-    charms:      RefCell<HashMap<u16, (Rc<Charm>, u8)>>,
-    decorations: RefCell<HashMap<u16, (Rc<Decoration>, u8)>>,
+pub struct Result {
+	weapon: ID,
+	set: [Option<Rc<Armor>>; 5],
+	charm: Option<Rc<Charm>>,
+}
 
+impl Result {
+	pub fn new() -> Self {
+		Result {
+			weapon: 0,
+			set: [None, None, None, None, None],
+			charm: None
+		}
+	}
+
+	pub fn add_armor(&mut self, armor: &Rc<Armor>) {
+		self.set[armor.class as usize] = Some(Rc::clone(armor));
+	}
+
+	pub fn get_skills(&self) -> HashMap<Rc<Skill>, u8> {
+		let mut skills_sum: HashMap<Rc<Skill>, u8> = Default::default();
+		for i in self.set.iter() {
+			if let Some(armor) = i {
+				for (skill, lev) in armor.skills.iter() {
+					let value: u8 = match skills_sum.entry(Rc::clone(skill)) {
+						Entry::Occupied(mut o) => o.insert(o.get() + lev),
+						Entry::Vacant(v) => *v.insert(*lev)
+					};
+				}
+			}
+		}
+		skills_sum.shrink_to_fit();
+		skills_sum
+	}
+}
+
+impl fmt::Display for Result {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		let mut str = String::new();
+		str = format!("Weapon not implemented\n");
+		let mut ind = 0;
+		let tmp = ["head", "chest", "arms", "waist", "legs"];
+		for i in self.set.iter() {
+			str = format!("{} {}:", str, tmp[ind]);
+			ind += 1;
+			match i {
+				Some(armor) => str = format!("{} <{}>\n", str, armor),
+				None => str = format!("{} None\n", str),
+			}
+		}
+		if let Some(charm) = &self.charm {
+			str = format!("{} Charm: {}", str, charm);
+		}
+		write!(f, "{}", str)
+	}
+}
+
+
+pub struct Searcher {
+	forge: Rc<Forge>,
+	skills_req: RefCell<HashMap<Rc<Skill>, u8>>,
+	armours: RefCell<[Vec<(Rc<Armor>, u8)>; 5]>,
+	charms: RefCell<HashMap<Rc<Charm>, u8>>,
+	decorations: RefCell<HashMap<Rc<Decoration>, u8>>,
 }
 
 impl fmt::Display for Searcher {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut str;
-        str = format!("###    ARMORS   ###\n");
-        for (_, (armor, rank)) in self.armours.borrow().iter().sorted_by(|(_, (_, a)), (_,(_, b))| {b.cmp(&a)})  {
-            str = format!("{} {} : {}\n", str, rank, armor);
-        }
-        str = format!("{}###    CHARMS   ###\n", str);
-        for (_, (charm, rank)) in self.charms.borrow().iter().sorted_by(|(_, (_, a)), (_,(_, b))| {b.cmp(&a)})  {
-            str = format!("{} {} : {}\n", str, rank,  charm);
-        }
-        str = format!("{}###    DECORATIONS   ###\n", str);
-        for (_, (deco, rank)) in self.decorations.borrow().iter().sorted_by(|(_, (_, a)), (_,(_, b))| {b.cmp(&a)})  {
-            str = format!("{} {} : {}\n", str, rank, deco);
-        }
-        write!(f, "{}##################\n", str)
-    }
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		let mut str;
+		str = format!("###    ARMORS   ###\n");
+		for list in self.armours.borrow().iter() {
+			match list.get(0) {
+				Some((a, _)) => str = format!("{}##    {}    ##\n", str, class_to_string(&a.class)),
+				None => ()
+			};
+			for (armor, rank) in list.iter() {
+				str = format!("{} {} : {}\n", str, rank, armor);
+			}
+		}
+		str = format!("{}###    CHARMS   ###\n", str);
+		for (charm, rank) in self.charms.borrow().iter() {
+			str = format!("{} {} : {}\n", str, rank, charm);
+		}
+		str = format!("{}###    DECORATIONS   ###\n", str);
+		for (deco, rank) in self.decorations.borrow().iter() {
+			str = format!("{} {} : {}\n", str, rank, deco);
+		}
+		write!(f, "{}##################\n", str)
+	}
 }
 
 impl Searcher {
-    pub fn new(forge: Rc<Forge>) -> Self {
-        Searcher{
-            skills_req:  Default::default(),
-            armours:     Default::default(),
-            charms:      Default::default(),
-            decorations: Default::default(),
-            forge,
-        }
-    }
+	pub fn new(forge: Rc<Forge>) -> Self {
+		Searcher {
+			skills_req: Default::default(),
+			armours: Default::default(),
+			charms: Default::default(),
+			decorations: Default::default(),
+			forge,
+		}
+	}
 
-    pub fn add_skill_requirement(&self, skill: Rc<Skill>, lev: u8) {  // Add Sign
-        if lev == 0 {
-            self.skills_req.borrow_mut().remove(&skill.id);
-        } else {
-            self.skills_req.borrow_mut().insert(skill.id, (skill, lev));
-        }
-    }
+	pub fn add_skill_requirement(&self, skill: Rc<Skill>, lev: u8) {  // Add Sign >= or =
+		if lev == 0 {
+			self.skills_req.borrow_mut().remove(&skill);
+		} else {
+			self.skills_req.borrow_mut().insert(skill.clone(), lev);
+		}
+	}
 
-    pub fn show_requirements(&self) {
-        println!("Requirements: ");
-        for (_id, (skill, lev)) in self.skills_req.borrow().iter() {
-            println!("Skill: {} lev: {}", skill.name, lev);
-        }
-    }
+	pub fn show_requirements(&self) {
+		println!("Requirements: ");
+		for (skill, lev) in self.skills_req.borrow().iter() {
+			println!("Skill: {} lev: {}", skill.name, lev);
+		}
+	}
 
-    fn filter(&self) {
-        self.armours.replace(self.forge.get_armors_filtered(&self.skills_req));
-        self.charms.replace(self.forge.get_charms_filtered(&self.skills_req));
-        self.decorations.replace(self.forge.get_decorations_filtered(&self.skills_req));
-        println!("ARMORS: {} CHARMS: {}, DECORATIONS: {}", self.armours.borrow().len(), self.charms.borrow().len(), self.decorations.borrow().len());
-    }
+	fn check_req(&self, res: &Result) -> bool {
+		let mut satisfied = true;
+		let set_skills = res.get_skills();
+		for (skill, req_lev) in self.skills_req.borrow().iter() {
+			match set_skills.get(skill) {
+				Some(level) => if req_lev > level { satisfied = false },
+				None => satisfied = false,
+			}
+		}
+		satisfied
+	}
 
-    fn clean(&self) {
-        self.armours.replace(Default::default());
-        self.charms.replace(Default::default());
-        self.decorations.replace(Default::default());
-    }
+	fn filter(&self) {
+		let mut order: [Vec<(Rc<Armor>, u8)>; 5] = Default::default();
+		let filtered = self.forge.get_armors_filtered(&self.skills_req);
+		for (armor, rank) in filtered.iter().sorted_by(|(_, a), (_, b)| { b.cmp(&a) }) {
+			order[armor.class as usize].push((Rc::clone(armor), *rank));
+		}
+		self.armours.replace(order);
+		self.charms.replace(self.forge.get_charms_filtered(&self.skills_req));
+		self.decorations.replace(self.forge.get_decorations_filtered(&self.skills_req));
+		println!("ARMORS: {} CHARMS: {}, DECORATIONS: {}", filtered.len(), self.charms.borrow().len(), self.decorations.borrow().len());
+	}
 
-    pub fn calculate(&self) {
-        self.clean();
-        self.filter();
-    }
+	fn stupid_search(&self) -> Result {
+		let mut res = Result::new();
+		for i in self.armours.borrow().iter() {
+			if self.check_req(&res).not() {
+				match i.get(0) {
+					Some((armor, _)) => res.add_armor(armor),
+					None => (),
+				};
+			}
+		}
+		res
+	}
 
+	//pub fn search(&self) -> Result {}
+
+	pub fn calculate(&self) -> Result {
+		self.filter();
+		self.stupid_search()
+	}
 }
 
 #[cfg(test)]
 mod tests {
-    use std::rc::Rc;
-    use crate::forge;
+	use std::rc::Rc;
+	use crate::forge;
 
-    #[test]
-    fn filtering() {
-        let forge = Rc::new(forge::forge::Forge::new());
-        forge.load_all("it");
-        let searcher = forge::searcher::Searcher::new(Rc::clone(&forge));
+	#[test]
+	fn filtering() {
+		let forge = Rc::new(forge::forge::Forge::new());
+		forge.load_all("it");
+		let searcher = forge::searcher::Searcher::new(Rc::clone(&forge));
 
-        searcher.add_skill_requirement(forge.get_skill("Occhio critico").unwrap(), 3);
-        searcher.add_skill_requirement(forge.get_skill("Bombardiere").unwrap(), 3);
-        searcher.add_skill_requirement(forge.get_skill("Critico elementale").unwrap(), 1);
+		searcher.add_skill_requirement(forge.get_skill("Occhio critico").unwrap(), 3);
+		searcher.add_skill_requirement(forge.get_skill("Angelo custode").unwrap(), 1);
+		//searcher.add_skill_requirement(forge.get_skill("Critico elementale").unwrap(), 1);
 
-        searcher.calculate();
-        println!("{}", searcher);
-        assert_eq!("a", "a");
-    }
+		let res = searcher.calculate();
+		//println!("{}", searcher);
+		println!("Result:\n{}", res);
+		assert_eq!("a", "a");
+	}
 }
