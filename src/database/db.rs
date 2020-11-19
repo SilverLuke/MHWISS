@@ -2,9 +2,8 @@ use rusqlite::{Connection, params, Row};
 use std::collections::HashMap;
 use crate::forge;
 use std::rc::Rc;
-use crate::forge::armor::{tr_armor_type, tr_rank};
+use crate::forge::types::{Rank, ArmorClass};
 use std::cell::{RefCell};
-use std::borrow::{BorrowMut, Borrow};
 use crate::forge::skill::Skill;
 use crate::forge::types::{Skills, Armors, Sets, Decorations, Charms};
 
@@ -65,7 +64,7 @@ WHERE lang_id = ?1").unwrap();
 			let mut armor = forge::armor::Armor::new(
 				row.get(row.column_index("id").unwrap()).unwrap(),
 				row.get(row.column_index("name").unwrap()).unwrap(),
-				tr_armor_type(row.get(row.column_index("armor_type").unwrap()).unwrap()),
+				ArmorClass::new(row.get(row.column_index("armor_type").unwrap()).unwrap()),
 				deco,
 				row.get(row.column_index("defense_base").unwrap()).unwrap(),
 				row.get(row.column_index("defense_max").unwrap()).unwrap(),
@@ -113,8 +112,8 @@ WHERE lang_id = ?1").unwrap();
 			let id = row.get(row.column_index("armorset_id").unwrap()).unwrap();
 			let armor_id = row.get(row.column_index("armor_id").unwrap()).unwrap();
 			let name = row.get(row.column_index("name").unwrap()).unwrap();
-			let armor_type = tr_armor_type(row.get(row.column_index("armor_type").unwrap()).unwrap());
-			let rank = tr_rank(row.get(row.column_index("rank").unwrap()).unwrap());
+			let armor_type = ArmorClass::new(row.get(row.column_index("armor_type").unwrap()).unwrap());
+			let rank = Rank::new(row.get(row.column_index("rank").unwrap()).unwrap());
 			let mut set = forge::armor::Set::new(id, name, rank);
 			set.add_element(armor_type, armors.borrow().get(&armor_id).unwrap());
 			set
@@ -128,7 +127,7 @@ WHERE lang_id = ?1").unwrap();
 			id = row.get(row.column_index("armorset_id").unwrap()).unwrap();
 			if set.id == id {
 				let armor_id = row.get(row.column_index("armor_id").unwrap()).unwrap();
-				let armor_type = tr_armor_type(row.get(row.column_index("armor_type").unwrap()).unwrap());
+				let armor_type = ArmorClass::new(row.get(row.column_index("armor_type").unwrap()).unwrap());
 				set.add_element(armor_type, armors.borrow().get(&armor_id).unwrap());
 			} else {
 				sets.borrow_mut().insert(set.id, set);

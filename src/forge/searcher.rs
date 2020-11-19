@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::cell::{RefCell, RefMut};
+use std::cell::{RefCell};
 
 use crate::forge::{
 	armor::Armor,
@@ -9,26 +9,27 @@ use crate::forge::{
 use std::rc::Rc;
 use itertools::Itertools;
 use std::fmt;
-use crate::forge::types::{SkillsLev, ID};
-use crate::forge::armor::{class_to_string, ArmorClass};
+use crate::forge::types::{ID, ArmorClass};
 use std::collections::hash_map::Entry;
 use std::ops::Not;
+use crate::forge::weapon::Weapon;
 
+#[allow(dead_code)]
 enum Sign {
 	GE,
 	EQ
 }
 
-pub struct Result {
-	weapon: ID,
-	set: [Option<Rc<Armor>>; 5],
+pub struct BestSet {
+	pub weapon: Option<Rc<Weapon>>,
+	pub set: [Option<Rc<Armor>>; 5],
 	charm: Option<Rc<Charm>>,
 }
 
-impl Result {
+impl BestSet {
 	pub fn new() -> Self {
-		Result {
-			weapon: 0,
+		BestSet {
+			weapon: None,
 			set: [None, None, None, None, None],
 			charm: None
 		}
@@ -43,7 +44,7 @@ impl Result {
 		for i in self.set.iter() {
 			if let Some(armor) = i {
 				for (skill, lev) in armor.skills.iter() {
-					let value: u8 = match skills_sum.entry(Rc::clone(skill)) {
+					match skills_sum.entry(Rc::clone(skill)) {
 						Entry::Occupied(mut o) => o.insert(o.get() + lev),
 						Entry::Vacant(v) => *v.insert(*lev)
 					};
@@ -55,23 +56,24 @@ impl Result {
 	}
 }
 
-impl fmt::Display for Result {
+impl fmt::Display for BestSet {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let mut str = String::new();
 		str = format!("Weapon not implemented\n");
-		let mut ind = 0;
-		let tmp = ["head", "chest", "arms", "waist", "legs"];
-		for i in self.set.iter() {
-			str = format!("{} {}:", str, tmp[ind]);
-			ind += 1;
-			match i {
-				Some(armor) => str = format!("{} <{}>\n", str, armor),
-				None => str = format!("{} None\n", str),
+
+		for i in ArmorClass::iterator() {
+			str = format!("{} {}:", str, ArmorClass::to_string(i));
+			match self.set.get(*i as usize) {
+				Some(Some(armor)) => str = format!("{} <{}>\n", str, armor),
+				Some(None) => str = format!("{} None\n", str),
+				None => panic!("ERROR: Result print out of bounds"),
 			}
 		}
+
 		if let Some(charm) = &self.charm {
 			str = format!("{} Charm: {}", str, charm);
 		}
+
 		write!(f, "{}", str)
 	}
 }
@@ -91,7 +93,7 @@ impl fmt::Display for Searcher {
 		str = format!("###    ARMORS   ###\n");
 		for list in self.armours.borrow().iter() {
 			match list.get(0) {
-				Some((a, _)) => str = format!("{}##    {}    ##\n", str, class_to_string(&a.class)),
+				Some((a, _)) => str = format!("{}##    {}    ##\n", str, ArmorClass::to_string(&a.class)),
 				None => ()
 			};
 			for (armor, rank) in list.iter() {
@@ -136,7 +138,7 @@ impl Searcher {
 		}
 	}
 
-	fn check_req(&self, res: &Result) -> bool {
+	fn check_req(&self, res: &BestSet) -> bool {
 		let mut satisfied = true;
 		let set_skills = res.get_skills();
 		for (skill, req_lev) in self.skills_req.borrow().iter() {
@@ -160,8 +162,8 @@ impl Searcher {
 		println!("ARMORS: {} CHARMS: {}, DECORATIONS: {}", filtered.len(), self.charms.borrow().len(), self.decorations.borrow().len());
 	}
 
-	fn stupid_search(&self) -> Result {
-		let mut res = Result::new();
+	fn stupid_search(&self) -> BestSet {
+		let mut res = BestSet::new();
 		for i in self.armours.borrow().iter() {
 			if self.check_req(&res).not() {
 				match i.get(0) {
@@ -175,7 +177,7 @@ impl Searcher {
 
 	//pub fn search(&self) -> Result {}
 
-	pub fn calculate(&self) -> Result {
+	pub fn calculate(&self) -> BestSet {
 		self.filter();
 		self.stupid_search()
 	}
@@ -183,6 +185,7 @@ impl Searcher {
 
 #[cfg(test)]
 mod tests {
+	#![allow(dead_code)]
 	use std::rc::Rc;
 	use crate::forge;
 

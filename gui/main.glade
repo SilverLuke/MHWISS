@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated with glade 3.38.1 -->
 <interface>
-  <requires lib="gtk+" version="3.22"/>
+  <requires lib="gtk+" version="3.24"/>
+  <!-- interface-css-provider-path style.css -->
   <object class="GtkAdjustment" id="deco adjustment">
     <property name="upper">100</property>
     <property name="step-increment">1</property>
@@ -27,7 +28,7 @@
     <property name="default-height">600</property>
     <property name="show-menubar">False</property>
     <child>
-      <object class="GtkNotebook">
+      <object class="GtkNotebook" id="notebook">
         <property name="visible">True</property>
         <property name="can-focus">True</property>
         <property name="show-border">False</property>
@@ -862,7 +863,7 @@
                             <property name="can-focus">False</property>
                             <property name="spacing">5</property>
                             <child>
-                              <object class="GtkImage" id="weapon result slot image 1">
+                              <object class="GtkImage" id="weapon slot image 0">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                               </object>
@@ -873,7 +874,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="weapon slot 1">
+                              <object class="GtkLabel" id="weapon slot 0">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="label" translatable="yes">Slot 1</property>
@@ -897,7 +898,7 @@
                             <property name="can-focus">False</property>
                             <property name="spacing">5</property>
                             <child>
-                              <object class="GtkImage" id="weapon result slot image 2">
+                              <object class="GtkImage" id="weapon slot image 1">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                               </object>
@@ -908,7 +909,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="weapon slot 2">
+                              <object class="GtkLabel" id="weapon slot 1">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="label" translatable="yes">Slot 2</property>
@@ -932,7 +933,7 @@
                             <property name="can-focus">False</property>
                             <property name="spacing">5</property>
                             <child>
-                              <object class="GtkImage" id="weapon result slot image 3">
+                              <object class="GtkImage" id="weapon slot image 2">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                               </object>
@@ -943,7 +944,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="weapon slot 3">
+                              <object class="GtkLabel" id="weapon slot 2">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="label" translatable="yes">Slot 3</property>
@@ -989,11 +990,11 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox" id="1">
+                  <object class="GtkBox" id="head box">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkImage" id="image 1">
+                      <object class="GtkImage" id="image 0">
                         <property name="width-request">60</property>
                         <property name="height-request">60</property>
                         <property name="visible">True</property>
@@ -1013,7 +1014,7 @@
                         <property name="can-focus">False</property>
                         <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkLabel" id="name 1">
+                          <object class="GtkLabel" id="name 0">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="margin-start">2</property>
@@ -1029,7 +1030,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="skill 1 1">
+                          <object class="GtkLabel" id="skill 0 0">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Skill 1</property>
@@ -1041,7 +1042,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="skill 2 1">
+                          <object class="GtkLabel" id="skill 1 0">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Skill 2</property>
@@ -1071,7 +1072,7 @@
                             <property name="can-focus">False</property>
                             <property name="spacing">5</property>
                             <child>
-                              <object class="GtkImage" id="slot image 1 1">
+                              <object class="GtkImage" id="slot image 0 0">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                               </object>
@@ -1082,7 +1083,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="slot 1 1">
+                              <object class="GtkLabel" id="slot 0 0">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="label" translatable="yes">Slot 1</property>
@@ -1106,7 +1107,7 @@
                             <property name="can-focus">False</property>
                             <property name="spacing">5</property>
                             <child>
-                              <object class="GtkImage" id="slot image 2 1">
+                              <object class="GtkImage" id="slot image 1 0">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                               </object>
@@ -1117,7 +1118,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="slot 2 1">
+                              <object class="GtkLabel" id="slot 1 0">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="label" translatable="yes">Slot 2</property>
@@ -1141,7 +1142,7 @@
                             <property name="can-focus">False</property>
                             <property name="spacing">5</property>
                             <child>
-                              <object class="GtkImage" id="slot image 3 1">
+                              <object class="GtkImage" id="slot image 2 0">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                               </object>
@@ -1152,7 +1153,382 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="slot 3 1">
+                              <object class="GtkLabel" id="slot 2 0">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Slot 3</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <!-- n-columns=6 n-rows=2 -->
+                      <object class="GtkGrid">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="row-homogeneous">True</property>
+                        <property name="column-homogeneous">True</property>
+                        <child>
+                          <object class="GtkImage" id="defense image 0">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">end</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkImage" id="fire image 0">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkImage" id="water image 0">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">2</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkImage" id="thunder image 0">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">3</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkImage" id="ice image 0">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">4</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkImage" id="dragon image 0">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">5</property>
+                            <property name="top-attach">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="defence 0">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
+                            <property name="label" translatable="yes">1</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">0</property>
+                            <property name="top-attach">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="fire 0">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
+                            <property name="label" translatable="yes">2</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">1</property>
+                            <property name="top-attach">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="water 0">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
+                            <property name="label" translatable="yes">3</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">2</property>
+                            <property name="top-attach">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="thunder 0">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
+                            <property name="label" translatable="yes">4</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">3</property>
+                            <property name="top-attach">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="ice 0">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
+                            <property name="label" translatable="yes">5</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">4</property>
+                            <property name="top-attach">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="dragon 0">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
+                            <property name="label" translatable="yes">6</property>
+                          </object>
+                          <packing>
+                            <property name="left-attach">5</property>
+                            <property name="top-attach">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="pack-type">end</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="chest box">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkImage" id="image 1">
+                        <property name="width-request">60</property>
+                        <property name="height-request">60</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <child>
+                          <object class="GtkLabel" id="name 1">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-left">2</property>
+                            <property name="margin-right">2</property>
+                            <property name="margin-start">2</property>
+                            <property name="margin-end">2</property>
+                            <property name="margin-top">2</property>
+                            <property name="margin-bottom">2</property>
+                            <property name="label" translatable="yes">Name</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="skill 0 1">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">Skill 1</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="skill 1 1">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">Skill 2</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkBox" id="slots 2">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <property name="homogeneous">True</property>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="spacing">5</property>
+                            <child>
+                              <object class="GtkImage" id="slot image 0 1">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="slot 0 1">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Slot 1</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="spacing">5</property>
+                            <child>
+                              <object class="GtkImage" id="slot image 1 1">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="slot 1 1">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Slot 2</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="spacing">5</property>
+                            <child>
+                              <object class="GtkImage" id="slot image 2 1">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="slot 2 1">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="label" translatable="yes">Slot 3</property>
@@ -1273,7 +1649,7 @@
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">center</property>
-                            <property name="valign">start</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">1</property>
                           </object>
                           <packing>
@@ -1285,6 +1661,8 @@
                           <object class="GtkLabel" id="fire 1">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">2</property>
                           </object>
                           <packing>
@@ -1293,9 +1671,11 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="water 2">
+                          <object class="GtkLabel" id="water 1">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">3</property>
                           </object>
                           <packing>
@@ -1307,6 +1687,8 @@
                           <object class="GtkLabel" id="thunder 1">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">4</property>
                           </object>
                           <packing>
@@ -1318,6 +1700,8 @@
                           <object class="GtkLabel" id="ice 1">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">5</property>
                           </object>
                           <packing>
@@ -1329,6 +1713,8 @@
                           <object class="GtkLabel" id="dragon 1">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">6</property>
                           </object>
                           <packing>
@@ -1348,17 +1734,21 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">1</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox" id="2">
+                  <object class="GtkBox" id="arms box">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
                       <object class="GtkImage" id="image 2">
+                        <property name="width-request">60</property>
+                        <property name="height-request">60</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -1375,6 +1765,8 @@
                           <object class="GtkLabel" id="name 2">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="margin-left">2</property>
+                            <property name="margin-right">2</property>
                             <property name="margin-start">2</property>
                             <property name="margin-end">2</property>
                             <property name="margin-top">2</property>
@@ -1388,7 +1780,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="skill 1 2">
+                          <object class="GtkLabel" id="skill 0 2">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Skill 1</property>
@@ -1400,7 +1792,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="skill 2 2">
+                          <object class="GtkLabel" id="skill 1 2">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Skill 2</property>
@@ -1419,7 +1811,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkBox" id="slots 2">
+                      <object class="GtkBox" id="slots 3">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="orientation">vertical</property>
@@ -1430,7 +1822,7 @@
                             <property name="can-focus">False</property>
                             <property name="spacing">5</property>
                             <child>
-                              <object class="GtkImage" id="slot image 1 2">
+                              <object class="GtkImage" id="slot image 0 2">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                               </object>
@@ -1441,7 +1833,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="slot 1 2">
+                              <object class="GtkLabel" id="slot 0 2">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="label" translatable="yes">Slot 1</property>
@@ -1465,7 +1857,7 @@
                             <property name="can-focus">False</property>
                             <property name="spacing">5</property>
                             <child>
-                              <object class="GtkImage" id="slot image 2 2">
+                              <object class="GtkImage" id="slot image 1 2">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                               </object>
@@ -1476,7 +1868,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="slot 2 2">
+                              <object class="GtkLabel" id="slot 1 2">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="label" translatable="yes">Slot 2</property>
@@ -1500,7 +1892,7 @@
                             <property name="can-focus">False</property>
                             <property name="spacing">5</property>
                             <child>
-                              <object class="GtkImage" id="slot image 3 2">
+                              <object class="GtkImage" id="slot image 2 2">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                               </object>
@@ -1511,7 +1903,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="slot 3 2">
+                              <object class="GtkLabel" id="slot 2 2">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="label" translatable="yes">Slot 3</property>
@@ -1545,10 +1937,12 @@
                         <property name="column-homogeneous">True</property>
                         <child>
                           <object class="GtkImage" id="defense image 2">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">center</property>
-                            <property name="valign">center</property>
+                            <property name="valign">end</property>
                           </object>
                           <packing>
                             <property name="left-attach">0</property>
@@ -1557,8 +1951,12 @@
                         </child>
                         <child>
                           <object class="GtkImage" id="fire image 2">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                           </object>
                           <packing>
                             <property name="left-attach">1</property>
@@ -1567,8 +1965,12 @@
                         </child>
                         <child>
                           <object class="GtkImage" id="water image 2">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                           </object>
                           <packing>
                             <property name="left-attach">2</property>
@@ -1577,8 +1979,12 @@
                         </child>
                         <child>
                           <object class="GtkImage" id="thunder image 2">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                           </object>
                           <packing>
                             <property name="left-attach">3</property>
@@ -1587,8 +1993,12 @@
                         </child>
                         <child>
                           <object class="GtkImage" id="ice image 2">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                           </object>
                           <packing>
                             <property name="left-attach">4</property>
@@ -1597,8 +2007,12 @@
                         </child>
                         <child>
                           <object class="GtkImage" id="dragon image 2">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                           </object>
                           <packing>
                             <property name="left-attach">5</property>
@@ -1609,6 +2023,8 @@
                           <object class="GtkLabel" id="defence 2">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">1</property>
                           </object>
                           <packing>
@@ -1620,6 +2036,8 @@
                           <object class="GtkLabel" id="fire 2">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">2</property>
                           </object>
                           <packing>
@@ -1628,9 +2046,11 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="water 1">
+                          <object class="GtkLabel" id="water 2">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">3</property>
                           </object>
                           <packing>
@@ -1642,6 +2062,8 @@
                           <object class="GtkLabel" id="thunder 2">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">4</property>
                           </object>
                           <packing>
@@ -1653,6 +2075,8 @@
                           <object class="GtkLabel" id="ice 2">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">5</property>
                           </object>
                           <packing>
@@ -1664,6 +2088,8 @@
                           <object class="GtkLabel" id="dragon 2">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">6</property>
                           </object>
                           <packing>
@@ -1683,17 +2109,21 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">2</property>
+                    <property name="position">3</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox" id="3">
+                  <object class="GtkBox" id="waist box">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
                       <object class="GtkImage" id="image 3">
+                        <property name="width-request">60</property>
+                        <property name="height-request">60</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -1710,6 +2140,8 @@
                           <object class="GtkLabel" id="name 3">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="margin-left">2</property>
+                            <property name="margin-right">2</property>
                             <property name="margin-start">2</property>
                             <property name="margin-end">2</property>
                             <property name="margin-top">2</property>
@@ -1723,7 +2155,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="skill 1 3">
+                          <object class="GtkLabel" id="skill 0 3">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Skill 1</property>
@@ -1735,7 +2167,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="skill 2 3">
+                          <object class="GtkLabel" id="skill 1 3">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Skill 2</property>
@@ -1754,7 +2186,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkBox" id="slots 3">
+                      <object class="GtkBox" id="slots 4">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="orientation">vertical</property>
@@ -1765,7 +2197,7 @@
                             <property name="can-focus">False</property>
                             <property name="spacing">5</property>
                             <child>
-                              <object class="GtkImage" id="slot image 1 3">
+                              <object class="GtkImage" id="slot image 0 3">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                               </object>
@@ -1776,7 +2208,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="slot 1 3">
+                              <object class="GtkLabel" id="slot 0 3">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="label" translatable="yes">Slot 1</property>
@@ -1800,7 +2232,7 @@
                             <property name="can-focus">False</property>
                             <property name="spacing">5</property>
                             <child>
-                              <object class="GtkImage" id="slot image 2 3">
+                              <object class="GtkImage" id="slot image 1 3">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                               </object>
@@ -1811,7 +2243,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="slot 2 3">
+                              <object class="GtkLabel" id="slot 1 3">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="label" translatable="yes">Slot 2</property>
@@ -1835,7 +2267,7 @@
                             <property name="can-focus">False</property>
                             <property name="spacing">5</property>
                             <child>
-                              <object class="GtkImage" id="slot image 3 3">
+                              <object class="GtkImage" id="slot image 2 3">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                               </object>
@@ -1846,7 +2278,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="slot 3 3">
+                              <object class="GtkLabel" id="slot 2 3">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="label" translatable="yes">Slot 3</property>
@@ -1880,10 +2312,12 @@
                         <property name="column-homogeneous">True</property>
                         <child>
                           <object class="GtkImage" id="defense image 3">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">center</property>
-                            <property name="valign">center</property>
+                            <property name="valign">end</property>
                           </object>
                           <packing>
                             <property name="left-attach">0</property>
@@ -1892,8 +2326,12 @@
                         </child>
                         <child>
                           <object class="GtkImage" id="fire image 3">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                           </object>
                           <packing>
                             <property name="left-attach">1</property>
@@ -1902,8 +2340,12 @@
                         </child>
                         <child>
                           <object class="GtkImage" id="water image 3">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                           </object>
                           <packing>
                             <property name="left-attach">2</property>
@@ -1912,8 +2354,12 @@
                         </child>
                         <child>
                           <object class="GtkImage" id="thunder image 3">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                           </object>
                           <packing>
                             <property name="left-attach">3</property>
@@ -1922,8 +2368,12 @@
                         </child>
                         <child>
                           <object class="GtkImage" id="ice image 3">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                           </object>
                           <packing>
                             <property name="left-attach">4</property>
@@ -1932,8 +2382,12 @@
                         </child>
                         <child>
                           <object class="GtkImage" id="dragon image 3">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                           </object>
                           <packing>
                             <property name="left-attach">5</property>
@@ -1944,6 +2398,8 @@
                           <object class="GtkLabel" id="defence 3">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">1</property>
                           </object>
                           <packing>
@@ -1955,6 +2411,8 @@
                           <object class="GtkLabel" id="fire 3">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">2</property>
                           </object>
                           <packing>
@@ -1966,6 +2424,8 @@
                           <object class="GtkLabel" id="water 3">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">3</property>
                           </object>
                           <packing>
@@ -1977,6 +2437,8 @@
                           <object class="GtkLabel" id="thunder 3">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">4</property>
                           </object>
                           <packing>
@@ -1988,6 +2450,8 @@
                           <object class="GtkLabel" id="ice 3">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">5</property>
                           </object>
                           <packing>
@@ -1999,6 +2463,8 @@
                           <object class="GtkLabel" id="dragon 3">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">6</property>
                           </object>
                           <packing>
@@ -2018,17 +2484,21 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">3</property>
+                    <property name="position">4</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkBox" id="4">
+                  <object class="GtkBox" id="legs box">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
                       <object class="GtkImage" id="image 4">
+                        <property name="width-request">60</property>
+                        <property name="height-request">60</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -2045,6 +2515,8 @@
                           <object class="GtkLabel" id="name 4">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="margin-left">2</property>
+                            <property name="margin-right">2</property>
                             <property name="margin-start">2</property>
                             <property name="margin-end">2</property>
                             <property name="margin-top">2</property>
@@ -2058,7 +2530,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="skill 1 4">
+                          <object class="GtkLabel" id="skill 0 4">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Skill 1</property>
@@ -2070,7 +2542,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="skill 2 4">
+                          <object class="GtkLabel" id="skill 1 4">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="label" translatable="yes">Skill 2</property>
@@ -2089,7 +2561,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkBox" id="slots 4">
+                      <object class="GtkBox" id="slots 5">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="orientation">vertical</property>
@@ -2100,7 +2572,7 @@
                             <property name="can-focus">False</property>
                             <property name="spacing">5</property>
                             <child>
-                              <object class="GtkImage" id="slot image 1 4">
+                              <object class="GtkImage" id="slot image 0 4">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                               </object>
@@ -2111,7 +2583,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="slot 1 4">
+                              <object class="GtkLabel" id="slot 0 4">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="label" translatable="yes">Slot 1</property>
@@ -2135,7 +2607,7 @@
                             <property name="can-focus">False</property>
                             <property name="spacing">5</property>
                             <child>
-                              <object class="GtkImage" id="slot image 2 4">
+                              <object class="GtkImage" id="slot image 1 4">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                               </object>
@@ -2146,7 +2618,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="slot 2 4">
+                              <object class="GtkLabel" id="slot 1 4">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="label" translatable="yes">Slot 2</property>
@@ -2170,7 +2642,7 @@
                             <property name="can-focus">False</property>
                             <property name="spacing">5</property>
                             <child>
-                              <object class="GtkImage" id="slot image 3 4">
+                              <object class="GtkImage" id="slot image 2 4">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                               </object>
@@ -2181,7 +2653,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="slot 3 4">
+                              <object class="GtkLabel" id="slot 2 4">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="label" translatable="yes">Slot 3</property>
@@ -2215,10 +2687,12 @@
                         <property name="column-homogeneous">True</property>
                         <child>
                           <object class="GtkImage" id="defense image 4">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="halign">center</property>
-                            <property name="valign">center</property>
+                            <property name="valign">end</property>
                           </object>
                           <packing>
                             <property name="left-attach">0</property>
@@ -2227,8 +2701,12 @@
                         </child>
                         <child>
                           <object class="GtkImage" id="fire image 4">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                           </object>
                           <packing>
                             <property name="left-attach">1</property>
@@ -2237,8 +2715,12 @@
                         </child>
                         <child>
                           <object class="GtkImage" id="water image 4">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                           </object>
                           <packing>
                             <property name="left-attach">2</property>
@@ -2247,8 +2729,12 @@
                         </child>
                         <child>
                           <object class="GtkImage" id="thunder image 4">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                           </object>
                           <packing>
                             <property name="left-attach">3</property>
@@ -2257,8 +2743,12 @@
                         </child>
                         <child>
                           <object class="GtkImage" id="ice image 4">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                           </object>
                           <packing>
                             <property name="left-attach">4</property>
@@ -2267,8 +2757,12 @@
                         </child>
                         <child>
                           <object class="GtkImage" id="dragon image 4">
+                            <property name="width-request">25</property>
+                            <property name="height-request">25</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                           </object>
                           <packing>
                             <property name="left-attach">5</property>
@@ -2279,6 +2773,8 @@
                           <object class="GtkLabel" id="defence 4">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">1</property>
                           </object>
                           <packing>
@@ -2290,6 +2786,8 @@
                           <object class="GtkLabel" id="fire 4">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">2</property>
                           </object>
                           <packing>
@@ -2301,6 +2799,8 @@
                           <object class="GtkLabel" id="water 4">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">3</property>
                           </object>
                           <packing>
@@ -2312,6 +2812,8 @@
                           <object class="GtkLabel" id="thunder 4">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">4</property>
                           </object>
                           <packing>
@@ -2323,6 +2825,8 @@
                           <object class="GtkLabel" id="ice 4">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="valign">center</property>
                             <property name="label" translatable="yes">5</property>
                           </object>
                           <packing>
@@ -2334,341 +2838,8 @@
                           <object class="GtkLabel" id="dragon 4">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">6</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">5</property>
-                            <property name="top-attach">1</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="pack-type">end</property>
-                        <property name="position">3</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">4</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkBox" id="5">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <child>
-                      <object class="GtkImage" id="image 5">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkBox">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="orientation">vertical</property>
-                        <child>
-                          <object class="GtkLabel" id="name 5">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="margin-start">2</property>
-                            <property name="margin-end">2</property>
-                            <property name="margin-top">2</property>
-                            <property name="margin-bottom">2</property>
-                            <property name="label" translatable="yes">Name</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="skill 1 5">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Skill 1</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="skill 2 5">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Skill 2</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkBox" id="slots 5">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="orientation">vertical</property>
-                        <property name="homogeneous">True</property>
-                        <child>
-                          <object class="GtkBox">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="spacing">5</property>
-                            <child>
-                              <object class="GtkImage" id="slot image 1 5">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkLabel" id="slot 1 5">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Slot 1</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkBox">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="spacing">5</property>
-                            <child>
-                              <object class="GtkImage" id="slot image 2 5">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkLabel" id="slot 2 5">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Slot 2</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkBox">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="spacing">5</property>
-                            <child>
-                              <object class="GtkImage" id="slot image 3 5">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkLabel" id="slot 3 5">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Slot 3</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <!-- n-columns=6 n-rows=2 -->
-                      <object class="GtkGrid">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="row-homogeneous">True</property>
-                        <property name="column-homogeneous">True</property>
-                        <child>
-                          <object class="GtkImage" id="defense image 5">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
                             <property name="halign">center</property>
                             <property name="valign">center</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">0</property>
-                            <property name="top-attach">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkImage" id="fire image 5">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">1</property>
-                            <property name="top-attach">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkImage" id="water image 5">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">2</property>
-                            <property name="top-attach">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkImage" id="thunder image 5">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">3</property>
-                            <property name="top-attach">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkImage" id="ice image 5">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">4</property>
-                            <property name="top-attach">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkImage" id="dragon image 5">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">5</property>
-                            <property name="top-attach">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="defence 5">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">1</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">0</property>
-                            <property name="top-attach">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="fire 5">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">2</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">1</property>
-                            <property name="top-attach">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="water 5">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">3</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">2</property>
-                            <property name="top-attach">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="thunder 5">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">4</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">3</property>
-                            <property name="top-attach">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="ice 5">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">5</property>
-                          </object>
-                          <packing>
-                            <property name="left-attach">4</property>
-                            <property name="top-attach">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="dragon 5">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
                             <property name="label" translatable="yes">6</property>
                           </object>
                           <packing>
@@ -3037,7 +3208,7 @@
                     <property name="can-focus">False</property>
                     <property name="shadow-type">none</property>
                     <child>
-                      <object class="GtkListBox">
+                      <object class="GtkListBox" id="results list">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                       </object>
@@ -3058,7 +3229,7 @@
           </packing>
         </child>
         <child type="tab">
-          <object class="GtkLabel">
+          <object class="GtkLabel" id="result">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="label" translatable="yes">Result</property>

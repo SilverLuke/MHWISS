@@ -3,54 +3,7 @@ use std::rc::Rc;
 use std::collections::HashMap;
 use std::fmt;
 use crate::forge::types;
-
-
-#[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Clone)]
-pub enum ArmorClass {
-    HEAD = 0,
-    CHEST = 1,
-    ARMS = 2,
-    WAIST = 3,
-    LEGS = 4
-}
-
-pub fn tr_armor_type (armor_type: String ) -> ArmorClass {
-    match armor_type.as_ref() {
-        "head"  => ArmorClass::HEAD,
-        "chest" => ArmorClass::CHEST,
-        "arms"  => ArmorClass::ARMS,
-        "waist" => ArmorClass::WAIST,
-        "legs"  => ArmorClass::LEGS,
-        _ => panic!("error")
-    }
-}
-
-pub fn class_to_string(armor_type: &ArmorClass ) -> String {
-    match armor_type {
-        ArmorClass::HEAD => "head".to_string(),
-        ArmorClass::CHEST => "chest".to_string(),
-        ArmorClass::ARMS => "arms".to_string(),
-        ArmorClass::WAIST => "waist".to_string(),
-        ArmorClass::LEGS => "legs".to_string(),
-        _ => panic!("error")
-    }
-}
-
-#[derive(Copy, Clone)]
-pub enum Rank {
-    LOW = 0,
-    HIGH = 1,
-    MASTER = 2,
-}
-
-pub fn tr_rank (rank: String ) -> Rank {
-    match rank.as_ref() {
-        "LR"  => Rank::LOW,
-        "HR" => Rank::HIGH,
-        "MR"  => Rank::MASTER,
-        _ => panic!("error")
-    }
-}
+use crate::forge::types::{ArmorClass, Rank};
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Armor {
@@ -102,7 +55,7 @@ pub struct Set {
     pub id: u16,
     pub name: String,
     set: [Option<Rc<Armor>>; 5],
-    pub rank: self::Rank,
+    pub rank: Rank,
 }
 
 impl Set {
@@ -117,14 +70,6 @@ impl Set {
         }
         else {
             self.set[i] = Some(Rc::clone(armor));
-        }
-    }
-
-    pub fn rank_index (&self) -> usize {
-        match self.rank {
-            Rank::LOW => 0,
-            Rank::HIGH => 1,
-            Rank::MASTER => 2
         }
     }
 }

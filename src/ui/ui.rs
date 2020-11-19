@@ -4,7 +4,6 @@ use gtk::{Application};
 use std::env::args;
 use std::env;
 use std::rc::Rc;
-use std::borrow::Borrow;
 use itertools::Itertools;
 
 use crate::forge;
@@ -19,6 +18,7 @@ pub struct Skills {
 pub struct Ui {
 	application: gtk::Application,
 	window: gtk::ApplicationWindow,
+	notebook: gtk::Notebook,
 	skill_list: gtk::FlowBox,
 	skill_set: gtk::FlowBox,
 	rank_set: [gtk::ListBox; 3],
@@ -73,6 +73,7 @@ impl Ui {
 		let app = Self {
 			application,
 			window,
+			notebook: builder.get_object("notebook").unwrap(),
 			skill_list,
 			skill_set,
 			rank_set,
@@ -97,8 +98,12 @@ impl Ui {
 
 		let app = Rc::clone(&me);
 		self.find_btn.connect_clicked(move |_btn| {
-			app.searcher.show_requirements();
 			let res = app.searcher.calculate();
+			app.searcher.show_requirements();
+			println!("{}", &res);
+			app.found.update(&res);
+			let i = app.notebook.get_n_pages() - 1;
+			app.notebook.set_current_page(Some(i));
 		});
 	}
 

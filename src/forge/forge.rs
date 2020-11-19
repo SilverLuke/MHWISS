@@ -1,12 +1,11 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 use std::cell::{RefCell};
-use std::borrow::Borrow;
 
-use crate::forge::types::{ID, Armors, Skills, Sets, Charms, Decorations};
+use crate::forge::types::{Armors, Skills, Sets, Charms, Decorations};
 use crate::database;
 use crate::forge::skill::{Skill, Charm, Decoration};
-use crate::forge::armor::{Armor, Set, ArmorClass};
+use crate::forge::armor::{Armor};
 
 pub struct Forge {
     pub skills: Skills,  // Len 168
@@ -53,7 +52,7 @@ impl Forge {
         let mut ret: HashMap<Rc<Charm>, u8>  = Default::default();
         let skills = skills_req.borrow();
 
-        for (id, charm) in self.charms.borrow().iter() {
+        for (_id, charm) in self.charms.borrow().iter() {
             let rank = charm.get_skills_rank(&skills);
             if  rank.is_some() {
                 ret.insert(Rc::clone(charm), rank.unwrap());
@@ -65,7 +64,7 @@ impl Forge {
     pub fn get_decorations_filtered(&self, skills_req: &RefCell<HashMap<Rc<Skill>, u8>>) -> HashMap<Rc<Decoration>, u8> {
         let mut ret: HashMap<Rc<Decoration>, u8>  = Default::default();
         let skills = skills_req.borrow();
-        for (id, deco) in self.decorations.borrow().iter() {
+        for (_id, deco) in self.decorations.borrow().iter() {
             let rank = deco.get_skills_rank(&skills);
             if  rank.is_some() {
                 ret.insert(Rc::clone(deco), rank.unwrap());

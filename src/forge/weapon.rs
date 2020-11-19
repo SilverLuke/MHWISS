@@ -1,9 +1,9 @@
-use crate::forge::types::{
-	ID,	Element
-};
-struct Weapon {
+use crate::forge::types::{ID, Element, WeaponClass};
+
+pub struct Weapon {
 	id: ID,
 	name: String,
+	class: WeaponClass,
 	attack: u16,
 	affiniy: i8,
 	element: Vec<(Element,u8)>,
@@ -15,6 +15,7 @@ impl Weapon {
 		Weapon{
 			id: 1,
 			name: "Implement".to_string(),
+			class: WeaponClass::Bow,
 			attack: 0,
 			affiniy: 0,
 			element: Vec::new(),
