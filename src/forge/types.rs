@@ -7,6 +7,7 @@ use std::slice::Iter;
 use crate::forge::types::Element::{Fire, Water, Thunder, Ice, Dragon, Poison, Sleep, Paralysis, Blast, Stun};
 use crate::forge::types::ArmorClass::{Head, Chest, Arms, Waist, Legs};
 use crate::forge::types::WeaponClass::{Bow, ChargeBlade, DualBlade, Greatsword, Gunlance, Hammer, HeavyBowgun, HuntingHorn, InsectGlaive, Lance, LightBowgun, Longsword, SwitchAxe, SwordAndShield};
+use crate::forge::types::Gender::{Male, Female, All};
 
 pub type ID = u16;
 pub type Skills = RefCell<HashMap<ID, Rc<Skill>>>;
@@ -169,6 +170,23 @@ impl WeaponClass {
 		match self {
 			Bow => "bow".to_string(),
 			_ => "".to_string(),
+		}
+	}
+}
+
+pub enum Gender{
+	Male,
+	Female,
+	All,
+}
+
+impl Gender {
+	fn new(i: u8) -> Self {
+		match i {
+			1 => Male,
+			10 => Female,
+			11 => All,
+			_ => panic!("Unknow gender")
 		}
 	}
 }

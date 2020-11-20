@@ -71,7 +71,8 @@ struct GtkArmour {
 	image: gtk::Image,
 	class: ArmorClass,
 	defence: gtk::Label,
-	elements: Vec<gtk::Label>,  // Size 5
+	elements: Vec<gtk::Label>,
+	// Size 5
 	skill: [gtk::Label; 2],
 	slots: Vec<GtkSlot>,
 }
@@ -109,6 +110,20 @@ impl GtkArmour {
 			for (i, (skill, lev)) in piece.skills.iter().enumerate() {
 				self.skill[i].set_text(format!("{} {}", skill.name, lev).as_str());
 				self.skill[i].show();
+			}
+			for (i, size) in piece.decorations.iter().enumerate() {
+				let str = {
+					if *size != 0 {
+						format!("slot {} 0", size)
+					} else {
+						String::from("slot none")
+					}
+				};
+				let img = images.get(str.as_str());
+				assert_ne!(img, None, "Image not found: {}", str);
+				self.slots[i].image.set_from_pixbuf(img);
+				self.slots[i].image.show();
+				self.slots[i].label.set_text("-");
 			}
 		} else {
 			self.image.set_from_pixbuf(images.get(format!("{} empty", self.class.to_string()).as_str()));
@@ -166,6 +181,7 @@ impl Found {
 			(String::from("mantle"), String::from("equipment/mantle.svg"), NORMAL_SIZE),
 			(String::from("mantle empty"), String::from("equipment/mantle empty.svg"), NORMAL_SIZE),
 			(String::from("booster"), String::from("equipment/booster.svg"), NORMAL_SIZE),
+			(String::from("slot none"), String::from("ui/slot none.svg"), SMALL_SIZE),
 		];
 		// for i in Weapons::iterator(){}
 		for i in Element::iterator() {
@@ -180,6 +196,12 @@ impl Found {
 			let res_name = format!("{} empty", &name);
 			let path = format!("equipment/{} empty.svg", &name);
 			resources.push((res_name, path, NORMAL_SIZE));
+		}
+
+		for i in 1..=4 {
+			for j in 0..=i {
+				resources.push((format!("slot {} {}", i, j), format!("ui/slot {} {}.svg", i, j), SMALL_SIZE));
+			}
 		}
 
 		let mut hash: HashMap<String, Pixbuf> = Default::default();
@@ -234,6 +256,5 @@ impl Found {
 		for (i, piece) in self.armors.iter().enumerate() {
 			piece.update(&best.set[i], &self.images);
 		}
-
 	}
 }

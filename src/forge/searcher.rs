@@ -9,7 +9,7 @@ use crate::forge::{
 use std::rc::Rc;
 use itertools::Itertools;
 use std::fmt;
-use crate::forge::types::{ID, ArmorClass};
+use crate::forge::types::{ArmorClass};
 use std::collections::hash_map::Entry;
 use std::ops::Not;
 use crate::forge::weapon::Weapon;

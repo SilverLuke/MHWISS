@@ -6,6 +6,7 @@ use crate::forge::types::{Rank, ArmorClass};
 use std::cell::{RefCell};
 use crate::forge::skill::Skill;
 use crate::forge::types::{Skills, Armors, Sets, Decorations, Charms};
+use std::borrow::Borrow;
 
 pub struct DB {
 	connection: rusqlite::Connection,
@@ -28,22 +29,35 @@ impl DB {
 
 	pub fn load_skills(&self, skills: &Skills) {
 		let mut statement = self.connection.prepare(
-			"SELECT skilltree_text.id, name, skilltree_text.description, s.max_level
-        FROM skilltree_text
-        JOIN skilltree AS s ON skilltree_text.id = s.id
-        WHERE skilltree_text.lang_id = ?1
-        ORDER BY name").unwrap();
+			"SELECT s.id, max_level, secret, unlocks_id, name, description
+FROM skilltree AS s
+JOIN skilltree_text ON skilltree_text.id = s.id
+WHERE skilltree_text.lang_id = ?1
+ORDER BY unlocks_id;").unwrap();
 		let str = &*self.lang.borrow();
 		let mut rows = statement.query(params![str]).unwrap();
 
 		while let Some(row) = rows.next().unwrap() {
-			let id = row.get(row.column_index("id").unwrap()).unwrap();
-			skills.borrow_mut().insert(id, Rc::new(forge::skill::Skill::new(
+			let dep = row.get(row.column_index("unlocks_id").unwrap());
+			let dep = {
+				if dep.is_ok() {
+					Some(Rc::clone(skills.borrow().get(&dep.unwrap()).unwrap()))
+				}
+				else {
+					None
+				}
+			};
+			let id= row.get(row.column_index("id").unwrap()).unwrap();
+			let skill = forge::skill::Skill::new(
 				id,
 				row.get(row.column_index("name").unwrap()).unwrap(),
 				row.get(row.column_index("description").unwrap()).unwrap(),
 				row.get(row.column_index("max_level").unwrap()).unwrap(),
-			)));
+				row.get(row.column_index("secret").unwrap()).unwrap(),
+				dep
+
+			);
+			skills.borrow_mut().insert(id, Rc::new(skill));
 		}
 	}
 
@@ -80,7 +94,7 @@ WHERE lang_id = ?1").unwrap();
 
 		let row = rows.next().unwrap().unwrap();
 		let mut armor = new_armor(row, &skills);
-		let mut id = 0;
+		let mut id ;
 
 		while let Some(row) = rows.next().unwrap() {
 			id = row.get(row.column_index("id").unwrap()).unwrap();

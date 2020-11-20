@@ -6,7 +6,7 @@ pub struct Weapon {
 	class: WeaponClass,
 	attack: u16,
 	affiniy: i8,
-	element: Vec<(Element,u8)>,
+	element: Vec<(u8)>,
 	slots: u8,  //
 }
 

@@ -8,8 +8,9 @@ pub struct Skill {
     pub id: u16,
     pub name: String,
     pub description: String,
-    pub dependency: Option<u8>,  // TODO
     pub max_level: u8,
+    pub secret: u8,
+    pub dependency: Option<Rc<Skill>>,  // TODO
 }
 impl fmt::Display for Skill {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -18,8 +19,8 @@ impl fmt::Display for Skill {
 }
 
 impl Skill {
-    pub fn new(id: u16, name: String, description: String, max_level: u8) -> Self {
-        Skill { id, name, description, max_level, dependency: None }
+    pub fn new(id: u16, name: String, description: String, max_level: u8, secret: u8, dependency: Option<Rc<Skill>>) -> Self {
+        Skill { id, name, description, max_level, secret, dependency }
     }
 }
 
