@@ -1,5 +1,5 @@
 use std::rc::Rc;
-use crate::forge::skill::{Skill, Decoration, Charm};
+use crate::forge::skill::{Skill, Decoration, Charm, SetSkill};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use crate::forge::armor::{Armor, Set};
@@ -11,9 +11,10 @@ use crate::forge::types::Gender::{Male, Female, All};
 
 pub type ID = u16;
 pub type Skills = RefCell<HashMap<ID, Rc<Skill>>>;
+pub type SetSkills = RefCell<HashMap<ID, Rc<SetSkill>>>;
 pub type SkillsLev = Vec<(Rc<Skill>, u8)>;
 pub type Armors = RefCell<HashMap<ID, Rc<Armor>>>;
-pub type Sets = RefCell<HashMap<ID, Set>>;
+pub type Sets = RefCell<HashMap<ID, Rc<Set>>>;
 pub type Decorations = RefCell<HashMap<ID, Rc<Decoration>>>;
 pub type Charms = RefCell<HashMap<ID, Rc<Charm>>>;
 
@@ -174,6 +175,7 @@ impl WeaponClass {
 	}
 }
 
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Gender{
 	Male,
 	Female,
@@ -181,12 +183,12 @@ pub enum Gender{
 }
 
 impl Gender {
-	fn new(i: u8) -> Self {
-		match i {
-			1 => Male,
-			10 => Female,
-			11 => All,
-			_ => panic!("Unknow gender")
+	pub fn new(male: bool, female: bool) -> Self {
+		match (male, female) {
+			(false, false) => panic!("No gender"),
+			(true, false) => Male,
+			(false, true) => Female,
+			(true, true) => All,
 		}
 	}
 }

@@ -14,7 +14,6 @@ pub struct Skills {
 	skill_set: gtk::FlowBox,
 }
 
-
 pub struct Ui {
 	application: gtk::Application,
 	window: gtk::ApplicationWindow,
@@ -107,8 +106,8 @@ impl Ui {
 		});
 	}
 
-	fn show_skills(&self, me: Rc<Self>) {  // TODO: Add skill dependecy and separe skill from set skills
-		for skill in self.forge.skills.borrow().values().sorted_by(|a, b| {a.name.cmp(&b.name)}) {
+	fn show_skills(&self, me: Rc<Self>) {  // TODO: Add skill dependecy
+		for skill in self.forge.skills.borrow().values().sorted_by(|a, b| { a.name.cmp(&b.name) }) {
 			let builder = Ui::get_builder("gui/skill box.glade".to_string());
 			let skill_box: gtk::Box = builder.get_object("box").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();
@@ -131,16 +130,39 @@ impl Ui {
 				app.searcher.add_skill_requirement(skill_req.clone(), lev.get_value() as u8);
 			});
 
-			if skill.id % 2 == 0 {
-				self.skill_list.insert(&skill_box, -1);
-			}else {
-				self.skill_set.insert(&skill_box, -1);
-			}
+			self.skill_list.insert(&skill_box, -1);
 		}
+		/*
+		for skill in self.forge.skills.borrow().values().sorted_by(|a, b| { a.name.cmp(&b.name) }) {
+			let builder = Ui::get_builder("gui/skill box.glade".to_string());
+			let skill_box: gtk::Box = builder.get_object("box").unwrap();
+			let name: gtk::Label = builder.get_object("name").unwrap();
+			let adjustment: gtk::Adjustment = builder.get_object("adjustment").unwrap();
+			let level: gtk::SpinButton = builder.get_object("level").unwrap();
+
+			let style = skill_box.get_style_context();
+			let provider = gtk::CssProvider::new();
+			provider.load_from_path("gui/style.css").unwrap();
+			style.add_provider(&provider, gtk::STYLE_PROVIDER_PRIORITY_USER);
+			style.add_class("skillBox");  // TODO: Better implementation using glades => Add this feature in glade
+
+			name.set_text(skill.name.as_str());
+			name.set_tooltip_text(Some(skill.description.as_str()));
+			adjustment.set_upper(skill.max_level as f64);
+
+			let app = Rc::clone(&me);
+			let skill_req = Rc::clone(&skill);
+			level.connect_value_changed(move |lev| {
+				app.searcher.add_skill_requirement(skill_req.clone(), lev.get_value() as u8);
+			});
+
+			self.skill_list.insert(&skill_box, -1);
+		}
+*/
 	}
 
 	fn show_sets(&self) {
-		for set in self.forge.sets.borrow().values().sorted_by(|a, b| {a.id.cmp(&b.id)}) {
+		for set in self.forge.sets.borrow().values().sorted_by(|a, b| { a.id.cmp(&b.id) }) {
 			let builder = Ui::get_builder("gui/set box.glade".to_string());
 			let set_row: gtk::ListBoxRow = builder.get_object("row").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();
@@ -151,7 +173,7 @@ impl Ui {
 	}
 
 	fn show_deco(&self) {
-		for (_, deco) in self.forge.decorations.borrow().iter().sorted_by(|(_, a), (_,b)| {a.name.cmp(&b.name)}) {
+		for (_, deco) in self.forge.decorations.borrow().iter().sorted_by(|(_, a), (_, b)| { a.name.cmp(&b.name) }) {
 			let builder = Ui::get_builder("gui/deco box.glade".to_string());
 			let deco_box: gtk::Box = builder.get_object("box").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();
@@ -173,7 +195,7 @@ impl Ui {
 		self.show_deco();
 	}
 
-	pub fn start(&self, me: Rc<Self> ) {
+	pub fn start(&self, me: Rc<Self>) {
 		let lang = "it";
 		self.forge.load_all(lang);
 		self.show_all(me);
