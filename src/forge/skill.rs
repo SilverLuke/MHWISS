@@ -41,6 +41,16 @@ impl SetSkill {
 		self.skills.push((Rc::clone(skill), lev));
 	}
 
+	pub fn get_max(&self) -> u8 {
+		let mut max = 0;
+		for i in self.skills.iter() {
+			if i.1 > max {
+				max = i.1;
+			}
+		}
+		max
+	}
+
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]

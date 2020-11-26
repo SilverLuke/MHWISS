@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use std::cell::{RefCell};
 
-use crate::forge::types::{Armors, Skills, Sets, Charms, Decorations, SetSkills};
+use crate::forge::types::{Armors, Skills, Sets, Charms, Decorations, SetSkills, Weapons};
 use crate::database;
 use crate::forge::skill::{Skill, Charm, Decoration};
 use crate::forge::armor::{Armor};
@@ -14,17 +14,19 @@ pub struct Forge {
     pub sets: Sets,  // Len 343
     pub decorations: Decorations,
     pub charms: Charms,
+    pub weapons: Weapons,
 }
 
 impl Forge {
     pub fn new() -> Self {
         Forge {
-            skills: RefCell::new(HashMap::with_capacity(168)),
+            skills: RefCell::new(Default::default()),
             set_skills: RefCell::new(Default::default()),
             armors: RefCell::new(Default::default()),
-            sets: RefCell::new(HashMap::with_capacity(343)),
+            sets: RefCell::new(Default::default()),
             decorations: RefCell::new(Default::default()),
-            charms: RefCell::new(Default::default())
+            charms: RefCell::new(Default::default()),
+            weapons: RefCell::new(Default::default()),
         }
     }
 
@@ -90,5 +92,7 @@ impl Forge {
         println!("Loaded {} charms", self.charms.borrow().len());
         db.load_decorations(&self.decorations, &self.skills);
         println!("Loaded {} decorations", self.decorations.borrow().len());
+        db.load_weapons(&self.weapons, &self.skills, &self.set_skills);
+        println!("Loaded {} weapons", self.weapons.borrow().len());
     }
 }

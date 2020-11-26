@@ -6,14 +6,17 @@ use crate::forge::armor::{Armor, Set};
 use std::slice::Iter;
 use crate::forge::types::Element::{Fire, Water, Thunder, Ice, Dragon, Poison, Sleep, Paralysis, Blast, Stun};
 use crate::forge::types::ArmorClass::{Head, Chest, Arms, Waist, Legs};
-use crate::forge::types::WeaponClass::{Bow, ChargeBlade, DualBlade, Greatsword, Gunlance, Hammer, HeavyBowgun, HuntingHorn, InsectGlaive, Lance, LightBowgun, Longsword, SwitchAxe, SwordAndShield};
+use crate::forge::types::WeaponClass::{Bow, ChargeBlade, DualBlade, GreatSword, Gunlance, Hammer, HeavyBowgun, HuntingHorn, InsectGlaive, Lance, LightBowgun, Longsword, SwitchAxe, SwordAndShield};
 use crate::forge::types::Gender::{Male, Female, All};
+// use crate::forge::types::Elderseal::{High, Medium, Low};
+use crate::forge::weapon::Weapon;
 
 pub type ID = u16;
 pub type Skills = RefCell<HashMap<ID, Rc<Skill>>>;
 pub type SetSkills = RefCell<HashMap<ID, Rc<SetSkill>>>;
 pub type SkillsLev = Vec<(Rc<Skill>, u8)>;
 pub type Armors = RefCell<HashMap<ID, Rc<Armor>>>;
+pub type Weapons = RefCell<HashMap<ID, Rc<Weapon>>>;
 pub type Sets = RefCell<HashMap<ID, Rc<Set>>>;
 pub type Decorations = RefCell<HashMap<ID, Rc<Decoration>>>;
 pub type Charms = RefCell<HashMap<ID, Rc<Charm>>>;
@@ -49,16 +52,16 @@ impl Element {
 
 	pub fn new(element: String) -> Element {
 		match element.as_ref() {
-			"fire" => Element::Fire,
-			"water" => Element::Water,
-			"thunder" => Element::Thunder,
-			"ice" => Element::Ice,
-			"dragon" => Element::Dragon,
-			"poison" => Element::Poison,
-			"sleep" => Element::Sleep,
-			"paralysis" => Element::Paralysis,
-			"blast" => Element::Blast,
-			"stun" => Element::Stun,
+			"Fire" => Element::Fire,
+			"Water" => Element::Water,
+			"Thunder" => Element::Thunder,
+			"Ice" => Element::Ice,
+			"Dragon" => Element::Dragon,
+			"Poison" => Element::Poison,
+			"Sleep" => Element::Sleep,
+			"Paralysis" => Element::Paralysis,
+			"Blast" => Element::Blast,
+			"Stun" => Element::Stun,
 			_ => panic!("error")
 		}
 	}
@@ -78,7 +81,6 @@ impl Element {
 		}
 	}
 }
-
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Clone)]
 pub enum ArmorClass {
@@ -117,7 +119,6 @@ impl ArmorClass {
 	}
 }
 
-
 #[derive(Copy, Clone)]
 pub enum Rank {
 	LOW = 0,
@@ -136,12 +137,11 @@ impl Rank {
 	}
 }
 
-
 pub enum WeaponClass {
 	Bow = 0,
 	ChargeBlade,
 	DualBlade,
-	Greatsword,
+	GreatSword,
 	Gunlance,
 	Hammer,
 	HeavyBowgun,
@@ -156,13 +156,26 @@ pub enum WeaponClass {
 
 impl WeaponClass {
 	pub fn iterator() -> Iter<'static, WeaponClass> {
-		static WEAPON_CLASS: [WeaponClass; 14] = [Bow, ChargeBlade, DualBlade, Greatsword, Gunlance, Hammer, HeavyBowgun, HuntingHorn, InsectGlaive, Lance, LightBowgun, Longsword, SwitchAxe, SwordAndShield];
+		static WEAPON_CLASS: [WeaponClass; 14] = [Bow, ChargeBlade, DualBlade, GreatSword, Gunlance, Hammer, HeavyBowgun, HuntingHorn, InsectGlaive, Lance, LightBowgun, Longsword, SwitchAxe, SwordAndShield];
 		WEAPON_CLASS.iter()
 	}
 
 	pub fn new(weapon_class: String) -> WeaponClass {
 		match weapon_class.as_ref() {
 			"bow" => Bow,
+			"charge-blade" => ChargeBlade,
+			"dual-blades" => DualBlade,
+			"great-sword" => GreatSword,
+			"gunlance" => Gunlance,
+			"hammer" => Hammer,
+			"heavy-bowgun" => HeavyBowgun,
+			"hunting-horn" => HuntingHorn,
+			"insect-glaive" => InsectGlaive,
+			"lance" => Lance,
+			"light-bowgun" => LightBowgun,
+			"long-sword" => Longsword,
+			"switch-axe" => SwitchAxe,
+			"sword-and-shield" => SwordAndShield,
 			_ => panic!("error")
 		}
 	}
@@ -176,7 +189,7 @@ impl WeaponClass {
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Gender{
+pub enum Gender {
 	Male,
 	Female,
 	All,
@@ -189,6 +202,19 @@ impl Gender {
 			(true, false) => Male,
 			(false, true) => Female,
 			(true, true) => All,
+		}
+	}
+}
+
+pub fn elder_seal(lev: Option<String>) -> u8 {
+	if lev.is_none() {
+		0
+	} else {
+		match lev.unwrap().as_str() {
+			"low" => 1,
+			"medium" => 2,
+			"high" => 3,
+			_ => panic!("Elderseal parsing error")
 		}
 	}
 }

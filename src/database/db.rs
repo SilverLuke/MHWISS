@@ -1,12 +1,16 @@
-use rusqlite::{Connection, params, Row};
 use std::collections::HashMap;
-use crate::forge;
 use std::rc::Rc;
-use crate::forge::types::{Rank, ArmorClass, SetSkills, Gender};
-use std::cell::{RefCell};
+use std::cell::RefCell;
+use std::borrow::{Borrow, BorrowMut};
+use gio::ListStoreExt;
+use std::str;
+use rusqlite::{Connection, params, Row};
+
+use crate::forge;
+use crate::forge::types::{Rank, ArmorClass, SetSkills, Gender, Element, WeaponClass, elder_seal, Weapons};
 use crate::forge::skill::{Skill, SetSkill};
 use crate::forge::types::{Skills, Armors, Sets, Decorations, Charms};
-use std::borrow::{Borrow, BorrowMut};
+use crate::forge::weapon::Weapon;
 
 pub struct DB {
 	connection: rusqlite::Connection,
@@ -277,6 +281,77 @@ WHERE lang_id = ?1").unwrap();
 		}
 		charms.borrow_mut().insert(id, Rc::new(charm));
 	}
+
+	pub fn load_weapons(&self, weapons: &Weapons, skills: &Skills, setskills: &SetSkills) {
+		let mut statement = self.connection.prepare(
+			"SELECT weapon.id, previous_weapon_id, weapon_type, name,
+		attack_true, affinity, sharpness, defense,
+		slot_1, slot_2, slot_3,
+		element1, element1_attack, element2, element2_attack, element_hidden, elderseal,
+		armorset_bonus_id, skilltree_id
+		FROM weapon
+		LEFT JOIN weapon_skill ws ON weapon.id = ws.weapon_id
+		LEFT JOIN weapon_text wt ON weapon.id = wt.id
+		WHERE lang_id = ?1;").unwrap();
+		let str = &*self.lang.borrow();
+		let mut rows = statement.query(params![str]).unwrap();
+
+		while let Some(row) = rows.next().unwrap() {
+			let id = row.get(row.column_index("id").unwrap()).unwrap();
+			let prev = row.get(row.column_index("previous_weapon_id").unwrap()).ok();
+			let class = WeaponClass::new(row.get(row.column_index("weapon_type").unwrap()).unwrap());
+			let name = row.get_unwrap(row.column_index("name").unwrap());
+			let affinity = row.get_unwrap(row.column_index("affinity").unwrap());
+			let attack = row.get_unwrap(row.column_index("attack_true").unwrap());
+			let defense = row.get(row.column_index("defense").unwrap()).unwrap();
+			let slots = [row.get(row.column_index("slot_1").unwrap()).unwrap(),
+				row.get(row.column_index("slot_2").unwrap()).unwrap(),
+				row.get(row.column_index("slot_3").unwrap()).unwrap()];
+
+			let sharpness = {
+				let tmp = row.get(row.column_index("sharpness").unwrap());
+				if let Ok(s) = tmp {
+					let s: String = s;
+					let mut sharp = [0u8;7];
+					let temp = s.as_str().split(',');
+					for (i,n) in temp.enumerate() {
+						sharp[i] = n.parse::<u8>().unwrap();
+					}
+					Some(sharp)
+				} else {None}
+			};
+
+			let mut elements = Vec::new();
+
+			if let Ok(e) = row.get(row.column_index("element1").unwrap()) {
+				elements.push((Element::new(e), row.get_unwrap(row.column_index("element1_attack").unwrap())));
+			}
+			if let Ok(e) = row.get(row.column_index("element2").unwrap()) {
+				elements.push((Element::new(e), row.get_unwrap(row.column_index("element2_attack").unwrap())));
+			}
+			let element_hidden = row.get(row.column_index("element_hidden").unwrap()).unwrap();
+			let elderseal = elder_seal(row.get(row.column_index("element_hidden").unwrap()).ok());
+			let armoset_bonus = {
+				if let Some(id) = row.get(row.column_index("armorset_bonus_id").unwrap()).ok() {
+					Some(Rc::clone(setskills.borrow().get(&id).unwrap()))
+				} else { None }
+			};
+			let skill = {
+				if let Some(id) = row.get(row.column_index("skilltree_id").unwrap()).ok() {
+					Some(Rc::clone(skills.borrow().get(&id).unwrap()))
+				} else { None }
+			};
+
+			let w = Weapon::new(id, prev, class, name,
+				attack, affinity, sharpness, defense,
+				slots, elements, element_hidden, elderseal,
+				armoset_bonus, skill
+			);
+			weapons.borrow_mut().insert(w.id, Rc::new(w));
+		}
+		weapons.borrow_mut().shrink_to_fit();
+	}
 }
+
 
 
