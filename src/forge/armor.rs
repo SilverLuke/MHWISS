@@ -13,7 +13,7 @@ pub struct Armor {
     pub skills: types::SkillsLev,  // Set skills go here
     pub setskill: Option<Rc<SetSkill>>,
     pub gender: Gender,
-    pub decorations: [u8; 3],
+    pub slots: [u8; 3],
     pub defence: [u8; 3],
     pub elements : [i8; 5],
 }
@@ -29,8 +29,8 @@ impl fmt::Display for Armor {
 }
 
 impl Armor {
-    pub fn new(id: u16, name: String, class: ArmorClass, gender: Gender, decorations: [u8; 3], defence: [u8; 3], elements: [i8; 5]) -> Self {
-        Armor { id, name, class, skills: Vec::new(), setskill: None, gender, decorations, defence, elements }
+    pub fn new(id: u16, name: String, class: ArmorClass, gender: Gender, slots: [u8; 3], defence: [u8; 3], elements: [i8; 5]) -> Self {
+        Armor { id, name, class, skills: Vec::new(), setskill: None, gender, slots, defence, elements }
     }
 
     pub fn add_skill(&mut self, skill: &Rc<Skill>, level: u8) {  // TODO add SkillLev "object"

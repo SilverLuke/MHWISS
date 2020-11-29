@@ -98,7 +98,7 @@ pub struct Decoration {
 	pub id: ID,
 	pub name: String,
 	pub size: u8,
-	pub skills: Vec<(Rc<Skill>, u8)>,
+	pub skills: SkillsLev,
 }
 
 impl fmt::Display for Decoration {

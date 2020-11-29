@@ -4,7 +4,7 @@ use gtk::Builder;
 use crate::forge::types::{Element, WeaponClass};
 use crate::forge::types::ArmorClass;
 use std::collections::HashMap;
-use crate::forge::searcher::BestSet;
+use crate::forge::searcher::{BestSet, ArmorDeco};
 use crate::forge::weapon::Weapon;
 use crate::forge::armor::Armor;
 use std::rc::Rc;
@@ -103,15 +103,16 @@ impl GtkArmour {
 		}
 	}
 
-	pub fn update(&self, piece: &Option<Rc<Armor>>, images: &HashMap<String, Pixbuf>) {
+	pub fn update(&self, piece: &Option<ArmorDeco>, images: &HashMap<String, Pixbuf>) {
 		if let Some(piece) = piece {
+			let piece = piece.get_armor();
 			self.image.set_from_pixbuf(images.get(format!("{}", self.class.to_string()).as_str()));
 			self.name.set_text(piece.name.as_str());
 			for (i, (skill, lev)) in piece.skills.iter().enumerate() {
 				self.skill[i].set_text(format!("{} {}", skill.name, lev).as_str());
 				self.skill[i].show();
 			}
-			for (i, size) in piece.decorations.iter().enumerate() {
+			for (i, size) in piece.slots.iter().enumerate() {
 				let str = {
 					if *size != 0 {
 						format!("slot {} 0", size)

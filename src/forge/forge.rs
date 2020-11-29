@@ -81,18 +81,22 @@ impl Forge {
         let db = database::db::DB::new();
         db.set_lang(lang.to_string());
         db.load_skills(&self.skills);
-        println!("Loaded {} skills", self.skills.borrow().len());
         db.load_setskills(&self.set_skills, &self.skills);
-        println!("Loaded {} armorset skills", self.skills.borrow().len());
         db.load_armors( &self.armors, &self.skills, &self.set_skills);
-        println!("Loaded {} armors", self.armors.borrow().len());
         db.load_sets(&self.sets, &self.armors, &self.set_skills);
-        println!("Loaded {} sets", self.sets.borrow().len());
         db.load_charms(&self.charms, &self.skills);
-        println!("Loaded {} charms", self.charms.borrow().len());
         db.load_decorations(&self.decorations, &self.skills);
-        println!("Loaded {} decorations", self.decorations.borrow().len());
         db.load_weapons(&self.weapons, &self.skills, &self.set_skills);
+    }
+
+    pub fn print_stat(&self) {
+        println!("Loaded {} skills", self.skills.borrow().len());
+        println!("Loaded {} armorset skills", self.skills.borrow().len());
+        println!("Loaded {} armors", self.armors.borrow().len());
+        println!("Loaded {} sets", self.sets.borrow().len());
+        println!("Loaded {} charms", self.charms.borrow().len());
+        println!("Loaded {} decorations", self.decorations.borrow().len());
         println!("Loaded {} weapons", self.weapons.borrow().len());
     }
+
 }

@@ -3,7 +3,6 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use std::borrow::{Borrow, BorrowMut};
 use gio::ListStoreExt;
-use std::str;
 use rusqlite::{Connection, params, Row};
 
 use crate::forge;

@@ -1,3 +1,5 @@
+#![allow(dead_code, unused)]
+
 mod ui;
 mod forge;
 mod database;

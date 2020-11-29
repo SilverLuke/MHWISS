@@ -8,6 +8,9 @@ use itertools::Itertools;
 
 use crate::forge;
 use crate::ui::found::Found;
+use crate::forge::forge::Forge;
+use crate::forge::searcher::Searcher;
+use std::sync::Arc;
 
 pub struct Skills {
 	skill_list: gtk::FlowBox,
@@ -24,7 +27,7 @@ pub struct Ui {
 	deco_list: [gtk::FlowBox; 4],
 	find_btn: gtk::Button,
 	lang_combo: gtk::ComboBox,
-	forge: Rc<forge::forge::Forge>,
+	forge: Arc<forge::forge::Forge>,
 	searcher: forge::searcher::Searcher,
 	found: Found,
 }
@@ -67,8 +70,8 @@ impl Ui {
 			builder.get_object("deco lev4").unwrap(),
 		];
 
-		let forge = Rc::new(forge::forge::Forge::new());
-		let searcher = forge::searcher::Searcher::new(Rc::clone(&forge));
+		let forge = Arc::new(Forge::new());
+		let searcher = Searcher::new(Arc::clone(&forge));
 		let app = Self {
 			application,
 			window,
