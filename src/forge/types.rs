@@ -1,26 +1,30 @@
 use std::rc::Rc;
-use crate::forge::skill::{Skill, Decoration, Charm, SetSkill};
-use std::cell::RefCell;
-use std::collections::HashMap;
-use crate::forge::armor::{Armor, Set};
 use std::slice::Iter;
-use crate::forge::types::Element::{Fire, Water, Thunder, Ice, Dragon, Poison, Sleep, Paralysis, Blast, Stun};
-use crate::forge::types::ArmorClass::{Head, Chest, Arms, Waist, Legs};
-use crate::forge::types::WeaponClass::{Bow, ChargeBlade, DualBlade, GreatSword, Gunlance, Hammer, HeavyBowgun, HuntingHorn, InsectGlaive, Lance, LightBowgun, Longsword, SwitchAxe, SwordAndShield};
-use crate::forge::types::Gender::{Male, Female, All};
-// use crate::forge::types::Elderseal::{High, Medium, Low};
-use crate::forge::weapon::Weapon;
+use std::collections::HashMap;
+use crate::forge::{
+	skill::{Skill, Decoration, Charm, SetSkill},
+	armor::{Armor, Set},
+	weapon::Weapon,
+	types::{
+		Element::{Fire, Water, Thunder, Ice, Dragon, Poison, Sleep, Paralysis, Blast, Stun},
+		ArmorClass::{Head, Chest, Arms, Waist, Legs},
+		WeaponClass::{Bow, ChargeBlade, DualBlade, GreatSword, Gunlance, Hammer, HeavyBowgun, HuntingHorn, InsectGlaive, Lance, LightBowgun, Longsword, SwitchAxe, SwordAndShield},
+		Gender::{Male, Female, All},
+	}
+};
 
 pub type ID = u16;
-pub type Skills = RefCell<HashMap<ID, Rc<Skill>>>;
-pub type SetSkills = RefCell<HashMap<ID, Rc<SetSkill>>>;
+pub type Skills = HashMap<ID, Rc<Skill>>;
+pub type SetSkills = HashMap<ID, Rc<SetSkill>>;
+pub type Armors = HashMap<ID, Rc<Armor>>;
+pub type Weapons = HashMap<ID, Rc<Weapon>>;
+pub type Sets = HashMap<ID, Rc<Set>>;
+pub type Decorations = HashMap<ID, Rc<Decoration>>;
+pub type Charms = HashMap<ID, Rc<Charm>>;
+
 pub type Level = u8;
-pub type SkillsLev = Vec<(Rc<Skill>, Level)>;
-pub type Armors = RefCell<HashMap<ID, Rc<Armor>>>;
-pub type Weapons = RefCell<HashMap<ID, Rc<Weapon>>>;
-pub type Sets = RefCell<HashMap<ID, Rc<Set>>>;
-pub type Decorations = RefCell<HashMap<ID, Rc<Decoration>>>;
-pub type Charms = RefCell<HashMap<ID, Rc<Charm>>>;
+pub type SkillLev = (Rc<Skill>, Level);
+pub type SkillsLev = Vec<SkillLev>;
 
 pub enum Element {
 	Fire = 0,

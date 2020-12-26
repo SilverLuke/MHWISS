@@ -1,16 +1,19 @@
-use crate::forge::skill::{Skill, SetSkill};
 use std::rc::Rc;
 use std::collections::HashMap;
 use std::fmt;
-use crate::forge::types;
-use crate::forge::types::{ArmorClass, Rank, SkillsLev, Gender, ID};
+use crate::forge::{
+    skill::{Skill, SetSkill},
+    types::{ArmorClass, Rank, SkillsLev, Gender, SkillLev, ID},
+};
+use crate::searcher::container::{HasDecorations, HasSkills};
+use std::cell::RefCell;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Armor {
     pub id: u16,
     pub name: String,
     pub class: ArmorClass,
-    pub skills: types::SkillsLev,  // Set skills go here
+    pub skills: SkillsLev,  // Set skills go here
     pub setskill: Option<Rc<SetSkill>>,
     pub gender: Gender,
     pub slots: [u8; 3],
@@ -41,17 +44,26 @@ impl Armor {
         self.setskill = Some(Rc::clone(setskill));
     }
 
-    pub fn get_skills_rank(&self, query: &HashMap<Rc<Skill>, u8>) -> Option<u8> {
-        let mut rank: u8 = 0;  // TODO use Option<u8>
+}
+
+impl HasDecorations for Armor {
+    fn get_slots(&self) -> [u8; 3] {
+        self.slots
+    }
+
+    fn get_skills(&self) -> Box<dyn Iterator<Item=&SkillLev> + '_> {
+        Box::new(self.skills.iter())
+    }
+}
+
+impl HasSkills for Armor {
+    fn has_skills(&self, query: &RefCell<HashMap<ID, u8>>) -> bool {
         for (skill, lev) in self.skills.iter() {
-            if query.get(skill).is_some() {
-                rank += lev;
+            if query.borrow().get(&skill.id).is_some() {
+                return true;
             }
         }
-        if rank == 0 {
-            return None;
-        }
-        Some(rank)
+        false
     }
 }
 

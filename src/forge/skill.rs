@@ -2,6 +2,8 @@ use std::rc::Rc;
 use std::fmt;
 use std::collections::HashMap;
 use crate::forge::types::{ID, SkillsLev};
+use std::cell::RefCell;
+use crate::searcher::container::HasSkills;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Skill {
@@ -79,17 +81,16 @@ impl Charm {
 		self.skills.push((Rc::clone(skill), level));
 	}
 
-	pub fn get_skills_rank(&self, query: &HashMap<Rc<Skill>, u8>) -> Option<u8> {
-		let mut rank: u8 = 0;
-		for (skill, lev) in self.skills.iter() {
-			if query.get(skill).is_some() {
-				rank += lev;
+}
+
+impl HasSkills for Charm {
+	fn has_skills(&self, query: &RefCell<HashMap<ID, u8>>) -> bool {
+		for (skill, _lev) in self.skills.iter() {
+			if query.borrow().get(&skill.id).is_some() {
+				return true;
 			}
 		}
-		if rank == 0 {
-			return None;
-		}
-		Some(rank)
+		false
 	}
 }
 
@@ -127,5 +128,16 @@ impl Decoration {
 			return None;
 		}
 		Some(rank)
+	}
+}
+
+impl HasSkills for Decoration {
+	fn has_skills(&self, query: &RefCell<HashMap<ID, u8>>) -> bool {
+		for (skill, lev) in self.skills.iter() {
+			if query.borrow().get(&skill.id).is_some() {
+				return true;
+			}
+		}
+		false
 	}
 }

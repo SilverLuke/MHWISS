@@ -1,13 +1,12 @@
 use gtk::prelude::*;
 use gdk_pixbuf::{Pixbuf};
 use gtk::Builder;
-use crate::forge::types::{Element, WeaponClass};
+use crate::forge::types::{Element};
 use crate::forge::types::ArmorClass;
 use std::collections::HashMap;
-use crate::forge::searcher::{BestSet, ArmorDeco};
+use crate::searcher::{bestset::BestSet, container::DecorationContainer};
 use crate::forge::weapon::Weapon;
 use crate::forge::armor::Armor;
-use std::rc::Rc;
 
 const NORMAL_SIZE: i32 = 60;
 const SMALL_SIZE: i32 = 25;
@@ -55,7 +54,7 @@ impl GtkWeapon {
 		}
 	}
 
-	pub fn update(&self, weapon: &Option<Rc<Weapon>>, images: &HashMap<String, Pixbuf>) {
+	pub fn update(&self, weapon: &Option<DecorationContainer<Weapon>>, images: &HashMap<String, Pixbuf>) {
 		if weapon.is_none() {
 			self.image.set_from_pixbuf(images.get("weapon empty"));
 			self.name.set_text("-");
@@ -103,9 +102,9 @@ impl GtkArmour {
 		}
 	}
 
-	pub fn update(&self, piece: &Option<ArmorDeco>, images: &HashMap<String, Pixbuf>) {
+	pub fn update(&self, piece: &Option<DecorationContainer<Armor>>, images: &HashMap<String, Pixbuf>) {
 		if let Some(piece) = piece {
-			let piece = piece.get_armor();
+			let piece = piece.get_container();
 			self.image.set_from_pixbuf(images.get(format!("{}", self.class.to_string()).as_str()));
 			self.name.set_text(piece.name.as_str());
 			for (i, (skill, lev)) in piece.skills.iter().enumerate() {
@@ -145,7 +144,7 @@ struct GtkTool {
 	slots: Vec<GtkSlot>,
 }
 
-pub struct Found {
+pub struct ResultTab {
 	weapon: GtkWeapon,
 	armors: Vec<GtkArmour>,
 	// Size 5
@@ -155,15 +154,15 @@ pub struct Found {
 	images: HashMap<String, Pixbuf>,
 }
 
-impl Found {
-	pub fn new(builder: &gtk::Builder) -> Found {
-		let images = Found::load_images();
+impl ResultTab {
+	pub fn new(builder: &gtk::Builder) -> Self {
+		let images = ResultTab::load_images();
 		let iter = ArmorClass::iterator();
 		let mut armors = Vec::with_capacity(iter.len());
 		for piece in iter {
 			armors.push(GtkArmour::new(&builder, *piece));
 		}
-		let f = Found {
+		let f = ResultTab {
 			weapon: GtkWeapon::new(builder),
 			armors,
 			list: builder.get_object("results list").unwrap(),

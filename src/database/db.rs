@@ -1,8 +1,6 @@
-use std::collections::HashMap;
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::borrow::{Borrow, BorrowMut};
-use gio::ListStoreExt;
 use rusqlite::{Connection, params, Row};
 
 use crate::forge;
@@ -30,7 +28,7 @@ impl DB {
 		self.lang.replace(lang);
 	}
 
-	pub fn load_skills(&self, skills: &Skills) {
+	pub fn load_skills(&self, skills: &mut Skills) {
 		let mut statement = self.connection.prepare(
 			"SELECT s.id, max_level, secret, unlocks_id, name, description
 FROM skilltree AS s
@@ -44,7 +42,7 @@ ORDER BY unlocks_id;").unwrap();
 			let unlock = row.get(row.column_index("unlocks_id").unwrap());
 			let unlock = {
 				if unlock.is_ok() {
-					Some(Rc::clone(skills.borrow().get(&unlock.unwrap()).unwrap()))
+					Some(Rc::clone(skills.get(&unlock.unwrap()).unwrap()))
 				} else {
 					None
 				}
@@ -58,11 +56,11 @@ ORDER BY unlocks_id;").unwrap();
 				row.get(row.column_index("secret").unwrap()).unwrap(),
 				unlock
 			);
-			skills.borrow_mut().insert(id, Rc::new(skill));
+			skills.insert(id, Rc::new(skill));
 		}
 	}
 
-	pub fn load_setskills(&self, setskills: &SetSkills, skills: &Skills) {
+	pub fn load_setskills(&self, setskills: &mut SetSkills, skills: &Skills) {
 		let mut statement = self.connection.prepare(
 			"SELECT setbonus_id, skilltree_id, required, name
 		FROM armorset_bonus_skill AS abs
@@ -93,14 +91,14 @@ ORDER BY unlocks_id;").unwrap();
 				let req = row.get(row.column_index("required").unwrap()).unwrap();
 				setskill.add_skill(skills.borrow().get(&skill_id).unwrap(), req);
 			} else {
-				setskills.borrow_mut().insert(setskill.id, Rc::new(setskill));
+				setskills.insert(setskill.id, Rc::new(setskill));
 				setskill = new_setskill(row, skills);
 			}
 		}
 		setskills.borrow_mut().insert(setskill.id, Rc::new(setskill));
 	}
 
-	pub fn load_armors(&self, armors: &Armors, skills: &Skills, setskills: &SetSkills) {
+	pub fn load_armors(&self, armors: &mut Armors, skills: &Skills, setskills: &SetSkills) {
 		let mut statement = self.connection.prepare(
 			"SELECT armor.id, name, rank, armor_type,
 					armorset_id, armorset_bonus_id,
@@ -141,7 +139,7 @@ ORDER BY unlocks_id;").unwrap();
 			let skill_id = row.get(row.column_index("skilltree_id").unwrap());
 			let skill_lev = row.get(row.column_index("level").unwrap());
 			if skill_id.is_ok() {
-				armor.add_skill(skills.borrow_mut().get(&skill_id.unwrap()).unwrap(), skill_lev.unwrap());
+				armor.add_skill(skills.get(&skill_id.unwrap()).unwrap(), skill_lev.unwrap());
 			}
 			let setskill_id = row.get(row.column_index("armorset_bonus_id").unwrap());
 			if let Ok(id) = setskill_id {
@@ -170,7 +168,7 @@ ORDER BY unlocks_id;").unwrap();
 		armors.borrow_mut().insert(armor.id, Rc::new(armor));
 	}
 
-	pub fn load_sets(&self, sets: &Sets, armors: &Armors, setskills: &SetSkills) {
+	pub fn load_sets(&self, sets: &mut Sets, armors: &Armors, setskills: &SetSkills) {
 		let mut statement = self.connection.prepare(
 			"SELECT armorset.id AS armorset_id, armor.id AS armor_id, armorset_text.name, armorset.rank, armor.armorset_bonus_id
 FROM armorset
@@ -212,7 +210,7 @@ WHERE armorset_text.lang_id = ?1;").unwrap();
 		sets.borrow_mut().insert(id, Rc::new(set));
 	}
 
-	pub fn load_decorations(&self, deco: &Decorations, skills: &Skills) {
+	pub fn load_decorations(&self, decorations: &mut Decorations, skills: &Skills) {
 		let mut statement = self.connection.prepare(
 			"SELECT decoration.id, name, slot, skilltree_id, skilltree_level, skilltree2_id, skilltree2_level
 				 FROM decoration
@@ -232,7 +230,7 @@ WHERE armorset_text.lang_id = ?1;").unwrap();
 					row.get(row.column_index("skilltree2_level").unwrap()).unwrap()));
 			}
 			let id = row.get(row.column_index("id").unwrap()).unwrap();
-			deco.borrow_mut().insert(id, Rc::new(forge::skill::Decoration::new(
+			decorations.borrow_mut().insert(id, Rc::new(forge::skill::Decoration::new(
 				id,
 				row.get(row.column_index("name").unwrap()).unwrap(),
 				row.get(row.column_index("slot").unwrap()).unwrap(),
@@ -241,7 +239,7 @@ WHERE armorset_text.lang_id = ?1;").unwrap();
 		}
 	}
 
-	pub fn load_charms(&self, charms: &Charms, skills: &Skills) {
+	pub fn load_charms(&self, charms: &mut Charms, skills: &Skills) {
 		let mut statement = self.connection.prepare(
 			"SELECT charm.id, charm.previous_id, skilltree_id, level, name
 FROM charm
@@ -252,7 +250,7 @@ WHERE lang_id = ?1").unwrap();
 		let mut rows = statement.query(params![str]).unwrap();
 
 
-		fn new_charm(row: &Row, skills: &RefCell<HashMap<u16, Rc<forge::skill::Skill>>>) -> forge::skill::Charm {
+		fn new_charm(row: &Row, skills: &Skills) -> forge::skill::Charm {
 			let id = row.get(row.column_index("id").unwrap()).unwrap();
 			let skill_id = row.get(row.column_index("skilltree_id").unwrap()).unwrap();
 			let skill_lev = row.get(row.column_index("level").unwrap()).unwrap();
@@ -260,7 +258,7 @@ WHERE lang_id = ?1").unwrap();
 				id,
 				row.get(row.column_index("name").unwrap()).unwrap(),
 			);
-			charm.add_skill(skills.borrow_mut().get(&skill_id).unwrap(), skill_lev);
+			charm.add_skill(skills.get(&skill_id).unwrap(), skill_lev);
 			charm
 		}
 
@@ -281,7 +279,7 @@ WHERE lang_id = ?1").unwrap();
 		charms.borrow_mut().insert(id, Rc::new(charm));
 	}
 
-	pub fn load_weapons(&self, weapons: &Weapons, skills: &Skills, setskills: &SetSkills) {
+	pub fn load_weapons(&self, weapons: &mut Weapons, skills: &Skills, setskills: &SetSkills) {
 		let mut statement = self.connection.prepare(
 			"SELECT weapon.id, previous_weapon_id, weapon_type, name,
 		attack_true, affinity, sharpness, defense,
@@ -337,7 +335,7 @@ WHERE lang_id = ?1").unwrap();
 			};
 			let skill = {
 				if let Some(id) = row.get(row.column_index("skilltree_id").unwrap()).ok() {
-					Some(Rc::clone(skills.borrow().get(&id).unwrap()))
+					Some((Rc::clone(skills.borrow().get(&id).unwrap()), 1))
 				} else { None }
 			};
 
