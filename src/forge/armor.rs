@@ -27,7 +27,7 @@ impl fmt::Display for Armor {
         for (skill, lev) in self.skills.iter() {
             str = format!("{} <{}, {}>", str, *skill, lev);
         }
-        write!(f, "name: {}[{}] skills: {}", self.name, self.id, str)
+        write!(f, "{0: <45}|{1: <50}", format!("{} [{}] {}", self.name, self.id, self.defence[2]), str)
     }
 }
 

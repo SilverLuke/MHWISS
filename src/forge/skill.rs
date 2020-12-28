@@ -17,7 +17,7 @@ pub struct Skill {
 
 impl fmt::Display for Skill {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(f, "{}[{}]", self.name, self.id)
+		write!(f, "{} [{}]", self.name, self.id)
 	}
 }
 
@@ -76,11 +76,9 @@ impl Charm {
 	pub fn new(id: ID, name: String) -> Self {
 		Charm { id, name, skills: Vec::with_capacity(1) }
 	}
-
 	pub fn add_skill(&mut self, skill: &Rc<Skill>, level: u8) {
 		self.skills.push((Rc::clone(skill), level));
 	}
-
 }
 
 impl HasSkills for Charm {
@@ -108,7 +106,7 @@ impl fmt::Display for Decoration {
 		for (skill, lev) in self.skills.iter() {
 			str = format!("{} <{}, {}>", str, *skill, lev);
 		}
-		write!(f, "{}[{}] Skill: {}", self.name, self.id, str)
+		write!(f, "{0: <45}|{1: <50}", format!("{} [{}]", self.name, self.id), str)
 	}
 }
 

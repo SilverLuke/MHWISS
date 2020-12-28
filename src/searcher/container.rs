@@ -1,16 +1,13 @@
-use std::{
-	cell::RefCell,
-	rc::Rc,
-	collections::HashMap,
-};
+use std::{cell::RefCell, rc::Rc, collections::HashMap, fmt};
 use crate::forge::{
 	skill::{Skill, Decoration},
 	types::{ID, Level, SkillLev}
 };
 use std::collections::hash_map::Entry;
+use crate::forge::armor::Armor;
 
 pub trait HasDecorations {
-	fn get_slots(&self) -> [u8;3];
+	fn get_slots(&self) -> [u8; 3];
 	fn get_skills(&self) -> Box<dyn Iterator<Item=&SkillLev> + '_>;
 }
 
@@ -34,7 +31,32 @@ impl<T> Clone for DecorationContainer<T> where T: HasDecorations + HasSkills {
 	}
 }
 
-impl<T> DecorationContainer<T> where T: HasDecorations + HasSkills{
+impl fmt::Display for DecorationContainer<Armor> {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		let mut decos_str = String::new();
+		// ToDo use: runtime-fmt
+		let mut deco_str = [String::new(), String::new(), String::new()];
+		for (i, d) in self.deco.iter().enumerate() {
+			deco_str[i] = {
+				if let Some(deco) = d {
+					format!("{} {}", self.container.slots[i], deco.to_string())
+				} else {
+					format!("{} None", self.container.slots[i])
+				}
+			}
+		}
+		decos_str = format!("{0: <25}|{1: <25}|{2: <25}", deco_str[0], deco_str[1], deco_str[2]);
+		write!(f, "{0: <90}|{1: <77}|{2: <5}", self.container, decos_str, self.value)
+	}
+}
+
+impl fmt::Debug for DecorationContainer<Armor> {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		write!(f, "{}", self)
+	}
+}
+
+impl<T> DecorationContainer<T> where T: HasDecorations + HasSkills {
 	pub fn new(container: Rc<T>) -> Self {
 		DecorationContainer {
 			container,

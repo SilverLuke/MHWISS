@@ -23,6 +23,7 @@ use crate::searcher::{
 };
 use std::borrow::Borrow;
 use crate::forge::types::Decorations;
+use std::cmp::Ordering;
 
 pub struct Searcher {
 	forge: Arc<Forge>,
@@ -125,8 +126,35 @@ impl Searcher {
 		ret
 	}
 
+	fn print_requirements(&self) {
+		println!("Requirements:");
+		for (key, val) in self.skills_req.borrow().iter() {
+			println!("\t{0: <40} {1: <2} ", self.forge.skills.get(key).unwrap(), val);
+		}
+	}
+
+	fn print_filter(&self) {
+		println!("Armors:");
+		for i in self.armors.borrow().iter() {
+			if i.value > 0 {
+				println!("\t{}", i.to_string());
+			}
+		}
+		println!("Charms:",);
+		for (c, val) in self.charms.borrow().iter() {
+			if *val > 0 {
+				println!("\t{0:<50} | {1:<2}", c.to_string(), val);
+			}
+		}
+		println!("Decorations:",);
+		for (d, val) in self.decorations.borrow().iter() {
+			if *val > 0 {
+				println!("\t{0:<50} | {1:<2}", d.to_string(), val);
+			}
+		}
+	}
+
 	fn filter(&self) {
-		println!("REQ:\n\t{:?}", &*self.skills_req.borrow());
 		self.charms.replace(self.forge.get_charms_filtered(&self.skills_req));
 		self.decorations.replace(self.forge.get_decorations_filtered(&self.skills_req));
 
@@ -137,17 +165,23 @@ impl Searcher {
 			vec.push(tmp);
 		}
 		vec.sort_by(|a, b| {
-			b.value.cmp(&a.value)
+			let value = b.value.cmp(&a.value);
+			if  value == Ordering::Equal {
+				b.container.defence[2].cmp(&a.container.defence[2])
+			} else {
+				value
+			}
 		});
-		self.armors.replace(vec);
 
-		println!("CHARMS: {}, DECORATIONS: {}", self.charms.borrow().len(), self.decorations.borrow().len());
+		self.armors.replace(vec);
 	}
 
 	fn stupid_search(&self) -> BestSet {
-		self.filter();
 		let mut result = BestSet::new();
 		while self.check_requirements(&result).not() && result.is_full().not() {
+			self.filter();
+			self.print_requirements();
+			self.print_filter();
 			let mut i = 0;
 			let mut done = true;
 			while done {
@@ -160,9 +194,7 @@ impl Searcher {
 					i += 1;
 				}
 			}
-			self.filter();
 		}
-		println!("################## DONE ##################\n");
 		result
 	}
 
