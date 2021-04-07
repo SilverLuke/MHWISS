@@ -3,11 +3,13 @@ use std::cell::RefCell;
 use std::borrow::{Borrow, BorrowMut};
 use rusqlite::{Connection, params, Row};
 
-use crate::forge;
-use crate::forge::types::{Rank, ArmorClass, SetSkills, Gender, Element, WeaponClass, elder_seal, Weapons};
-use crate::forge::skill::{Skill, SetSkill};
-use crate::forge::types::{Skills, Armors, Sets, Decorations, Charms};
-use crate::forge::weapon::Weapon;
+use crate::datatypes::*;
+use crate::datatypes;
+use crate::datatypes::types::{Gender, ArmorClass, Rank, Element, elder_seal, WeaponClass};
+use crate::datatypes::skill::{Skill, SetSkill};
+use crate::datatypes::weapon::Weapon;
+use crate::datatypes::decoration::Decoration;
+use crate::datatypes::charm::Charm;
 
 pub struct DB {
 	connection: rusqlite::Connection,
@@ -48,7 +50,7 @@ ORDER BY unlocks_id;").unwrap();
 				}
 			};
 			let id = row.get(row.column_index("id").unwrap()).unwrap();
-			let skill = forge::skill::Skill::new(
+			let skill = datatypes::skill::Skill::new(
 				id,
 				row.get(row.column_index("name").unwrap()).unwrap(),
 				row.get(row.column_index("description").unwrap()).unwrap(),
@@ -113,7 +115,7 @@ ORDER BY unlocks_id;").unwrap();
 		let str = &*self.lang.borrow();
 		let mut rows = statement.query(params![str]).unwrap();
 
-		fn new_armor(row: &Row, skills: &Skills, setskills: &SetSkills) -> forge::armor::Armor {
+		fn new_armor(row: &Row, skills: &Skills, setskills: &SetSkills) -> datatypes::armor::Armor {
 			let slots = [row.get(row.column_index("slot_1").unwrap()).unwrap(),
 				row.get(row.column_index("slot_2").unwrap()).unwrap(),
 				row.get(row.column_index("slot_3").unwrap()).unwrap()];
@@ -127,7 +129,7 @@ ORDER BY unlocks_id;").unwrap();
 				row.get(row.column_index("dragon").unwrap()).unwrap(),
 			];
 			let gender = Gender::new(row.get(row.column_index("male").unwrap()).unwrap(), row.get(row.column_index("female").unwrap()).unwrap());
-			let mut armor = forge::armor::Armor::new(
+			let mut armor = datatypes::armor::Armor::new(
 				row.get(row.column_index("id").unwrap()).unwrap(),
 				row.get(row.column_index("name").unwrap()).unwrap(),
 				ArmorClass::new(row.get(row.column_index("armor_type").unwrap()).unwrap()),
@@ -178,7 +180,7 @@ WHERE armorset_text.lang_id = ?1;").unwrap();
 		let str = &*self.lang.borrow();
 		let mut rows = statement.query(params![str]).unwrap();
 
-		fn new_set(row: &Row, armors: &Armors, setskills: &SetSkills) -> forge::armor::Set {
+		fn new_set(row: &Row, armors: &Armors, setskills: &SetSkills) -> datatypes::armor::ArmorSet {
 			let id = row.get(row.column_index("armorset_id").unwrap()).unwrap();
 			let armor_id = row.get(row.column_index("armor_id").unwrap()).unwrap();
 			let name = row.get(row.column_index("name").unwrap()).unwrap();
@@ -188,7 +190,7 @@ WHERE armorset_text.lang_id = ?1;").unwrap();
 					Some(Rc::clone(setskills.borrow().get(&id).unwrap()))
 				} else { None }
 			};
-			let mut set = forge::armor::Set::new(id, name, rank, skill);
+			let mut set = datatypes::armor::ArmorSet::new(id, name, rank, skill);
 			set.add_piece(armors.borrow().get(&armor_id).unwrap());
 			set
 		}
@@ -230,7 +232,7 @@ WHERE armorset_text.lang_id = ?1;").unwrap();
 					row.get(row.column_index("skilltree2_level").unwrap()).unwrap()));
 			}
 			let id = row.get(row.column_index("id").unwrap()).unwrap();
-			decorations.borrow_mut().insert(id, Rc::new(forge::skill::Decoration::new(
+			decorations.borrow_mut().insert(id, Rc::new(Decoration::new(
 				id,
 				row.get(row.column_index("name").unwrap()).unwrap(),
 				row.get(row.column_index("slot").unwrap()).unwrap(),
@@ -250,11 +252,11 @@ WHERE lang_id = ?1").unwrap();
 		let mut rows = statement.query(params![str]).unwrap();
 
 
-		fn new_charm(row: &Row, skills: &Skills) -> forge::skill::Charm {
+		fn new_charm(row: &Row, skills: &Skills) -> Charm {
 			let id = row.get(row.column_index("id").unwrap()).unwrap();
 			let skill_id = row.get(row.column_index("skilltree_id").unwrap()).unwrap();
 			let skill_lev = row.get(row.column_index("level").unwrap()).unwrap();
-			let mut charm = forge::skill::Charm::new(
+			let mut charm = Charm::new(
 				id,
 				row.get(row.column_index("name").unwrap()).unwrap(),
 			);

@@ -11,12 +11,11 @@ use std::{
 
 use crate::searcher::{
 	searcher::Searcher,
-	container::DecorationContainer,
 	bestset::BestSet
 };
-use crate::forge::{
+use crate::datatypes::{
 	forge::Forge,
-	types::SkillsLev,
+	SkillsLev,
 };
 
 use super::*;
@@ -50,7 +49,7 @@ impl Shared {
 
 #[test]
 fn check_requirement() {
-	println!("check_requirement START");
+	println!("TEST\ncheck_requirement START");
 	let shared = Shared::get();
 	let forge = shared.forge;
 	let searcher = Searcher::new(forge.clone());
@@ -60,12 +59,12 @@ fn check_requirement() {
 	searcher.init();
 	assert_eq!(searcher.check_requirements(&result), false);
 	let armor = forge.armors.get(&1550).unwrap();
-	let dc = DecorationContainer::new(armor.clone());
+	let dc = AttachedDecorations::new(armor.clone());
 	assert_eq!(result.try_add_armor(&dc).is_ok(), true);
 	assert_eq!(result.try_add_armor(&dc).is_ok(), false);
 	assert_eq!(searcher.check_requirements(&result), false);
 	let armor = forge.armors.get(&1548).unwrap();
-	let dc = DecorationContainer::new(armor.clone());
+	let dc = AttachedDecorations::new(armor.clone());
 	assert_eq!(result.try_add_armor(&dc).is_ok(), true);
 	assert_eq!(result.try_add_armor(&dc).is_ok(), false);
 	assert_eq!(searcher.check_requirements(&result), true);
@@ -74,14 +73,14 @@ fn check_requirement() {
 
 #[test]
 fn calculate() {
-	println!("calculate START");
+	println!("TEST\ncalculate START");
 	let shared = Shared::get();
 	let forge = shared.forge;
 	let searcher = Searcher::new(forge.clone());
 
 	searcher.add_skill_requirement(forge.get_skill("Battitore").unwrap().id, 5);
-	//searcher.add_skill_requirement(forge.get_skill("Angelo custode").unwrap(), 1);
-	//searcher.add_skill_requirement(forge.get_skill("Critico elementale").unwrap(), 1);
+	//searcher.add_skill_requirement(datatypes.get_skill("Angelo custode").unwrap(), 1);
+	//searcher.add_skill_requirement(datatypes.get_skill("Critico elementale").unwrap(), 1);
 
 	let res = searcher.calculate();
 	println!("Result:\n{}", res);
@@ -91,10 +90,12 @@ fn calculate() {
 
 #[test]
 fn armordeco() {
+	println!("TEST");
+	println!("Armordeco START");
 	let shared = Shared::get();
 	let armors = shared.forge.armors.borrow();
 	let armor = armors.get(&1545).unwrap();  // Slots 4-4-2 Skill id 16 <3>
-	let mut armdec = DecorationContainer::new(Rc::clone(armor));
+	let mut armdec = AttachedDecorations::new(Rc::clone(armor));
 	let decos = shared.forge.decorations.borrow();
 
 	let deco1 = decos.get(&150).unwrap();  // Skill id 16 <3>

@@ -10,26 +10,21 @@ use std::{
 	},
 };
 use itertools::Itertools;
-use crate::forge::{
-	armor::Armor,
-	skill::{Charm, Decoration, Skill},
-	forge::Forge,
-	weapon::Weapon,
-	types::{ArmorClass, ID, Level},
-};
-use crate::searcher::{
-	container::{HasDecorations, DecorationContainer, HasSkills},
-	bestset::BestSet,
-};
+use crate::datatypes::*;
+use crate::searcher::bestset::BestSet;
 use std::borrow::Borrow;
-use crate::forge::types::Decorations;
+use crate::datatypes::*;
 use std::cmp::Ordering;
+use crate::datatypes::charm::Charm;
+use crate::datatypes::decoration::{Decoration, AttachedDecorations};
+use crate::datatypes::forge::Forge;
+use crate::datatypes::armor::Armor;
 
 pub struct Searcher {
 	forge: Arc<Forge>,
 	input_skills_req: RefCell<HashMap<ID, u8>>,
 	skills_req: RefCell<HashMap<ID, u8>>,
-	armors: RefCell<Vec<DecorationContainer<Armor>>>,
+	armors: RefCell<Vec<AttachedDecorations<Armor>>>,
 	charms: RefCell<Vec<(Rc<Charm>, u8)>>,
 	decorations: RefCell<Vec<(Rc<Decoration>, u8)>>,
 }
@@ -39,7 +34,7 @@ impl fmt::Display for Searcher {
 		let mut str;
 		str = format!("###    ARMORS   ###\n");
 		for elem in self.armors.borrow().iter() {
-			str = format!("{} [{}] {}\n", str, elem.value, elem.container);
+			str = format!("{} [{}] {}\n", str, elem.value, elem.item);
 		}
 		str = format!("{}###    CHARMS   ###\n", str);
 		for (charm, rank) in self.charms.borrow().iter() {
@@ -140,13 +135,13 @@ impl Searcher {
 				println!("\t{}", i.to_string());
 			}
 		}
-		println!("Charms:",);
+		println!("Charms:", );
 		for (c, val) in self.charms.borrow().iter() {
 			if *val > 0 {
 				println!("\t{0:<50} | {1:<2}", c.to_string(), val);
 			}
 		}
-		println!("Decorations:",);
+		println!("Decorations:", );
 		for (d, val) in self.decorations.borrow().iter() {
 			if *val > 0 {
 				println!("\t{0:<50} | {1:<2}", d.to_string(), val);
@@ -155,19 +150,23 @@ impl Searcher {
 	}
 
 	fn filter(&self) {
-		self.charms.replace(self.forge.get_charms_filtered(&self.skills_req));
-		self.decorations.replace(self.forge.get_decorations_filtered(&self.skills_req));
+		let mut tmp = self.forge.get_charms_filtered(&self.skills_req);
+		tmp.sort_by(|a, b| { b.1.cmp(&a.1)});
+		self.charms.replace(tmp);
+		let mut tmp = self.forge.get_decorations_filtered(&self.skills_req);
+		tmp.sort_by(|a, b| { b.1.cmp(&a.1)});
+		self.decorations.replace(tmp);
 
 		let mut vec = vec![];
 		for (_, piece) in self.forge.armors.iter() {
-			let mut tmp = DecorationContainer::new(Rc::clone(piece));
+			let mut tmp = AttachedDecorations::new(Rc::clone(piece));
 			tmp.value(&*self.skills_req.borrow());
 			vec.push(tmp);
 		}
 		vec.sort_by(|a, b| {
 			let value = b.value.cmp(&a.value);
-			if  value == Ordering::Equal {
-				b.container.defence[2].cmp(&a.container.defence[2])
+			if value == Ordering::Equal {
+				b.item.defence[2].cmp(&a.item.defence[2])
 			} else {
 				value
 			}
@@ -178,21 +177,28 @@ impl Searcher {
 
 	fn stupid_search(&self) -> BestSet {
 		let mut result = BestSet::new();
-		while self.check_requirements(&result).not() && result.is_full().not() {
+		let mut impossible = false;
+		while self.check_requirements(&result).not() && result.is_full().not() && impossible.not() {
 			self.filter();
 			self.print_requirements();
 			self.print_filter();
 			let mut i = 0;
 			let mut done = true;
-			while done {
+			while done {  // Loop until a armor is suited for placement
 				let tmp = self.armors.borrow();
-				let piece = tmp.get(i).unwrap();
-				if result.try_add_armor(&piece).is_ok() {
-					self.remove_requirements(piece.get_skills());
-					done = false;
-				} else {
-					i += 1;
-				}
+				match tmp.get(i) {
+					Some(piece) =>
+						if result.try_add_armor(&piece).is_ok() {
+							self.remove_requirements(piece.get_skills());
+							done = false;  // Go for the next piece
+						} else {
+							i += 1;
+						},
+					None => {
+						done = false;  // No more armor to be tested
+						impossible = true  // So no configuration exist (Maybe???)
+					},
+				};
 			}
 		}
 		result

@@ -1,12 +1,11 @@
 use std::rc::Rc;
 use std::collections::HashMap;
 use std::fmt;
-use crate::forge::{
-    skill::{Skill, SetSkill},
-    types::{ArmorClass, Rank, SkillsLev, Gender, SkillLev, ID},
-};
-use crate::searcher::container::{HasDecorations, HasSkills};
+use crate::datatypes::*;
 use std::cell::RefCell;
+use crate::datatypes::types::{ArmorClass, Gender, Rank};
+use crate::datatypes::decoration::HasDecorations;
+use crate::datatypes::skill::HasSkills;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Armor {
@@ -65,20 +64,32 @@ impl HasSkills for Armor {
         }
         false
     }
+    fn get_skills_rank(&self, query: &RefCell<HashMap<ID, u8>>) -> Option<u8> {
+        let mut sum = 0;
+        for (skill, lev) in self.skills.iter() {
+            if query.borrow().get(&skill.id).is_some() {
+                sum += lev;
+            }
+        }
+        if sum != 0 {
+            return Some(sum);
+        }
+        None
+    }
 }
 
 
-pub struct Set {
+pub struct ArmorSet {
     pub id: u16,
     pub name: String,
-    pub rank: Rank,  // Duplicate you cannot have a HR set with LR o MR armour TO BE FIXED
+    pub rank: Rank,  // TODO Duplicate you cannot have a HR set with LR o MR armour
     set: [Option<Rc<Armor>>; 5],
     armorset_skill: Option<Rc<SetSkill>>,
 }
 
-impl Set {
+impl ArmorSet {
     pub fn new(id: u16, name: String, rank: Rank, armorset_skill: Option<Rc<SetSkill>>) -> Self {
-        Set { id, name, rank, set: [None, None, None, None, None], armorset_skill}
+        ArmorSet { id, name, rank, set: [None, None, None, None, None], armorset_skill}
     }
 
     pub fn add_piece(&mut self, armor: &Rc<Armor>) {

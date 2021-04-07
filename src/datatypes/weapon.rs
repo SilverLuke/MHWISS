@@ -1,22 +1,23 @@
-use crate::forge::types::{ID, Element, WeaponClass, SkillLev};
-use crate::forge::skill::{SetSkill};
+use crate::datatypes::*;
+use crate::datatypes::skill::{SetSkill, HasSkills};
 use std::rc::Rc;
 use std::{fmt};
-use crate::searcher::container::{HasDecorations, HasSkills};
 use std::collections::hash_map::RandomState;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use crate::datatypes::types::*;
+use crate::datatypes::decoration::HasDecorations;
 
 pub struct Weapon {
 	pub id: ID,
 	previous_id: Option<ID>,
-	class: WeaponClass,
-	name: String,
+	pub class: WeaponClass,
+	pub name: String,
 	attack_true: u16,
 	affinity: i8,
 	sharpness: Option<[u8;7]>,
 	defense: u8,
-	slots: [u8; 3],
+	pub slots: [u8; 3],
 	elements: Vec<(Element, u16)>,
 	element_hidden: bool,
 	elderseal: u8,
@@ -44,6 +45,9 @@ impl HasDecorations for Weapon {
 impl HasSkills for Weapon {
 	fn has_skills(&self, query: &RefCell<HashMap<u16, u8, RandomState>>) -> bool {
 		todo!()
+	}
+	fn get_skills_rank(&self, query: &RefCell<HashMap<ID, u8>>) -> Option<u8> {
+			todo!()
 	}
 }
 

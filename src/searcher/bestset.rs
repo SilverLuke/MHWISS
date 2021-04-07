@@ -10,35 +10,34 @@ use std::{
 	},
 };
 use itertools::Itertools;
-use crate::forge::{
-	armor::Armor,
-	skill::{Charm, Decoration, Skill},
-	forge::Forge,
-	weapon::Weapon,
-	types::{ArmorClass, ID, Level},
-};
-use crate::searcher::container::{HasDecorations, DecorationContainer, HasSkills};
+use crate::datatypes::*;
 use std::borrow::Borrow;
-use crate::forge::types::Decorations;
+use crate::datatypes::weapon::Weapon;
+use crate::datatypes::armor::Armor;
+use crate::datatypes::charm::Charm;
+use crate::datatypes::types::ArmorClass;
+use crate::datatypes::decoration::AttachedDecorations;
+use crate::datatypes::tool::Tool;
 
 pub struct BestSet {
-	pub weapon: Option<DecorationContainer<Weapon>>,
-	pub set: [Option<DecorationContainer<Armor>>; 5],
+	pub weapon: Option<AttachedDecorations<Weapon>>,
+	pub set: [Option<AttachedDecorations<Armor>>; 5],
 	pub charm: Option<Rc<Charm>>,
+	pub tools: [Option<AttachedDecorations<Tool>>; 2],
 }
 
 impl fmt::Display for BestSet {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let mut str;
 		str = match &self.weapon {
-			Some(w) => format!("Weapon: {}\n", w.container),
+			Some(w) => format!("Weapon: {}\n", w.item),
 			None => format!("Weapon: None\n")
 		};
 
 		for i in ArmorClass::iterator() {
 			str = format!("{} {}:", str, ArmorClass::to_string(i));
 			match self.set.get(*i as usize) {
-				Some(Some(armor)) => str = format!("{} <{}>\n", str, armor.container),
+				Some(Some(armor)) => str = format!("{} <{}>\n", str, armor.item),
 				Some(None) => str = format!("{} None\n", str),
 				None => panic!("ERROR: Result print out of bounds"),
 			}
@@ -57,24 +56,25 @@ impl BestSet {
 		BestSet {
 			weapon: None,
 			set: <[_; 5]>::default(),
-			charm: None
+			charm: None,
+			tools: <[_; 2]>::default(),
 		}
 	}
 
-	pub fn try_add_armor(&mut self, armor: &DecorationContainer<Armor>) -> Result<(), &str> {
-		let i = armor.container.class as usize;
+	pub fn try_add_armor(&mut self, armor: &AttachedDecorations<Armor>) -> Result<(), &str> {
+		let i = armor.item.class as usize;
 		if self.set[i].is_some() {
 			Err("Space already taken")
 		} else {
 			self.set[i] = Some(armor.clone());
-			println!("Added: {}", armor.container);
+			println!("Added: {}", armor.item);
 			Ok(())
 		}
 	}
 
 	fn add_weapon_skills(&self, skills_sum: &mut HashMap<ID, Level>) {
 		if let Some(deco_container) = &self.weapon {
-			if let Some(skill) = &deco_container.container.skill {
+			if let Some(skill) = &deco_container.item.skill {
 				*skills_sum.entry(skill.0.id).or_insert(1) += 1;
 			}
 		}

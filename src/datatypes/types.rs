@@ -1,30 +1,10 @@
-use std::rc::Rc;
 use std::slice::Iter;
-use std::collections::HashMap;
-use crate::forge::{
-	skill::{Skill, Decoration, Charm, SetSkill},
-	armor::{Armor, Set},
-	weapon::Weapon,
-	types::{
-		Element::{Fire, Water, Thunder, Ice, Dragon, Poison, Sleep, Paralysis, Blast, Stun},
-		ArmorClass::{Head, Chest, Arms, Waist, Legs},
-		WeaponClass::{Bow, ChargeBlade, DualBlade, GreatSword, Gunlance, Hammer, HeavyBowgun, HuntingHorn, InsectGlaive, Lance, LightBowgun, Longsword, SwitchAxe, SwordAndShield},
-		Gender::{Male, Female, All},
-	}
+use crate::datatypes::types::{
+	Element::{Fire, Water, Thunder, Ice, Dragon, Poison, Sleep, Paralysis, Blast, Stun},
+	ArmorClass::{Head, Chest, Arms, Waist, Legs},
+	WeaponClass::{Bow, ChargeBlade, DualBlade, GreatSword, Gunlance, Hammer, HeavyBowgun, HuntingHorn, InsectGlaive, Lance, LightBowgun, Longsword, SwitchAxe, SwordAndShield},
+	Gender::{Male, Female, All},
 };
-
-pub type ID = u16;
-pub type Skills = HashMap<ID, Rc<Skill>>;
-pub type SetSkills = HashMap<ID, Rc<SetSkill>>;
-pub type Armors = HashMap<ID, Rc<Armor>>;
-pub type Weapons = HashMap<ID, Rc<Weapon>>;
-pub type Sets = HashMap<ID, Rc<Set>>;
-pub type Decorations = HashMap<ID, Rc<Decoration>>;
-pub type Charms = HashMap<ID, Rc<Charm>>;
-
-pub type Level = u8;
-pub type SkillLev = (Rc<Skill>, Level);
-pub type SkillsLev = Vec<SkillLev>;
 
 pub enum Element {
 	Fire = 0,

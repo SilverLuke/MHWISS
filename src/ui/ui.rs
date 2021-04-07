@@ -1,34 +1,67 @@
 use gio::prelude::*;
 use gtk::prelude::*;
-use gtk::{Application};
-use std::env::args;
-use std::env;
-use std::rc::Rc;
+use gtk::Application;
+use std::{env,
+	env::args,
+	rc::Rc,
+	sync::Arc,
+	collections::HashMap
+};
 use itertools::Itertools;
-use std::sync::Arc;
+use gdk_pixbuf::Pixbuf;
 
-use crate::ui::result::ResultTab;
-use crate::forge::forge::Forge;
+use super::pages::{
+	skills::SkillsPage,
+	armors::ArmorsPage,
+	decorations::DecorationsPage,
+	charms::CharmsPage,
+	result::ResultPage
+};
+use crate::datatypes::forge::Forge;
 use crate::searcher::searcher::Searcher;
+use crate::datatypes::types::{Element, ArmorClass};
+use crate::ui::{NORMAL_SIZE_ICON, SMALL_SIZE_ICON};
 
-pub struct Skills {
-	skill_list: gtk::FlowBox,
-	skill_set: gtk::FlowBox,
+struct Pages {
+	skills_page: SkillsPage,
+	armors_page: ArmorsPage,
+	decos_page: DecorationsPage,
+	charms_page: CharmsPage,
+	found_page: ResultPage,
+}
+
+impl Pages {
+	pub fn new(builder: &gtk::Builder, images: Rc<HashMap<String, Pixbuf>>) -> Self {
+		Pages {
+			skills_page: SkillsPage::new(&builder),
+			armors_page:ArmorsPage::new(&builder),
+			decos_page: DecorationsPage::new(&builder),
+			charms_page: CharmsPage::new(&builder),
+			found_page: ResultPage::new(builder, images),
+		}
+	}
+
+	pub fn show(&self, app: Rc<Ui>) {  // Todo move this to the costructor this methods do not show anything they load things
+		let forge = Arc::clone(&app.forge);
+		self.skills_page.show(app, &forge);
+		self.armors_page.show(&forge);
+		self.decos_page.show(&forge);
+		self.charms_page.show(&forge);
+	}
 }
 
 pub struct Ui {
 	application: gtk::Application,
 	window: gtk::ApplicationWindow,
-	notebook: gtk::Notebook,
-	skill_list: gtk::FlowBox,
-	armorset_skill_list: gtk::FlowBox,
-	rank_set: [gtk::ListBox; 3],
-	deco_list: [gtk::FlowBox; 4],
 	find_btn: gtk::Button,
 	lang_combo: gtk::ComboBox,
-	found: ResultTab,
+	images: Rc<HashMap<String, Pixbuf>>,
+
+	notebook: gtk::Notebook,
+	pages: Pages,
+
 	forge: Arc<Forge>,
-	searcher: Searcher,
+	pub searcher: Searcher,
 }
 
 impl Ui {
@@ -54,32 +87,19 @@ impl Ui {
 
 		let window = builder.get_object("main window").unwrap();
 		let find_btn = builder.get_object("find btn").unwrap();
-		let skill_list = builder.get_object("skill list").unwrap();
-		let armorset_skill_list = builder.get_object("skill set").unwrap();
 		let lang_combo = builder.get_object("lang combo").unwrap();
-		let rank_set = [
-			builder.get_object("lr list").unwrap(),
-			builder.get_object("hr list").unwrap(),
-			builder.get_object("mr list").unwrap(),
-		];
-		let deco_list = [
-			builder.get_object("deco lev1").unwrap(),
-			builder.get_object("deco lev2").unwrap(),
-			builder.get_object("deco lev3").unwrap(),
-			builder.get_object("deco lev4").unwrap(),
-		];
 
+		let images = Rc::new(Ui::load_images());
+		let pages = Pages::new(&builder, Rc::clone(&images));
 		let app = Self {
 			application,
 			window,
-			notebook: builder.get_object("notebook").unwrap(),
-			skill_list,
-			armorset_skill_list,
-			rank_set,
-			deco_list,
 			find_btn,
 			lang_combo,
-			found: ResultTab::new(&builder),
+			images,
+
+			notebook: builder.get_object("notebook").unwrap(),
+			pages,
 			forge,
 			searcher,
 		};
@@ -100,105 +120,70 @@ impl Ui {
 			let res = app.searcher.calculate();
 			app.searcher.show_requirements();
 			println!("{}", &res);
-			app.found.update(&res);
+			app.pages.found_page.update(&res);
 			let i = app.notebook.get_n_pages() - 1;
 			app.notebook.set_current_page(Some(i));
 		});
 	}
 
-	fn show_skills(&self, me: Rc<Self>) {  // TODO: Add skill dependecy
-		for skill in self.forge.skills.values().sorted_by(|a, b| { a.name.cmp(&b.name) }) {
-			let builder = Ui::get_builder("gui/skill box.glade".to_string());
-			let skill_box: gtk::Box = builder.get_object("box").unwrap();
-			let name: gtk::Label = builder.get_object("name").unwrap();
-			let adjustment: gtk::Adjustment = builder.get_object("adjustment").unwrap();
-			let level: gtk::SpinButton = builder.get_object("level").unwrap();
-
-			let style = skill_box.get_style_context();
-			let provider = gtk::CssProvider::new();
-			provider.load_from_path("gui/style.css").unwrap();
-			style.add_provider(&provider, gtk::STYLE_PROVIDER_PRIORITY_USER);
-			style.add_class("skillBox");  // TODO: Better implementation using glades => Add this feature in glade
-
-			name.set_text(skill.name.as_str());
-			name.set_tooltip_text(Some(skill.description.as_str()));
-			adjustment.set_upper(skill.max_level as f64);
-
-			let app = Rc::clone(&me);
-			// let skill_req = Rc::clone(&skill);
-			let id = skill.id;
-			level.connect_value_changed(move |lev| {
-				app.searcher.add_skill_requirement(id, lev.get_value() as u8);
-			});
-
-			self.skill_list.insert(&skill_box, -1);
-		}
-
-		for skill in self.forge.set_skills.values().sorted_by(|a, b| { a.name.cmp(&b.name) }) {
-			let builder = Ui::get_builder("gui/skill box.glade".to_string());
-			let skill_box: gtk::Box = builder.get_object("box").unwrap();
-			let name: gtk::Label = builder.get_object("name").unwrap();
-			let adjustment: gtk::Adjustment = builder.get_object("adjustment").unwrap();
-			let level: gtk::SpinButton = builder.get_object("level").unwrap();
-
-			let style = skill_box.get_style_context();
-			let provider = gtk::CssProvider::new();
-			provider.load_from_path("gui/style.css").unwrap();
-			style.add_provider(&provider, gtk::STYLE_PROVIDER_PRIORITY_USER);
-			style.add_class("skillBox");  // TODO: Better implementation using glades => Add this feature in glade
-
-			name.set_text(skill.name.as_str());
-			adjustment.set_upper(skill.get_max() as f64);
-
-			/*let app = Rc::clone(&me);
-			let skill_req = Rc::clone(&skill);
-			level.connect_value_changed(move |lev| {
-				app.searcher.add_skill_requirement(skill_req.clone(), lev.get_value() as u8);
-			});*/
-
-			self.armorset_skill_list.insert(&skill_box, -1);
-		}
-
-	}
-
-	fn show_sets(&self) {
-		for set in self.forge.sets.values().sorted_by(|a, b| { a.id.cmp(&b.id) }) {
-			let builder = Ui::get_builder("gui/set box.glade".to_string());
-			let set_row: gtk::ListBoxRow = builder.get_object("row").unwrap();
-			let name: gtk::Label = builder.get_object("name").unwrap();
-
-			name.set_text(&set.name);
-			self.rank_set[set.rank as usize].insert(&set_row, -1);
-		}
-	}
-
-	fn show_deco(&self) {
-		for (_, deco) in self.forge.decorations.iter().sorted_by(|(_, a), (_, b)| { a.name.cmp(&b.name) }) {
-			let builder = Ui::get_builder("gui/deco box.glade".to_string());
-			let deco_box: gtk::Box = builder.get_object("box").unwrap();
-			let name: gtk::Label = builder.get_object("name").unwrap();
-
-			let style = deco_box.get_style_context();
-			let provider = gtk::CssProvider::new();
-			provider.load_from_path("gui/style.css").unwrap();
-			style.add_provider(&provider, gtk::STYLE_PROVIDER_PRIORITY_USER);
-			style.add_class("skillBox");  // TODO: Better implementation using glades => Add this feature in glade
-
-			name.set_text(deco.name.as_str());
-			self.deco_list[deco.size as usize - 1].insert(&deco_box, -1);
-		}
-	}
-
-	fn show_all(&self, me: Rc<Self>) {
-		self.show_skills(me);
-		self.show_sets();
-		self.show_deco();
-	}
-
 	pub fn start(&self, me: Rc<Self>) {
-		self.show_all(me);
+		self.pages.show(Rc::clone(&me));
 		self.window.show_all();
 		let args: Vec<String> = args().collect();
 		self.application.run(&args);
 	}
+
+	pub fn load_images() -> HashMap<String, Pixbuf> {
+		let mut resources = vec![
+			(String::from("weapon empty"), String::from("equipment/weapon empty.svg"), NORMAL_SIZE_ICON),
+			(String::from("charm"), String::from("equipment/charm.svg"), NORMAL_SIZE_ICON),
+			(String::from("charm empty"), String::from("equipment/charm empty.svg"), NORMAL_SIZE_ICON),
+			(String::from("mantle"), String::from("equipment/mantle.svg"), NORMAL_SIZE_ICON),
+			(String::from("mantle empty"), String::from("equipment/mantle empty.svg"), NORMAL_SIZE_ICON),
+			(String::from("booster"), String::from("equipment/booster.svg"), NORMAL_SIZE_ICON),
+			(String::from("slot none"), String::from("ui/slot none.svg"), SMALL_SIZE_ICON),
+		];
+		// for i in Weapons::iterator(){}
+		for i in Element::iterator() {
+			let name = i.to_string();
+			let path = format!("ui/{}.svg", &name);
+			resources.push((name, path, SMALL_SIZE_ICON));
+		}
+		for i in ArmorClass::iterator() {
+			let name = i.to_string();
+			let path = format!("equipment/{}.svg", &name);
+			resources.push((name.clone(), path, NORMAL_SIZE_ICON));
+			let res_name = format!("{} empty", &name);
+			let path = format!("equipment/{} empty.svg", &name);
+			resources.push((res_name, path, NORMAL_SIZE_ICON));
+		}
+
+		for i in 1..=4 {
+			for j in 0..=i {  // slot <slot size> <deco size>
+				resources.push((format!("slot {} {}", i, j), format!("ui/slot {} {}.svg", i, j), SMALL_SIZE_ICON));
+			}
+		}
+
+		let mut hash: HashMap<String, Pixbuf> = Default::default();
+		resources.into_iter().for_each(|(name, path, size)| {
+			let real_path = format!("MHWorldData/images/{}", path);
+			hash.insert(name, Pixbuf::from_file_at_scale(&real_path, size, size, true).expect(&path));
+		});
+		hash
+	}
+
+	pub(crate) fn set_image(image: &gtk::Image, key: &str, images: &Rc<HashMap<String, Pixbuf>>) {
+		let pixbuf = images.get(key);
+		assert_ne!(pixbuf, None);
+		image.set_from_pixbuf(pixbuf);
+	}
+
+	pub fn set_fixed_image(builder: &gtk::Builder, id: &str, path: &str, size: i32) {
+		let path = format!("MHWorldData/images/{}", path);
+		let image: gtk::Image = builder.get_object(id).expect(id);
+		image.set_from_pixbuf(
+			Some(&Pixbuf::from_file_at_scale(&path, size, size, true).expect(path.as_str()))
+		);
+	}
+
 }
