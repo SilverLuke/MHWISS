@@ -37,22 +37,22 @@ impl GtkTool {
 impl UI<AttachedDecorations<Tool>> for GtkTool {
 	fn update(&self, piece: &Option<AttachedDecorations<Tool>>) {
 		if let Some(tool) = piece {
-			self.show_item(tool);
+			self.show(tool);
 		} else {
-			self.set_empty();
+			self.empty();
 		}
 	}
 
-	fn set_empty(&self) {
-		self.image.set_from_pixbuf(self.images.get("tool empty"));
+	fn empty(&self) {
+		self.image.set_from_pixbuf(self.images.get("mantle empty"));
 		self.name.set_text("-");
-		self.slots[0].set_empty();
-		self.slots[1].set_empty();
+		self.slots[0].empty(0);
+		self.slots[1].empty(0);
 	}
 
-	fn show_item(&self, item: &AttachedDecorations<Tool>) {
+	fn show(&self, item: &AttachedDecorations<Tool>) {
 		let tool = item.get_item();
-		self.image.set_from_pixbuf(self.images.get("tool"));
+		self.image.set_from_pixbuf(self.images.get("booster empty"));
 		self.name.set_text(tool.name.as_str());
 	}
 }

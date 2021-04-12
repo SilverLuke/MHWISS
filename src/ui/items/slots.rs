@@ -25,18 +25,22 @@ impl GtkSlot {
 
 	pub fn update(&self, piece: &Option<Rc<Decoration>>, size: u8) {
 		if let Some(deco) = piece {
-			self.show_item(deco, size);
+			self.show(deco, size);
 		} else {
-			self.set_empty();
+			self.empty(size);
 		}
 	}
 
-	pub fn set_empty(&self) {
-		self.label.set_text("-");
-		self.image.set_from_pixbuf(self.images.get("slot none"));
+	pub fn empty(&self, size: u8) {
+		self.label.set_text("");
+		if size == 0 {
+			self.image.set_from_pixbuf(self.images.get("slot none"));
+		} else {
+			self.image.set_from_pixbuf(self.images.get(format!("slot {} 0", size).as_str()));
+		}
 	}
 
-	pub fn show_item(&self, item: &Rc<Decoration>, size: u8) {
+	pub fn show(&self, item: &Rc<Decoration>, size: u8) {
 		self.label.set_text(item.name.as_str());
 		self.image.set_from_pixbuf(self.images.get(format!("slot {} {}", size, item.size).as_str()));
 	}

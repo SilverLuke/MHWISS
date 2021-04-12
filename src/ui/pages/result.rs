@@ -50,13 +50,13 @@ impl ResultPage {
 	}
 
 	fn empty(&self) {
-		self.weapon.set_empty();
+		self.weapon.empty();
 		for armor in self.armors.iter() {
-			armor.set_empty();
+			armor.empty();
 		}
-		self.charm.set_empty();
+		self.charm.empty();
 		for tool in self.tools.iter() {
-			tool.set_empty();
+			tool.empty();
 		}
 	}
 

@@ -29,20 +29,20 @@ impl GtkCharm {
 impl UI<Rc<Charm>> for GtkCharm {
 	fn update(&self, piece: &Option<Rc<Charm>>) {
 		if let Some(weapon) = piece {
-			self.show_item(weapon);
+			self.show(weapon);
 		} else {
-			self.set_empty();
+			self.empty();
 		}
 	}
 
-	fn set_empty(&self) {
+	fn empty(&self) {
 		self.image.set_from_pixbuf(self.images.get("charm empty"));
 		self.name.set_text("-");
 		self.skill[0].set_text("-");
 		self.skill[1].set_text("-");
 	}
 
-	fn show_item(&self, item: &Rc<Charm>) {
+	fn show(&self, item: &Rc<Charm>) {
 		self.image.set_from_pixbuf(self.images.get("charm"));
 		self.name.set_text(item.name.as_str());
 		for (i, (skill, lev)) in item.skills.iter().enumerate() {

@@ -67,7 +67,7 @@ impl BestSet {
 			Err("Space already taken")
 		} else {
 			self.set[i] = Some(armor.clone());
-			println!("Added: {}", armor.item);
+			println!("Added:\n\t{}", armor.item);
 			Ok(())
 		}
 	}

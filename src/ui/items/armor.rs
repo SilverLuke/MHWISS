@@ -33,8 +33,8 @@ impl GtkArmour {
 
 		let mut slots = Vec::with_capacity(3);
 		for id in 0..3 {
-			let name = format!("slot {} {}", id, piece_id);  // TODO change to "armor slot {} {}"
-			let image = format!("slot image {} {}", id, piece_id);
+			let name = format!("armor slot {} {}", id, piece_id);
+			let image = format!("armor slot image {} {}", id, piece_id);
 			slots.push(GtkSlot::new(&builder, name.as_str(), image.as_str(), Rc::clone(&images)));
 		}
 		GtkArmour {
@@ -53,13 +53,13 @@ impl GtkArmour {
 impl UI<AttachedDecorations<Armor>> for GtkArmour {
 	fn update(&self, piece: &Option<AttachedDecorations<Armor>>) {
 		if let Some(piece) = piece {
-			self.show_item(piece);
+			self.show(piece);
 		} else {
-			self.set_empty();
+			self.empty();
 		}
 	}
 
-	fn set_empty(&self) {
+	fn empty(&self) {
 		self.image.set_from_pixbuf(self.images.get(format!("{} empty", self.class.to_string()).as_str()));
 		self.name.set_text("-");
 		self.skill[0].set_text("");
@@ -69,11 +69,11 @@ impl UI<AttachedDecorations<Armor>> for GtkArmour {
 			element.set_text("")
 		}
 		for slot in self.slots.iter() {
-			slot.set_empty();
+			slot.empty(0);
 		}
 	}
 
-	fn show_item(&self, item: &AttachedDecorations<Armor>) {
+	fn show(&self, item: &AttachedDecorations<Armor>) {
 		let piece = item.get_item();
 		self.image.set_from_pixbuf(self.images.get(format!("{}", self.class.to_string()).as_str()));
 		self.name.set_text(piece.name.as_str());
@@ -81,8 +81,8 @@ impl UI<AttachedDecorations<Armor>> for GtkArmour {
 			self.skill[i].set_text(format!("{} {}", skill.name, lev).as_str());
 			self.skill[i].show();
 		}
-		for (i, size) in piece.slots.iter().enumerate() {
-			self.slots[i].update(&item.deco[i], *size);
+		for (i, slot_size) in piece.slots.iter().enumerate() {
+			self.slots[i].update(&item.deco[i], *slot_size);
 		}
 	}
 }

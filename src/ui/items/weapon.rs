@@ -48,21 +48,23 @@ impl GtkWeapon {
 impl UI<AttachedDecorations<Weapon>> for GtkWeapon {
 	fn update(&self, piece: &Option<AttachedDecorations<Weapon>>) {
 		if let Some(weapon) = piece {
-			self.show_item(weapon);
+			self.show(weapon);
 		} else {
-			self.set_empty();
+			self.empty();
 		}
 	}
 
-	fn set_empty(&self) {
+	fn empty(&self) {
 		self.image.set_from_pixbuf(self.images.get("weapon empty"));
 		self.name.set_text("-");
 		self.attack.set_text("-");
 		self.affinity.set_text("-");
 		self.skill.set_text("-");
+		self.element[0].set_text("");
+		self.element[1].set_text("");
 	}
 
-	fn show_item(&self, item: &AttachedDecorations<Weapon>) {
+	fn show(&self, item: &AttachedDecorations<Weapon>) {
 		let weapon = item.get_item();
 		self.image.set_from_pixbuf(self.images.get(format!("{}", weapon.class.to_string()).as_str()));
 		self.name.set_text(weapon.name.as_str());
@@ -71,16 +73,7 @@ impl UI<AttachedDecorations<Weapon>> for GtkWeapon {
 			self.skill.show();
 		}
 		for (i, size) in weapon.slots.iter().enumerate() {
-			let str = {
-				if *size != 0 {
-					format!("slot {} 0", size)
-				} else {
-					String::from("slot none")
-				}
-			};
-			let img = self.images.get(str.as_str());
-			assert_ne!(img, None, "Image not found: {}", str);
-			self.slots[i].set_empty();
+			self.slots[i].empty(0);
 		}
 	}
 }
