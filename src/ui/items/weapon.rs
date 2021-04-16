@@ -12,6 +12,7 @@ use crate::datatypes::skill::Skill;
 use crate::datatypes::{ID, Level};
 use std::rc::Rc;
 use std::collections::hash_map::RandomState;
+use std::fmt::Pointer;
 
 pub struct GtkWeapon {
 	name: gtk::Label,
@@ -68,8 +69,8 @@ impl UI<AttachedDecorations<Weapon>> for GtkWeapon {
 		let weapon = item.get_item();
 		self.image.set_from_pixbuf(self.images.get(format!("{}", weapon.class.to_string()).as_str()));
 		self.name.set_text(weapon.name.as_str());
-		if let Some((skill_rc, lev)) = &weapon.skill {
-			self.skill.set_text(format!("{} {}", skill_rc.name, lev).as_str());
+		if let Some(weapon_skill) = &weapon.skill {
+			self.skill.set_text(weapon_skill.to_string().as_str());
 			self.skill.show();
 		}
 		for (i, size) in weapon.slots.iter().enumerate() {

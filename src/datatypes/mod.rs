@@ -8,6 +8,8 @@ use crate::datatypes::{
 	skill::{SetSkill, Skill},
 	weapon::Weapon,
 };
+use std::fmt;
+use std::sync::Arc;
 
 pub mod forge;
 pub mod skill;
@@ -17,18 +19,18 @@ pub mod weapon;
 pub mod decoration;
 pub mod charm;
 pub mod tool;
+pub mod equipment;
 
 pub type ID = u16;
-pub type Skills = HashMap<ID, Rc<Skill>>;
-pub type SetSkills = HashMap<ID, Rc<SetSkill>>;
-pub type Armors = HashMap<ID, Rc<Armor>>;
-pub type Weapons = HashMap<ID, Rc<Weapon>>;
-pub type Sets = HashMap<ID, Rc<ArmorSet>>;
-pub type Decorations = HashMap<ID, Rc<Decoration>>;
-pub type Charms = HashMap<ID, Rc<Charm>>;
-
 pub type Level = u8;
-pub type SkillLev = (Rc<Skill>, Level);
-pub type SkillsLev = Vec<SkillLev>;
 
-pub const MAX_SLOTS : usize = 3;
+pub type Skills = HashMap<ID, Arc<Skill>>;
+pub type SetSkills = HashMap<ID, Arc<SetSkill>>;
+pub type Armors = HashMap<ID, Arc<Armor>>;
+pub type Weapons = HashMap<ID, Arc<Weapon>>;
+pub type Sets = HashMap<ID, Arc<ArmorSet>>;
+pub type Decorations = HashMap<ID, Arc<Decoration>>;
+pub type Charms = HashMap<ID, Arc<Charm>>;
+
+pub const MAX_SLOTS: usize = 3;
+pub const SHARPNESS_LEVELS: usize = 7;

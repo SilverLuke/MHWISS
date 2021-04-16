@@ -2,12 +2,13 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use std::cell::{RefCell};
 
-use crate::datatypes::{Skills, SetSkills, Armors, Sets, Decorations, Charms, Weapons, ID};
+use crate::datatypes::{Skills, SetSkills, Armors, Sets, Decorations, Charms, Weapons, ID, Level};
 use crate::datatypes::skill::{Skill, HasSkills};
 use crate::datatypes::armor::Armor;
 use crate::datatypes::charm::Charm;
 use crate::datatypes::decoration::Decoration;
 use crate::db;
+use std::sync::Arc;
 
 pub struct Forge {
 	pub skills: Skills,  // Len 168
@@ -32,42 +33,46 @@ impl Forge {
 		}
 	}
 
-	pub fn get_skill(&self, name: &str) -> Option<Rc<Skill>> {
+	pub fn new_from(origin: Arc<Self>) -> Self {
+		todo!()
+	}
+
+	pub fn get_skill_from_name(&self, name: &str) -> Option<Arc<Skill>> {
 		for (_, skill) in self.skills.iter() {
 			if skill.name == name {
-				return Some(Rc::clone(skill));
+				return Some(Arc::clone(skill));
 			}
 		}
 		None
 	}
 
-	pub fn get_armors_filtered(&self, skills_req: &RefCell<HashMap<ID, u8>>) -> Vec<Rc<Armor>> {
-		let mut ret: Vec<Rc<Armor>>  = Default::default();
+
+	pub fn get_armors_filtered(&self, skills_req: &HashMap<ID, Level>) -> Vec<Arc<Armor>> {
+		let mut ret: Vec<Arc<Armor>>  = Default::default();
 		for (_id, armor) in self.armors.iter() {
 			if armor.has_skills(&skills_req) {
-				ret.push(Rc::clone(armor));
+				ret.push(Arc::clone(armor));
 			}
 		}
 		ret.shrink_to_fit();
 		ret
 	}
 
-	pub fn get_charms_filtered(&self, skills_req: &RefCell<HashMap<ID, u8>>) -> Vec<(Rc<Charm>, u8)> {
+	pub fn get_charms_filtered(&self, skills_req: &HashMap<ID, Level>) -> Vec<Arc<Charm>> {
 		let mut ret  = vec![];
-
 		for (_id, charm) in self.charms.iter() {
-			if let Some(value) = charm.get_skills_rank(skills_req) {
-				ret.push((Rc::clone(charm), value));
+			if charm.has_skills(skills_req) {
+				ret.push(Arc::clone(charm));
 			}
 		}
 		ret
 	}
 
-	pub fn get_decorations_filtered(&self, skills_req: &RefCell<HashMap<ID, u8>>) -> Vec<(Rc<Decoration>, u8)> {
+	pub fn get_decorations_filtered(&self, skills_req: &HashMap<ID, Level>) -> Vec<Arc<Decoration>> {
 		let mut ret  = vec![];
 		for (_id, deco) in self.decorations.iter() {
-			if let Some(value) = deco.get_skills_rank(skills_req) {
-				ret.push((Rc::clone(deco), value));
+			if deco.has_skills(skills_req) {
+				ret.push(Arc::clone(deco));
 			}
 		}
 		ret
@@ -86,13 +91,13 @@ impl Forge {
 	}
 
 	pub fn print_stat(&self) {
-		println!("Loaded {} skills", self.skills.len());
-		println!("Loaded {} armorset skills", self.skills.len());
-		println!("Loaded {} armors", self.armors.len());
-		println!("Loaded {} sets", self.sets.len());
-		println!("Loaded {} charms", self.charms.len());
-		println!("Loaded {} decorations", self.decorations.len());
-		println!("Loaded {} weapons", self.weapons.len());
+		println!("Loaded:");
+		println!("\t{} skills", self.skills.len());
+		println!("\t{} armorset skills", self.skills.len());
+		println!("\t{} armors", self.armors.len());
+		println!("\t{} sets", self.sets.len());
+		println!("\t{} charms", self.charms.len());
+		println!("\t{} decorations", self.decorations.len());
+		println!("\t{} weapons", self.weapons.len());
 	}
-
 }

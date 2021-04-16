@@ -1,24 +1,25 @@
 use std::collections::HashMap;
+use std::ops::Index;
 use std::rc::Rc;
+
 use gdk_pixbuf::Pixbuf;
 use gtk::Builder;
 use gtk::prelude::*;
 
 use crate::datatypes::{armor::Armor,
-	weapon::Weapon,
-	types::{Element, ArmorClass}
+	types::{ArmorClass, Element},
+	weapon::Weapon
 };
-use crate::ui::{NORMAL_SIZE_ICON, SMALL_SIZE_ICON,
-	items::{weapon::GtkWeapon,
-		armor::GtkArmour,
-		charm::GtkCharm,
-		tool::GtkTool,
-		UI,
-	}
+use crate::datatypes::equipment::Equipment;
+use crate::ui::{items::{armor::GtkArmour,
+	charm::GtkCharm,
+	tool::GtkTool,
+	UI,
+	weapon::GtkWeapon,
+	}, NORMAL_SIZE_ICON,
+	SMALL_SIZE_ICON
 };
-use crate::searcher::{bestset::BestSet};
 use crate::ui::ui::Ui;
-use std::ops::Index;
 
 pub struct ResultPage {
 	weapon: GtkWeapon,
@@ -74,7 +75,7 @@ impl ResultPage {
 		}
 	}
 
-	pub fn update(&self, best: &BestSet) {
+	pub fn update(&self, best: &Equipment) {
 		self.weapon.update(&best.weapon);
 		for (i, piece) in self.armors.iter().enumerate() {
 			piece.update(&best.set[i]);

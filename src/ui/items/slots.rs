@@ -7,6 +7,7 @@ use gdk_pixbuf::Pixbuf;
 use crate::ui::items::UI;
 use std::rc::Rc;
 use crate::datatypes::decoration::Decoration;
+use std::sync::Arc;
 
 pub struct GtkSlot {
 	pub(crate) label: gtk::Label,
@@ -23,7 +24,7 @@ impl GtkSlot {
 		}
 	}
 
-	pub fn update(&self, piece: &Option<Rc<Decoration>>, size: u8) {
+	pub fn update(&self, piece: &Option<Arc<Decoration>>, size: u8) {
 		if let Some(deco) = piece {
 			self.show(deco, size);
 		} else {
@@ -40,7 +41,7 @@ impl GtkSlot {
 		}
 	}
 
-	pub fn show(&self, item: &Rc<Decoration>, size: u8) {
+	pub fn show(&self, item: &Arc<Decoration>, size: u8) {
 		self.label.set_text(item.name.as_str());
 		self.image.set_from_pixbuf(self.images.get(format!("slot {} {}", size, item.size).as_str()));
 	}

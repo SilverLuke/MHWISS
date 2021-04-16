@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use gdk_pixbuf::Pixbuf;
 use std::collections::hash_map::RandomState;
 use std::rc::Rc;
+use std::sync::Arc;
 
 pub struct GtkCharm {
 	name: gtk::Label,
@@ -26,8 +27,8 @@ impl GtkCharm {
 	}
 }
 
-impl UI<Rc<Charm>> for GtkCharm {
-	fn update(&self, piece: &Option<Rc<Charm>>) {
+impl UI<Arc<Charm>> for GtkCharm {
+	fn update(&self, piece: &Option<Arc<Charm>>) {
 		if let Some(weapon) = piece {
 			self.show(weapon);
 		} else {
@@ -42,11 +43,11 @@ impl UI<Rc<Charm>> for GtkCharm {
 		self.skill[1].set_text("-");
 	}
 
-	fn show(&self, item: &Rc<Charm>) {
+	fn show(&self, item: &Arc<Charm>) {
 		self.image.set_from_pixbuf(self.images.get("charm"));
 		self.name.set_text(item.name.as_str());
-		for (i, (skill, lev)) in item.skills.iter().enumerate() {
-			self.skill[i].set_text(format!("{} {}", skill.name, lev).as_str());
+		for (i, charm_skill) in item.skills.get_skills().enumerate() {
+			self.skill[i].set_text(format!("{} {}", charm_skill.skill.name, charm_skill.level).as_str());
 			self.skill[i].show();
 		}
 	}

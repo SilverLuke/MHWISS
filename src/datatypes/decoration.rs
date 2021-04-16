@@ -1,77 +1,75 @@
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::rc::Rc;
-use std::fmt;
-use crate::datatypes::{ID, SkillsLev, SkillLev, Level};
-use crate::datatypes::skill::{Skill, HasSkills};
-use std::collections::hash_map::Entry;
-use crate::datatypes::armor::Armor;
+use std::{
+	fmt,
+	sync::Arc,
+	cell::RefCell,
+	collections::{HashMap, hash_map::Entry},
+};
+use crate::datatypes::{
+	ID, Level, MAX_SLOTS,
+	skill::{Skill, HasSkills, SkillLevel, SkillsLevel},
+	armor::Armor
+};
 
 pub trait HasDecorations {
 	fn get_slots(&self) -> [u8; 3];
-	fn get_skills(&self) -> Box<dyn Iterator<Item=&SkillLev> + '_>;
+	fn get_skills(&self) -> Box<dyn Iterator<Item=&SkillLevel> + '_>;
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Decoration {
 	pub id: ID,
 	pub name: String,
 	pub size: u8,
-	pub skills: SkillsLev,
+	pub skills: SkillsLevel,
 }
 
 impl fmt::Display for Decoration {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let mut str = String::new();
-		for (skill, lev) in self.skills.iter() {
-			str = format!("{} <{}, {}>", str, *skill, lev);
+		for skill in self.skills.get_skills() {
+			str = format!("{} <{}, {}>", str, *skill.skill, skill.level);
 		}
 		write!(f, "{0: <45}|{1: <50}", format!("{} [{}]", self.name, self.id), str)
 	}
 }
 
 impl Decoration {
-	pub fn new(id: ID, name: String, size: u8, skills: Vec<(Rc<Skill>, u8)>) -> Self {
+	pub fn new(id: ID, name: String, size: u8, skills: SkillsLevel) -> Self {
 		Decoration { id, name, size, skills }
 	}
-
 }
 
 impl HasSkills for Decoration {
-	fn has_skills(&self, query: &RefCell<HashMap<ID, u8>>) -> bool {
-		for (skill, lev) in self.skills.iter() {
-			if query.borrow().get(&skill.id).is_some() {
+	fn has_skills(&self, query: &HashMap<ID, Level>) -> bool {
+		for skill in self.skills.get_skills() {
+			if query.get(&skill.get_id()).is_some() {
 				return true;
 			}
 		}
 		false
 	}
 
-	fn get_skills_rank(&self, query: &RefCell<HashMap<ID, u8>>) -> Option<u8> {
+	fn get_skills_rank(&self, query: &HashMap<ID, Level>) -> u8 {
 		let mut sum = 0;
-		for (skill, lev) in self.skills.iter() {
-			if query.borrow().get(&skill.id).is_some() {
-				sum += lev;
+		for skill in self.skills.get_skills() {
+			if query.get(&skill.get_id()).is_some() {
+				sum += skill.level;
 			}
 		}
-		if sum != 0 {
-			return Some(sum);
-		}
-		None
+		sum
 	}
 }
 
 
 pub struct AttachedDecorations<T: HasDecorations + HasSkills> {
-	pub item: Rc<T>,
-	pub deco: [Option<Rc<Decoration>>; 3],
+	pub item: Arc<T>,
+	pub deco: [Option<Arc<Decoration>>; MAX_SLOTS],
 	pub value: u8,
 }
 
 impl<T> Clone for AttachedDecorations<T> where T: HasDecorations + HasSkills {
 	fn clone(&self) -> Self {
 		AttachedDecorations {
-			item: Rc::clone(&self.item),
+			item: Arc::clone(&self.item),
 			deco: self.deco.clone(),
 			value: self.value,
 		}
@@ -104,19 +102,19 @@ impl fmt::Debug for AttachedDecorations<Armor> {
 }
 
 impl<T> AttachedDecorations<T> where T: HasDecorations + HasSkills {
-	pub fn new(container: Rc<T>) -> Self {
+	pub fn new(container: Arc<T>) -> Self {
 		AttachedDecorations {
 			item: container,
 			deco: [None, None, None],
-			value: 0
+			value: 0,
 		}
 	}
 
 	pub fn value(&mut self, req: &HashMap<ID, u8>) -> u8 {
 		let mut value = 0;
-		for (skill, lev) in self.item.get_skills() {
-			if req.contains_key(&skill.id) {
-				value += lev;
+		for skill in self.item.get_skills() {
+			if req.contains_key(&skill.get_id()) {
+				value += skill.level;
 			}
 		}
 		/*
@@ -129,7 +127,7 @@ impl<T> AttachedDecorations<T> where T: HasDecorations + HasSkills {
 		value
 	}
 
-	pub fn get_item(&self) -> &Rc<T> {
+	pub fn get_item(&self) -> &Arc<T> {
 		&self.item
 	}
 
@@ -137,11 +135,11 @@ impl<T> AttachedDecorations<T> where T: HasDecorations + HasSkills {
 		self.deco[i].is_none()
 	}
 
-	pub fn try_add_deco(&mut self, deco: &Rc<Decoration>) -> Result<(), &str> {
+	pub fn try_add_deco(&mut self, deco: &Arc<Decoration>) -> Result<(), &str> {
 		for (i, size) in self.item.get_slots().iter().enumerate().rev() {
 			if *size >= deco.size {
 				if self.is_empty(i) {
-					self.deco[i] = Some(Rc::clone(deco));
+					self.deco[i] = Some(Arc::clone(deco));
 					return Ok(());
 				}
 			}
@@ -150,18 +148,18 @@ impl<T> AttachedDecorations<T> where T: HasDecorations + HasSkills {
 	}
 
 	pub fn add_skills(&self, skills_sum: &mut HashMap<ID, Level>) {
-		for (skill, lev) in self.item.get_skills() {
-			match skills_sum.entry(skill.id) {
-				Entry::Occupied(mut o) => o.insert(o.get() + lev),
-				Entry::Vacant(v) => *v.insert(*lev)
+		for skill in self.item.get_skills() {
+			match skills_sum.entry(skill.get_id()) {
+				Entry::Occupied(mut o) => o.insert(o.get() + skill.level),
+				Entry::Vacant(v) => *v.insert(skill.level)
 			};
 		}
 		for deco in self.deco.iter() {
 			if let Some(deco) = deco {
-				for (skill, lev) in deco.skills.iter() {
-					match skills_sum.entry(skill.id) {
-						Entry::Occupied(mut o) => o.insert(o.get() + lev),
-						Entry::Vacant(v) => *v.insert(*lev)
+				for skill in deco.skills.get_skills() {
+					match skills_sum.entry(skill.get_id()) {
+						Entry::Occupied(mut o) => o.insert(o.get() + skill.level),
+						Entry::Vacant(v) => *v.insert(skill.level)
 					};
 				}
 			}
@@ -170,18 +168,18 @@ impl<T> AttachedDecorations<T> where T: HasDecorations + HasSkills {
 
 	pub fn get_skills(&self) -> HashMap<ID, Level> {
 		let mut skills: HashMap<ID, Level> = Default::default();
-		for (skill, lev) in self.item.get_skills() {
-			match skills.entry(skill.id) {
-				Entry::Occupied(mut o) => o.insert(o.get() + lev),
-				Entry::Vacant(v) => *v.insert(*lev)
+		for skill in self.item.get_skills() {
+			match skills.entry(skill.get_id()) {
+				Entry::Occupied(mut o) => o.insert(o.get() + skill.level),
+				Entry::Vacant(v) => *v.insert(skill.level)
 			};
 		}
 		for deco in self.deco.iter() {
 			if let Some(deco) = deco {
-				for (skill, lev) in deco.skills.iter() {
-					match skills.entry(skill.id) {
-						Entry::Occupied(mut o) => o.insert(o.get() + lev),
-						Entry::Vacant(v) => *v.insert(*lev)
+				for skill in deco.skills.get_skills() {
+					match skills.entry(skill.get_id()) {
+						Entry::Occupied(mut o) => o.insert(o.get() + skill.level),
+						Entry::Vacant(v) => *v.insert(skill.level)
 					};
 				}
 			}

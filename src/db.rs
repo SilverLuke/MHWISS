@@ -1,15 +1,18 @@
-use std::rc::Rc;
 use std::cell::RefCell;
 use std::borrow::{Borrow, BorrowMut};
 use rusqlite::{Connection, params, Row};
 
-use crate::datatypes::*;
-use crate::datatypes;
-use crate::datatypes::types::{Gender, ArmorClass, Rank, Element, elder_seal, WeaponClass};
-use crate::datatypes::skill::{Skill, SetSkill};
-use crate::datatypes::weapon::Weapon;
-use crate::datatypes::decoration::Decoration;
-use crate::datatypes::charm::Charm;
+use crate::datatypes::{
+	*,
+	types::{Gender, ArmorClass, Rank, Element, ElderSeal, WeaponClass},
+	skill::{Skill, SetSkill},
+	weapon::Weapon,
+	decoration::Decoration,
+	charm::Charm
+};
+use crate::datatypes::armor::{Armor, ArmorSet};
+use std::sync::Arc;
+use crate::datatypes::skill::{SkillsLevel, SkillLevel};
 
 pub struct DB {
 	connection: rusqlite::Connection,
@@ -44,21 +47,21 @@ ORDER BY unlocks_id;").unwrap();
 			let unlock = row.get(row.column_index("unlocks_id").unwrap());
 			let unlock = {
 				if unlock.is_ok() {
-					Some(Rc::clone(skills.get(&unlock.unwrap()).unwrap()))
+					Some(Arc::clone(skills.get(&unlock.unwrap()).unwrap()))
 				} else {
 					None
 				}
 			};
 			let id = row.get(row.column_index("id").unwrap()).unwrap();
-			let skill = datatypes::skill::Skill::new(
+			let skill = Skill::new(
 				id,
 				row.get(row.column_index("name").unwrap()).unwrap(),
 				row.get(row.column_index("description").unwrap()).unwrap(),
 				row.get(row.column_index("max_level").unwrap()).unwrap(),
 				row.get(row.column_index("secret").unwrap()).unwrap(),
-				unlock
+				unlock,
 			);
-			skills.insert(id, Rc::new(skill));
+			skills.insert(id, Arc::new(skill));
 		}
 	}
 
@@ -93,11 +96,11 @@ ORDER BY unlocks_id;").unwrap();
 				let req = row.get(row.column_index("required").unwrap()).unwrap();
 				setskill.add_skill(skills.borrow().get(&skill_id).unwrap(), req);
 			} else {
-				setskills.insert(setskill.id, Rc::new(setskill));
+				setskills.insert(setskill.id, Arc::new(setskill));
 				setskill = new_setskill(row, skills);
 			}
 		}
-		setskills.borrow_mut().insert(setskill.id, Rc::new(setskill));
+		setskills.borrow_mut().insert(setskill.id, Arc::new(setskill));
 	}
 
 	pub fn load_armors(&self, armors: &mut Armors, skills: &Skills, setskills: &SetSkills) {
@@ -115,7 +118,7 @@ ORDER BY unlocks_id;").unwrap();
 		let str = &*self.lang.borrow();
 		let mut rows = statement.query(params![str]).unwrap();
 
-		fn new_armor(row: &Row, skills: &Skills, setskills: &SetSkills) -> datatypes::armor::Armor {
+		fn new_armor(row: &Row, skills: &Skills, setskills: &SetSkills) -> Armor {
 			let slots = [row.get(row.column_index("slot_1").unwrap()).unwrap(),
 				row.get(row.column_index("slot_2").unwrap()).unwrap(),
 				row.get(row.column_index("slot_3").unwrap()).unwrap()];
@@ -129,7 +132,7 @@ ORDER BY unlocks_id;").unwrap();
 				row.get(row.column_index("dragon").unwrap()).unwrap(),
 			];
 			let gender = Gender::new(row.get(row.column_index("male").unwrap()).unwrap(), row.get(row.column_index("female").unwrap()).unwrap());
-			let mut armor = datatypes::armor::Armor::new(
+			let mut armor = Armor::new(
 				row.get(row.column_index("id").unwrap()).unwrap(),
 				row.get(row.column_index("name").unwrap()).unwrap(),
 				ArmorClass::new(row.get(row.column_index("armor_type").unwrap()).unwrap()),
@@ -162,12 +165,12 @@ ORDER BY unlocks_id;").unwrap();
 				armor.add_skill(skills.borrow().get(&skill_id).unwrap(), skill_lev);
 			} else {
 				armor.skills.shrink_to_fit();
-				armors.borrow_mut().insert(armor.id, Rc::new(armor));
+				armors.borrow_mut().insert(armor.id, Arc::new(armor));
 				armor = new_armor(row, &skills, setskills);
 			}
 		}
 		armor.skills.shrink_to_fit();
-		armors.borrow_mut().insert(armor.id, Rc::new(armor));
+		armors.borrow_mut().insert(armor.id, Arc::new(armor));
 	}
 
 	pub fn load_sets(&self, sets: &mut Sets, armors: &Armors, setskills: &SetSkills) {
@@ -180,17 +183,17 @@ WHERE armorset_text.lang_id = ?1;").unwrap();
 		let str = &*self.lang.borrow();
 		let mut rows = statement.query(params![str]).unwrap();
 
-		fn new_set(row: &Row, armors: &Armors, setskills: &SetSkills) -> datatypes::armor::ArmorSet {
+		fn new_set(row: &Row, armors: &Armors, setskills: &SetSkills) -> ArmorSet {
 			let id = row.get(row.column_index("armorset_id").unwrap()).unwrap();
 			let armor_id = row.get(row.column_index("armor_id").unwrap()).unwrap();
 			let name = row.get(row.column_index("name").unwrap()).unwrap();
 			let rank = Rank::new(row.get(row.column_index("rank").unwrap()).unwrap());
 			let skill = {
 				if let Ok(id) = row.get(row.column_index("armorset_bonus_id").unwrap()) {
-					Some(Rc::clone(setskills.borrow().get(&id).unwrap()))
+					Some(Arc::clone(setskills.borrow().get(&id).unwrap()))
 				} else { None }
 			};
-			let mut set = datatypes::armor::ArmorSet::new(id, name, rank, skill);
+			let mut set = ArmorSet::new(id, name, rank, skill);
 			set.add_piece(armors.borrow().get(&armor_id).unwrap());
 			set
 		}
@@ -205,11 +208,11 @@ WHERE armorset_text.lang_id = ?1;").unwrap();
 				let armor_id = row.get(row.column_index("armor_id").unwrap()).unwrap();
 				set.add_piece(armors.borrow().get(&armor_id).unwrap());
 			} else {
-				sets.borrow_mut().insert(set.id, Rc::new(set));
+				sets.borrow_mut().insert(set.id, Arc::new(set));
 				set = new_set(row, &armors, &setskills);
 			}
 		}
-		sets.borrow_mut().insert(id, Rc::new(set));
+		sets.borrow_mut().insert(id, Arc::new(set));
 	}
 
 	pub fn load_decorations(&self, decorations: &mut Decorations, skills: &Skills) {
@@ -222,17 +225,22 @@ WHERE armorset_text.lang_id = ?1;").unwrap();
 		let mut rows = statement.query(params![str]).unwrap();
 
 		while let Some(row) = rows.next().unwrap() {
-			let mut deco_skills = Vec::with_capacity(1);
-			let skill1: (Rc<Skill>, u8) = (skills.borrow().get(&row.get(row.column_index("skilltree_id").unwrap()).unwrap()).unwrap().clone(),
-				row.get(row.column_index("skilltree_level").unwrap()).unwrap());
-			deco_skills.push(skill1);
-			let tmp = row.get(row.column_index("skilltree2_id").unwrap());
-			if tmp.is_ok() {
-				deco_skills.push((skills.borrow().get(&tmp.unwrap()).unwrap().clone(),
-					row.get(row.column_index("skilltree2_level").unwrap()).unwrap()));
+			let mut deco_skills = SkillsLevel::new();
+
+			let skill_id = &row.get(row.column_index("skilltree_id").unwrap()).unwrap();
+			let skill = Arc::clone(skills.borrow().get(skill_id).unwrap());
+			let level = row.get(row.column_index("skilltree_level").unwrap()).unwrap();
+			;
+			deco_skills.update_or_append(SkillLevel::new(skill, level));
+
+			if let Ok(tmp) = row.get(row.column_index("skilltree2_id").unwrap()) {
+				let skill = Arc::clone(skills.borrow().get(&tmp).unwrap());
+				let level = row.get(row.column_index("skilltree2_level").unwrap()).unwrap();
+				deco_skills.update_or_append(SkillLevel::new(skill, level));
 			}
+
 			let id = row.get(row.column_index("id").unwrap()).unwrap();
-			decorations.borrow_mut().insert(id, Rc::new(Decoration::new(
+			decorations.borrow_mut().insert(id, Arc::new(Decoration::new(
 				id,
 				row.get(row.column_index("name").unwrap()).unwrap(),
 				row.get(row.column_index("slot").unwrap()).unwrap(),
@@ -274,11 +282,11 @@ WHERE lang_id = ?1").unwrap();
 				let skill_lev = row.get(row.column_index("level").unwrap());
 				charm.add_skill(skills.borrow().get(&skill_id.unwrap()).unwrap(), skill_lev.unwrap());
 			} else {
-				charms.borrow_mut().insert(charm.id, Rc::new(charm));
+				charms.borrow_mut().insert(charm.id, Arc::new(charm));
 				charm = new_charm(row, &skills);
 			}
 		}
-		charms.borrow_mut().insert(id, Rc::new(charm));
+		charms.borrow_mut().insert(id, Arc::new(charm));
 	}
 
 	pub fn load_weapons(&self, weapons: &mut Weapons, skills: &Skills, setskills: &SetSkills) {
@@ -311,13 +319,13 @@ WHERE lang_id = ?1").unwrap();
 				let tmp = row.get(row.column_index("sharpness").unwrap());
 				if let Ok(s) = tmp {
 					let s: String = s;
-					let mut sharp = [0u8;7];
+					let mut sharp = [0u8; 7];
 					let temp = s.as_str().split(',');
-					for (i,n) in temp.enumerate() {
+					for (i, n) in temp.enumerate() {
 						sharp[i] = n.parse::<u8>().unwrap();
 					}
 					Some(sharp)
-				} else {None}
+				} else { None }
 			};
 
 			let mut elements = Vec::new();
@@ -329,24 +337,24 @@ WHERE lang_id = ?1").unwrap();
 				elements.push((Element::new(e), row.get_unwrap(row.column_index("element2_attack").unwrap())));
 			}
 			let element_hidden = row.get(row.column_index("element_hidden").unwrap()).unwrap();
-			let elderseal = elder_seal(row.get(row.column_index("element_hidden").unwrap()).ok());
+			let elderseal = ElderSeal::new(row.get(row.column_index("element_hidden").unwrap()).ok());
 			let armoset_bonus = {
 				if let Some(id) = row.get(row.column_index("armorset_bonus_id").unwrap()).ok() {
-					Some(Rc::clone(setskills.borrow().get(&id).unwrap()))
+					Some(Arc::clone(setskills.borrow().get(&id).unwrap()))
 				} else { None }
 			};
 			let skill = {
 				if let Some(id) = row.get(row.column_index("skilltree_id").unwrap()).ok() {
-					Some((Rc::clone(skills.borrow().get(&id).unwrap()), 1))
+					Some(SkillLevel::new(Arc::clone(skills.borrow().get(&id).unwrap()), 1))
 				} else { None }
 			};
 
 			let w = Weapon::new(id, prev, class, name,
 				attack, affinity, sharpness, defense,
 				slots, elements, element_hidden, elderseal,
-				armoset_bonus, skill
+				armoset_bonus, skill,
 			);
-			weapons.borrow_mut().insert(w.id, Rc::new(w));
+			weapons.borrow_mut().insert(w.id, Arc::new(w));
 		}
 		weapons.borrow_mut().shrink_to_fit();
 	}

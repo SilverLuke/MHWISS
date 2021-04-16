@@ -1,9 +1,16 @@
-use crate::datatypes::ID;
-use crate::datatypes::decoration::HasDecorations;
-use std::rc::Rc;
-use crate::datatypes::skill::{Skill, HasSkills};
-use std::cell::RefCell;
-use std::collections::HashMap;
+use std::{
+	fmt,
+	sync::Arc,
+	cell::RefCell,
+	collections::{HashMap, hash_map::Entry},
+};
+
+use crate::datatypes::{
+	ID, Level,
+	skill::{Skill, HasSkills, SkillLevel, SkillsLevel},
+	decoration::HasDecorations
+};
+use std::fmt::Formatter;
 
 pub struct Tool {
 	id: ID,
@@ -26,17 +33,23 @@ impl HasDecorations for Tool {
 		todo!()
 	}
 
-	fn get_skills(&self) -> Box<dyn Iterator<Item=&(Rc<Skill>, u8)>> {
+	fn get_skills(&self) -> Box<dyn Iterator<Item=&SkillLevel>> {
 		todo!()
 	}
 }
 
 impl HasSkills for Tool {
-	fn has_skills(&self, query: &RefCell<HashMap<u16, u8>>) -> bool {
+	fn has_skills(&self, query: &HashMap<ID, Level>) -> bool {
 		todo!()
 	}
 
-	fn get_skills_rank(&self, query: &RefCell<HashMap<u16, u8>>) -> Option<u8> {
+	fn get_skills_rank(&self, query: &HashMap<ID, Level>) -> u8 {
 		todo!()
+	}
+}
+
+impl fmt::Display for Tool {
+	fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+		write!(f, "{}", self.name)
 	}
 }

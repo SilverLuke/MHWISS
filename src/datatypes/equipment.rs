@@ -19,41 +19,49 @@ use crate::datatypes::types::ArmorClass;
 use crate::datatypes::decoration::AttachedDecorations;
 use crate::datatypes::tool::Tool;
 
-pub struct BestSet {
+pub struct Equipment {
 	pub weapon: Option<AttachedDecorations<Weapon>>,
 	pub set: [Option<AttachedDecorations<Armor>>; 5],
-	pub charm: Option<Rc<Charm>>,
+	pub charm: Option<Arc<Charm>>,
 	pub tools: [Option<AttachedDecorations<Tool>>; 2],
 }
 
-impl fmt::Display for BestSet {
+impl fmt::Display for Equipment {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let mut str;
 		str = match &self.weapon {
-			Some(w) => format!("Weapon: {}\n", w.item),
-			None => format!("Weapon: None\n")
+			Some(w) => format!("\t{0: <6}: {1:}\n", "weapon", w.item),
+			None => format!("\tweapon: None\n")
 		};
 
 		for i in ArmorClass::iterator() {
-			str = format!("{} {}:", str, ArmorClass::to_string(i));
-			match self.set.get(*i as usize) {
-				Some(Some(armor)) => str = format!("{} <{}>\n", str, armor.item),
-				Some(None) => str = format!("{} None\n", str),
-				None => panic!("ERROR: Result print out of bounds"),
+			str = format!("{0:}\t{1: <6}:", str, i.to_string());
+			str = match self.set.get(*i as usize).expect("ERROR: Result print out of bounds") {
+				Some(armor) => format!("{} {}\n", str, armor.item),
+				None => format!("{} None\n", str),
 			}
 		}
 
-		if let Some(charm) = &self.charm {
-			str = format!("{} Charm: {}", str, charm);
-		}
+		str = match &self.charm {
+			Some(charm) => format!("{0:}\t{1: <6}: {2:}\n", str, "Charm", charm),
+			None => format!("{0:}\t{1: <6}: None\n", str, "charm"),
+		};
 
+		for (i, tool) in self.tools.iter().enumerate() {
+			str = format!("{0:}\t{1: <6}:", str, format!("tool {}", i+1));
+			str = match tool {
+				Some(tool) => format!("{} {}\n", str, tool.item),
+				None => format!("{} None\n", str),
+			}
+		}
+		str.remove(str.len()-1);
 		write!(f, "{}", str)
 	}
 }
 
-impl BestSet {
+impl Equipment {
 	pub fn new() -> Self {
-		BestSet {
+		Equipment {
 			weapon: None,
 			set: <[_; 5]>::default(),
 			charm: None,
@@ -75,7 +83,7 @@ impl BestSet {
 	fn add_weapon_skills(&self, skills_sum: &mut HashMap<ID, Level>) {
 		if let Some(deco_container) = &self.weapon {
 			if let Some(skill) = &deco_container.item.skill {
-				*skills_sum.entry(skill.0.id).or_insert(1) += 1;
+				*skills_sum.entry(skill.get_id()).or_insert(1) += 1;
 			}
 		}
 	}
@@ -90,8 +98,8 @@ impl BestSet {
 
 	fn add_charm_skills(&self, skills_sum: &mut HashMap<ID, Level>) {
 		if let Some(charm) = &self.charm {
-			for (skill, lev) in charm.skills.iter() {
-				*skills_sum.entry(skill.id).or_insert(*lev) += *lev;
+			for skill in charm.skills.get_skills() {
+				*skills_sum.entry(skill.get_id()).or_insert(skill.level) += skill.level;
 			}
 		}
 	}

@@ -45,7 +45,7 @@ impl SkillsPage {
 			// let skill_req = Rc::clone(&skill);
 			let id = skill.id;
 			level.connect_value_changed(move |lev| {
-				app.searcher.add_skill_requirement(id, lev.get_value() as u8);
+				app.searcher.add_constraint(id, lev.get_value() as u8);
 			});
 
 			self.skill_list.insert(&skill_box, -1);
@@ -70,7 +70,7 @@ impl SkillsPage {
 			let app = Rc::clone(&application);
 			let id = skill.id;
 			level.connect_value_changed(move |lev| {
-				app.searcher.add_skill_requirement(id, lev.get_value() as u8);
+				app.searcher.add_constraint(id, lev.get_value() as u8);
 			});
 
 			self.armorset_skill_list.insert(&skill_box, -1);

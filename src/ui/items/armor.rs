@@ -77,8 +77,8 @@ impl UI<AttachedDecorations<Armor>> for GtkArmour {
 		let piece = item.get_item();
 		self.image.set_from_pixbuf(self.images.get(format!("{}", self.class.to_string()).as_str()));
 		self.name.set_text(piece.name.as_str());
-		for (i, (skill, lev)) in piece.skills.iter().enumerate() {
-			self.skill[i].set_text(format!("{} {}", skill.name, lev).as_str());
+		for (i, armor_skill) in piece.skills.get_skills().enumerate() {
+			self.skill[i].set_text(format!("{} {}", armor_skill.skill.name, armor_skill.level).as_str());
 			self.skill[i].show();
 		}
 		for (i, slot_size) in piece.slots.iter().enumerate() {

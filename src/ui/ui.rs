@@ -1,26 +1,37 @@
-use gio::prelude::*;
-use gtk::prelude::*;
-use gtk::Application;
 use std::{env,
 	env::args,
 	rc::Rc,
 	sync::Arc,
 	collections::HashMap
 };
-use itertools::Itertools;
-use gdk_pixbuf::Pixbuf;
-
-use super::pages::{
-	skills::SkillsPage,
-	armors::ArmorsPage,
-	decorations::DecorationsPage,
-	charms::CharmsPage,
-	result::ResultPage
+use gtk::{
+	prelude::*,
+	Application,
 };
-use crate::datatypes::forge::Forge;
-use crate::searcher::searcher::Searcher;
-use crate::datatypes::types::{Element, ArmorClass};
-use crate::ui::{NORMAL_SIZE_ICON, SMALL_SIZE_ICON};
+use glib::{Sender, Receiver};
+use gio::prelude::*;
+use gdk_pixbuf::Pixbuf;
+use itertools::Itertools;
+use crate::ui::{
+	NORMAL_SIZE_ICON, SMALL_SIZE_ICON,
+	pages::{
+		skills::SkillsPage,
+		armors::ArmorsPage,
+		decorations::DecorationsPage,
+		charms::CharmsPage,
+		result::ResultPage
+	}
+};
+use crate::datatypes::{
+	forge::Forge,
+	types::{Element, ArmorClass},
+	equipment::Equipment,
+};
+use crate::engines::EnginesManager;
+
+pub enum Callback {
+	Done(Equipment)
+}
 
 struct Pages {
 	skills_page: SkillsPage,
@@ -34,7 +45,7 @@ impl Pages {
 	pub fn new(builder: &gtk::Builder, images: Rc<HashMap<String, Pixbuf>>) -> Self {
 		Pages {
 			skills_page: SkillsPage::new(&builder),
-			armors_page:ArmorsPage::new(&builder),
+			armors_page: ArmorsPage::new(&builder),
 			decos_page: DecorationsPage::new(&builder),
 			charms_page: CharmsPage::new(&builder),
 			found_page: ResultPage::new(builder, images),
@@ -61,7 +72,7 @@ pub struct Ui {
 	pages: Pages,
 
 	forge: Arc<Forge>,
-	pub searcher: Searcher,
+	pub(crate) searcher: EnginesManager,
 }
 
 impl Ui {
@@ -76,7 +87,7 @@ impl Ui {
 		gtk::Builder::from_file(glade)  // ToDo: Use new_from_resurces with some cargo tricks
 	}
 
-	pub fn new(forge: Arc<Forge>, searcher: Searcher) -> Rc<Self> {
+	pub fn new(forge: Arc<Forge>, mut searcher: EnginesManager) -> Rc<Self> {
 		gtk::init().unwrap_or_else(|_| panic!("Failed to initialize GTK."));
 		let builder = Ui::get_builder("gui/main.glade".to_string());
 
@@ -91,7 +102,11 @@ impl Ui {
 
 		let images = Rc::new(Ui::load_images());
 		let pages = Pages::new(&builder, Rc::clone(&images));
-		let app = Self {
+
+		let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
+		searcher.add_callback(sender);
+
+		let app = Rc::new(Self {
 			application,
 			window,
 			find_btn,
@@ -100,40 +115,51 @@ impl Ui {
 
 			notebook: builder.get_object("notebook").unwrap(),
 			pages,
+
 			forge,
 			searcher,
-		};
-		let tmp = Rc::new(app);
-		tmp.setup_signals(tmp.clone());
-		tmp
+		});
+		app.setup_signals(receiver);
+		app
 	}
 
-	fn setup_signals(&self, me: Rc<Self>) {
+	fn setup_signals(self: &Rc<Self>, receiver: Receiver<Callback>) {
 		let window = self.window.clone();
 		self.application.connect_activate(move |app| {
 			app.add_window(&window);
 			window.present();
 		});
 
-		let app = Rc::clone(&me);
+		let app = Rc::clone(self);
 		self.find_btn.connect_clicked(move |_btn| {
-			let res = app.searcher.calculate();
-			app.searcher.show_requirements();
-			println!("{}", &res);
-			app.pages.found_page.update(&res);
-			let i = app.notebook.get_n_pages() - 1;
-			app.notebook.set_current_page(Some(i));
+			println!("{}", app.searcher);
+			app.searcher.run();
+		});
+
+		let app= Rc::clone(self);
+		receiver.attach(None, move |action| {
+			app.process_callbacks(action)
 		});
 	}
 
-	pub fn start(&self, me: Rc<Self>) {
-		self.pages.show(Rc::clone(&me));
+	fn process_callbacks(self: &Rc<Self>, action: Callback) -> glib::Continue {
+		match action {
+			Callback::Done(sample) => {
+				self.pages.found_page.update(&sample);
+				self.notebook.set_current_page(Some(self.notebook.get_n_pages() - 1));
+			}
+		}
+		glib::Continue(true)
+	}
+
+	pub fn start(self: &Rc<Self>) {
+		self.pages.show(Rc::clone(self));
 		self.window.show_all();
 		let args: Vec<String> = args().collect();
 		self.application.run(&args);
 	}
 
-	pub fn load_images() -> HashMap<String, Pixbuf> {
+	fn load_images() -> HashMap<String, Pixbuf> {
 		let mut resources = vec![
 			(String::from("weapon empty"), String::from("equipment/weapon empty.svg"), NORMAL_SIZE_ICON),
 			(String::from("charm"), String::from("equipment/charm.svg"), NORMAL_SIZE_ICON),
@@ -178,12 +204,11 @@ impl Ui {
 		image.set_from_pixbuf(pixbuf);
 	}
 
-	pub fn set_fixed_image(builder: &gtk::Builder, id: &str, path: &str, size: i32) {
+	pub(crate) fn set_fixed_image(builder: &gtk::Builder, id: &str, path: &str, size: i32) {
 		let path = format!("MHWorldData/images/{}", path);
 		let image: gtk::Image = builder.get_object(id).expect(id);
 		image.set_from_pixbuf(
 			Some(&Pixbuf::from_file_at_scale(&path, size, size, true).expect(path.as_str()))
 		);
 	}
-
 }

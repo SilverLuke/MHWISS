@@ -3,8 +3,9 @@ use crate::datatypes::types::{
 	Element::{Fire, Water, Thunder, Ice, Dragon, Poison, Sleep, Paralysis, Blast, Stun},
 	ArmorClass::{Head, Chest, Arms, Waist, Legs},
 	WeaponClass::{Bow, ChargeBlade, DualBlade, GreatSword, Gunlance, Hammer, HeavyBowgun, HuntingHorn, InsectGlaive, Lance, LightBowgun, Longsword, SwitchAxe, SwordAndShield},
-	Gender::{Male, Female, All},
 };
+use std::fmt;
+use std::fmt::Formatter;
 
 pub enum Element {
 	Fire = 0,
@@ -50,19 +51,21 @@ impl Element {
 			_ => panic!("error")
 		}
 	}
+}
 
-	pub fn to_string(&self) -> String {
+impl fmt::Display for Element {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
-			Element::Fire => "fire".to_string(),
-			Element::Water => "water".to_string(),
-			Element::Thunder => "thunder".to_string(),
-			Element::Ice => "ice".to_string(),
-			Element::Dragon => "dragon".to_string(),
-			Element::Poison => "poison".to_string(),
-			Element::Sleep => "sleep".to_string(),
-			Element::Paralysis => "paralysis".to_string(),
-			Element::Blast => "blast".to_string(),
-			Element::Stun => "stun".to_string(),
+			Element::Fire => write!(f, "fire"),
+			Element::Water => write!(f, "water"),
+			Element::Thunder => write!(f, "thunder"),
+			Element::Ice => write!(f, "ice"),
+			Element::Dragon => write!(f, "dragon"),
+			Element::Poison => write!(f, "poison"),
+			Element::Sleep => write!(f, "sleep"),
+			Element::Paralysis => write!(f, "paralysis"),
+			Element::Blast => write!(f, "blast"),
+			Element::Stun => write!(f, "stun"),
 		}
 	}
 }
@@ -92,31 +95,33 @@ impl ArmorClass {
 			_ => panic!("error")
 		}
 	}
+}
 
-	pub fn to_string(&self) -> String {
+impl fmt::Display for ArmorClass {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
-			Head => "head".to_string(),
-			Chest => "chest".to_string(),
-			Arms => "arms".to_string(),
-			Waist => "waist".to_string(),
-			Legs => "legs".to_string(),
+			Head => write!(f, "head"),
+			Chest => write!(f, "chest"),
+			Arms => write!(f, "arms"),
+			Waist => write!(f, "waist"),
+			Legs => write!(f, "legs"),
 		}
 	}
 }
 
 #[derive(Copy, Clone)]
 pub enum Rank {
-	LOW = 0,
-	HIGH,
-	MASTER,
+	Low = 0,
+	High,
+	Master,
 }
 
 impl Rank {
 	pub fn new(rank: String) -> Rank {
 		match rank.as_ref() {
-			"LR" => Rank::LOW,
-			"HR" => Rank::HIGH,
-			"MR" => Rank::MASTER,
+			"LR" => Rank::Low,
+			"HR" => Rank::High,
+			"MR" => Rank::Master,
 			_ => panic!("error")
 		}
 	}
@@ -164,11 +169,25 @@ impl WeaponClass {
 			_ => panic!("error")
 		}
 	}
+}
 
-	pub fn to_string(&self) -> String {
+impl fmt::Display for WeaponClass {
+	fn fmt(&self, f: &mut Formatter) -> fmt::Result {
 		match self {
-			Bow => "bow".to_string(),
-			_ => "".to_string(),
+			Bow => write!(f, "Bow"),
+			ChargeBlade => write!(f, "ChargeBlade"),
+			DualBlade => write!(f, "DualBlade"),
+			GreatSword => write!(f, "GreatSword"),
+			Gunlance => write!(f, "Gunlance"),
+			Hammer => write!(f, "Hammer"),
+			HeavyBowgun => write!(f, "HeavyBowgun"),
+			HuntingHorn => write!(f, "HuntingHorn"),
+			InsectGlaive => write!(f, "InsectGlaive"),
+			Lance => write!(f, "Lance"),
+			LightBowgun => write!(f, "LightBowgun"),
+			Longsword => write!(f, "Longsword"),
+			SwitchAxe => write!(f, "SwitchAxe"),
+			SwordAndShield => write!(f, "SwordAndShield"),
 		}
 	}
 }
@@ -184,22 +203,31 @@ impl Gender {
 	pub fn new(male: bool, female: bool) -> Self {
 		match (male, female) {
 			(false, false) => panic!("No gender"),
-			(true, false) => Male,
-			(false, true) => Female,
-			(true, true) => All,
+			(true, false) => Gender::Male,
+			(false, true) => Gender::Female,
+			(true, true) => Gender::All,
 		}
 	}
 }
 
-pub fn elder_seal(lev: Option<String>) -> u8 {
-	if lev.is_none() {
-		0
-	} else {
-		match lev.unwrap().as_str() {
-			"low" => 1,
-			"medium" => 2,
-			"high" => 3,
-			_ => panic!("Elderseal parsing error")
+pub enum ElderSeal {
+	Empty,
+	Low,
+	Medium,
+	High,
+}
+
+impl ElderSeal {
+	pub fn new(lev: Option<String>) -> Self {
+		if lev.is_none() {
+			ElderSeal::Empty
+		} else {
+			match lev.unwrap().as_str() {
+				"low" => ElderSeal::Low,
+				"medium" => ElderSeal::Medium,
+				"high" => ElderSeal::High,
+				_ => panic!("Elderseal parsing error")
+			}
 		}
 	}
 }
