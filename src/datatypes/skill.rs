@@ -1,14 +1,13 @@
-
-use std::fmt;
-use std::collections::HashMap;
-use std::cell::RefCell;
+use std::{
+	fmt,
+	sync::Arc,
+	cell::RefCell,
+	collections::{
+		HashMap,
+		hash_map::Entry,
+	},
+};
 use crate::datatypes::{ID, Level};
-use std::sync::Arc;
-
-pub trait HasSkills {
-	fn has_skills(&self, query: &HashMap<ID, Level>) -> bool;
-	fn get_skills_rank(&self, query: &HashMap<ID, Level>) -> u8;
-}
 
 pub struct Skill {
 	pub id: ID,
@@ -30,6 +29,7 @@ impl PartialEq for Skill {
 		self.id == other.id
 	}
 }
+
 impl Eq for Skill {}
 
 impl fmt::Display for Skill {
@@ -38,11 +38,10 @@ impl fmt::Display for Skill {
 	}
 }
 
-
 pub struct SetSkill {
 	pub id: ID,
 	pub name: String,
-	pub skills: SkillsLevel,
+	pub skills: SkillsLevel,  // This level indicate the require level of self for enabling the skill related in skills
 }
 
 impl SetSkill {
@@ -56,7 +55,7 @@ impl SetSkill {
 
 	// Get the max required set skill for enable the skill
 	pub fn get_max(&self) -> u8 {
-		let mut max= 0 ;
+		let mut max = 0;
 		for i in self.skills.get_skills() {
 			if i.level > max {
 				max = i.level;
@@ -71,8 +70,8 @@ impl PartialEq for SetSkill {
 		self.id == other.id
 	}
 }
-impl Eq for SetSkill {}
 
+impl Eq for SetSkill {}
 
 pub struct SkillLevel {
 	pub(crate) skill: Arc<Skill>,
@@ -130,6 +129,41 @@ impl SkillsLevel {
 			None => ()
 		}
 		self
+	}
+
+	pub fn contains_hash(&self, list: &HashMap<ID, Level>) -> bool {
+		for (id, lev) in list.iter() {
+			if self.contains_id(*id) {
+				return true;
+			}
+		}
+		false
+	}
+
+	pub fn contains_id(&self, id: u16) -> bool {
+		for i in self.list.iter() {
+			if i.skill.id == id {
+				return true;
+			}
+		}
+		false
+	}
+
+	pub fn put_in(&self, out: &mut HashMap<ID, Level>) {
+		for skill in self.list.iter() {
+			match out.entry(skill.get_id()) {
+				Entry::Occupied(mut o) => o.insert(o.get() + skill.level),
+				Entry::Vacant(v) => *v.insert(skill.level)
+			};
+		}
+	}
+
+	pub fn as_hash(&self) -> HashMap<ID, Level> {
+		let mut ret: HashMap<ID, Level> = Default::default();
+		for skill in self.list.iter() {
+			ret.insert(skill.get_id(), skill.level);
+		}
+		ret
 	}
 
 	pub(crate) fn get_skills(&self) -> Box<dyn Iterator<Item=&SkillLevel> + '_> {

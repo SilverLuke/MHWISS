@@ -4,7 +4,7 @@ use rusqlite::{Connection, params, Row};
 
 use crate::datatypes::{
 	*,
-	types::{Gender, ArmorClass, Rank, Element, ElderSeal, WeaponClass},
+	types::{Gender, ArmorClass, ArmorRank, Element, ElderSeal, WeaponClass},
 	skill::{Skill, SetSkill},
 	weapon::Weapon,
 	decoration::Decoration,
@@ -187,7 +187,7 @@ WHERE armorset_text.lang_id = ?1;").unwrap();
 			let id = row.get(row.column_index("armorset_id").unwrap()).unwrap();
 			let armor_id = row.get(row.column_index("armor_id").unwrap()).unwrap();
 			let name = row.get(row.column_index("name").unwrap()).unwrap();
-			let rank = Rank::new(row.get(row.column_index("rank").unwrap()).unwrap());
+			let rank = ArmorRank::new(row.get(row.column_index("rank").unwrap()).unwrap());
 			let skill = {
 				if let Ok(id) = row.get(row.column_index("armorset_bonus_id").unwrap()) {
 					Some(Arc::clone(setskills.borrow().get(&id).unwrap()))
@@ -359,6 +359,3 @@ WHERE lang_id = ?1").unwrap();
 		weapons.borrow_mut().shrink_to_fit();
 	}
 }
-
-
-

@@ -1,12 +1,20 @@
-use std::slice::Iter;
-use crate::datatypes::types::{
-	Element::{Fire, Water, Thunder, Ice, Dragon, Poison, Sleep, Paralysis, Blast, Stun},
-	ArmorClass::{Head, Chest, Arms, Waist, Legs},
-	WeaponClass::{Bow, ChargeBlade, DualBlade, GreatSword, Gunlance, Hammer, HeavyBowgun, HuntingHorn, InsectGlaive, Lance, LightBowgun, Longsword, SwitchAxe, SwordAndShield},
+use std::{
+	fmt,
+	fmt::Formatter,
+	slice::Iter,
+	collections::HashMap,
 };
-use std::fmt;
-use std::fmt::Formatter;
+use crate::datatypes::{
+	ID, Level,
+	types::{
+		Element::{Fire, Water, Thunder, Ice, Dragon, Poison, Sleep, Paralysis, Blast, Stun},
+		ArmorClass::{Head, Chest, Arms, Waist, Legs},
+		WeaponClass::{Bow, ChargeBlade, DualBlade, GreatSword, Gunlance, Hammer, HeavyBowgun, HuntingHorn, InsectGlaive, Lance, LightBowgun, Longsword, SwitchAxe, SwordAndShield},
+	},
+	skill::SkillLevel,
+};
 
+// Elements
 pub enum Element {
 	Fire = 0,
 	Water,
@@ -70,6 +78,7 @@ impl fmt::Display for Element {
 	}
 }
 
+// Armor Class
 #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Clone)]
 pub enum ArmorClass {
 	Head = 0,
@@ -109,24 +118,45 @@ impl fmt::Display for ArmorClass {
 	}
 }
 
+// ArmorSet rank level
 #[derive(Copy, Clone)]
-pub enum Rank {
+pub enum ArmorRank {
 	Low = 0,
 	High,
 	Master,
 }
 
-impl Rank {
-	pub fn new(rank: String) -> Rank {
+impl ArmorRank {
+	pub fn new(rank: String) -> ArmorRank {
 		match rank.as_ref() {
-			"LR" => Rank::Low,
-			"HR" => Rank::High,
-			"MR" => Rank::Master,
+			"LR" => ArmorRank::Low,
+			"HR" => ArmorRank::High,
+			"MR" => ArmorRank::Master,
 			_ => panic!("error")
 		}
 	}
 }
 
+// Armor related. There are some armors only for some gender
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Gender {
+	Male,
+	Female,
+	All,
+}
+
+impl Gender {
+	pub fn new(male: bool, female: bool) -> Self {
+		match (male, female) {
+			(false, false) => panic!("No gender"),
+			(true, false) => Gender::Male,
+			(false, true) => Gender::Female,
+			(true, true) => Gender::All,
+		}
+	}
+}
+
+// Weapon type
 pub enum WeaponClass {
 	Bow = 0,
 	ChargeBlade,
@@ -192,24 +222,7 @@ impl fmt::Display for WeaponClass {
 	}
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Gender {
-	Male,
-	Female,
-	All,
-}
-
-impl Gender {
-	pub fn new(male: bool, female: bool) -> Self {
-		match (male, female) {
-			(false, false) => panic!("No gender"),
-			(true, false) => Gender::Male,
-			(false, true) => Gender::Female,
-			(true, true) => Gender::All,
-		}
-	}
-}
-
+// Elder Seal level only for weapons
 pub enum ElderSeal {
 	Empty,
 	Low,
@@ -231,3 +244,13 @@ impl ElderSeal {
 		}
 	}
 }
+
+pub trait Item {
+	fn has_skills(&self, query: &HashMap<ID, Level>) -> bool;
+	fn get_skills_chained(&self, chained: &mut HashMap<ID, Level>);
+	fn get_skills_hash(&self) -> HashMap<ID, Level>;
+	fn get_skills_iter(&self) -> Box<dyn Iterator<Item=&SkillLevel> + '_>;
+	fn get_slots(&self) -> Option<Vec<u8>>;
+}
+
+pub trait Decorable {}

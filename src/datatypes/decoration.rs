@@ -6,14 +6,13 @@ use std::{
 };
 use crate::datatypes::{
 	ID, Level, MAX_SLOTS,
-	skill::{Skill, HasSkills, SkillLevel, SkillsLevel},
+	types::Item,
+	skill::{Skill, SkillLevel, SkillsLevel},
 	armor::Armor
 };
-
-pub trait HasDecorations {
-	fn get_slots(&self) -> [u8; 3];
-	fn get_skills(&self) -> Box<dyn Iterator<Item=&SkillLevel> + '_>;
-}
+use crate::datatypes::types::Decorable;
+use crate::datatypes::weapon::Weapon;
+use crate::datatypes::tool::Tool;
 
 pub struct Decoration {
 	pub id: ID,
@@ -38,93 +37,56 @@ impl Decoration {
 	}
 }
 
-impl HasSkills for Decoration {
+impl Item for Decoration {
 	fn has_skills(&self, query: &HashMap<ID, Level>) -> bool {
-		for skill in self.skills.get_skills() {
-			if query.get(&skill.get_id()).is_some() {
-				return true;
-			}
-		}
-		false
+		self.skills.contains_hash(query)
 	}
 
-	fn get_skills_rank(&self, query: &HashMap<ID, Level>) -> u8 {
-		let mut sum = 0;
-		for skill in self.skills.get_skills() {
-			if query.get(&skill.get_id()).is_some() {
-				sum += skill.level;
-			}
-		}
-		sum
+	fn get_skills_chained(&self, chained: &mut HashMap<ID, Level>) {
+		self.skills.put_in(chained);
+	}
+
+	fn get_skills_hash(&self) -> HashMap<ID, Level> {
+		self.skills.as_hash()
+	}
+
+	fn get_skills_iter(&self) -> Box<dyn Iterator<Item=&SkillLevel> + '_> {
+		self.skills.get_skills()
+	}
+
+	fn get_slots(&self) -> Option<Vec<u8>> {
+		None
 	}
 }
 
-
-pub struct AttachedDecorations<T: HasDecorations + HasSkills> {
+pub struct AttachedDecorations<T: Item> {
 	pub item: Arc<T>,
-	pub deco: [Option<Arc<Decoration>>; MAX_SLOTS],
-	pub value: u8,
+	pub decorations: Vec<Option<Arc<Decoration>>>,
 }
 
-impl<T> Clone for AttachedDecorations<T> where T: HasDecorations + HasSkills {
+impl<T> Clone for AttachedDecorations<T> where T: Item {
 	fn clone(&self) -> Self {
 		AttachedDecorations {
 			item: Arc::clone(&self.item),
-			deco: self.deco.clone(),
-			value: self.value,
+			decorations: self.decorations.clone(),
 		}
 	}
 }
 
-impl fmt::Display for AttachedDecorations<Armor> {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		let mut decos_str = String::new();
-		// ToDo use: runtime-fmt
-		let mut deco_str = [String::new(), String::new(), String::new()];
-		for (i, d) in self.deco.iter().enumerate() {
-			deco_str[i] = {
-				if let Some(deco) = d {
-					format!("{} {}", self.item.slots[i], deco.to_string())
-				} else {
-					format!("{} None", self.item.slots[i])
-				}
-			}
-		}
-		decos_str = format!("{0: <25}|{1: <25}|{2: <25}", deco_str[0], deco_str[1], deco_str[2]);
-		write!(f, "{0: <90}|{1: <77}|{2: <5}", self.item, decos_str, self.value)
-	}
-}
+impl Decorable for Weapon {}
 
-impl fmt::Debug for AttachedDecorations<Armor> {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(f, "{}", self)
-	}
-}
+impl Decorable for Armor {}
 
-impl<T> AttachedDecorations<T> where T: HasDecorations + HasSkills {
-	pub fn new(container: Arc<T>) -> Self {
+impl Decorable for Tool {}
+
+impl<T> AttachedDecorations<T> where T: Item + Decorable {
+	pub fn new(item: Arc<T>) -> Self {
+		let item_slots = item.get_slots().unwrap();
+		let deco = vec![None; item_slots.len()];
 		AttachedDecorations {
-			item: container,
-			deco: [None, None, None],
-			value: 0,
+			item,
+			decorations: deco,
 		}
-	}
-
-	pub fn value(&mut self, req: &HashMap<ID, u8>) -> u8 {
-		let mut value = 0;
-		for skill in self.item.get_skills() {
-			if req.contains_key(&skill.get_id()) {
-				value += skill.level;
-			}
-		}
-		/*
-		for slot in armor.slots {
-			for (deco, val) in self.decorations.borrow().iter() {
-			}
-		}
-		*/
-		self.value = value;
-		value
 	}
 
 	pub fn get_item(&self) -> &Arc<T> {
@@ -132,58 +94,119 @@ impl<T> AttachedDecorations<T> where T: HasDecorations + HasSkills {
 	}
 
 	fn is_empty(&self, i: usize) -> bool {
-		self.deco[i].is_none()
+		if let Some(hit) = self.decorations.get(i) {
+			return hit.is_none();
+		}
+		false
 	}
 
-	pub fn try_add_deco(&mut self, deco: &Arc<Decoration>) -> Result<(), &str> {
-		for (i, size) in self.item.get_slots().iter().enumerate().rev() {
-			if *size >= deco.size {
-				if self.is_empty(i) {
-					self.deco[i] = Some(Arc::clone(deco));
+	pub fn try_add_deco(&mut self, decoration: Arc<Decoration>) -> Result<(), &str> {
+		if let Some(slots) = self.item.get_slots() {
+			for (i, size) in slots.iter().enumerate().rev() {
+				if *size >= decoration.size && self.is_empty(i) {
+					self.set_deco(i, decoration);
 					return Ok(());
 				}
 			}
+			Err("No space left")
+		} else {
+			Err("This object do not have slots")
 		}
-		Err("No space left")
 	}
 
-	pub fn add_skills(&self, skills_sum: &mut HashMap<ID, Level>) {
-		for skill in self.item.get_skills() {
-			match skills_sum.entry(skill.get_id()) {
-				Entry::Occupied(mut o) => o.insert(o.get() + skill.level),
-				Entry::Vacant(v) => *v.insert(skill.level)
-			};
+	pub(crate) fn get_deco(&self, index: usize) -> Option<Arc<Decoration>> {
+		if let Some(hit) = self.decorations.get(index) {
+			return hit.clone();  // TODO: this .clone() is right???
 		}
-		for deco in self.deco.iter() {
-			if let Some(deco) = deco {
-				for skill in deco.skills.get_skills() {
-					match skills_sum.entry(skill.get_id()) {
-						Entry::Occupied(mut o) => o.insert(o.get() + skill.level),
-						Entry::Vacant(v) => *v.insert(skill.level)
-					};
+		None
+	}
+
+	fn set_deco(&mut self, index: usize, decoration: Arc<Decoration>) {
+		let empty = self.decorations.get(index).unwrap().is_none();  // TODO to many unwrap ?
+		let size = *self.item.get_slots().unwrap().get(index).unwrap() >= decoration.size;
+		if empty && size {  // decos.len() > index &&
+			self.decorations[index] = Some(decoration);
+		}
+	}
+
+	fn replace_deco(&mut self, index: usize, decoration: Arc<Decoration>) -> Option<Arc<Decoration>>{
+		if index < self.decorations.len() {
+			std::mem::replace( &mut self.decorations[index], Some(decoration))
+		} else {
+			None
+		}
+	}
+
+}
+
+impl<T> Item for AttachedDecorations<T> where T: Item {
+	fn has_skills(&self, query: &HashMap<ID, Level>) -> bool {
+		self.item.has_skills(query) || {
+			for deco in self.decorations.iter() {
+				if let Some(deco) = deco {
+					if deco.has_skills(query) {
+						return true;
+					}
 				}
+			}
+			false
+		}
+	}
+
+	fn get_skills_chained(&self, chained: &mut HashMap<ID, Level>) {
+		self.item.get_skills_chained(chained);
+		for deco in self.decorations.iter() {
+			if let Some(deco) = deco {
+				deco.get_skills_chained(chained);
 			}
 		}
 	}
 
-	pub fn get_skills(&self) -> HashMap<ID, Level> {
-		let mut skills: HashMap<ID, Level> = Default::default();
-		for skill in self.item.get_skills() {
-			match skills.entry(skill.get_id()) {
-				Entry::Occupied(mut o) => o.insert(o.get() + skill.level),
-				Entry::Vacant(v) => *v.insert(skill.level)
-			};
-		}
-		for deco in self.deco.iter() {
+	fn get_skills_hash(&self) -> HashMap<ID, Level> {
+		let mut ret = Default::default();
+		self.item.get_skills_chained(&mut ret);
+		for deco in self.decorations.iter() {
 			if let Some(deco) = deco {
-				for skill in deco.skills.get_skills() {
-					match skills.entry(skill.get_id()) {
-						Entry::Occupied(mut o) => o.insert(o.get() + skill.level),
-						Entry::Vacant(v) => *v.insert(skill.level)
-					};
-				}
+				deco.get_skills_chained(&mut ret);
 			}
 		}
-		skills
+		ret
+	}
+
+	fn get_skills_iter(&self) -> Box<dyn Iterator<Item=&SkillLevel>> {
+		todo!()
+	}
+
+	fn get_slots(&self) -> Option<Vec<u8>> {
+		self.item.get_slots()
+	}
+}
+
+impl fmt::Display for AttachedDecorations<Armor> {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		// ToDo use: runtime-fmt
+		let mut str =
+			if self.decorations.len() > 0 {
+				let mut deco_str = [String::new(), String::new(), String::new()];  // TODO refactor this shit please
+				for (i, d) in self.decorations.iter().enumerate() {
+					deco_str[i] = {
+						if let Some(deco) = d {
+							format!("{} {}", self.item.slots[i], deco.to_string())
+						} else {
+							format!("{} None", self.item.slots[i])
+						}
+					}
+				}
+				format!("{0: <25}|{1: <25}|{2: <25}", deco_str[0], deco_str[1], deco_str[2])
+			} else {
+				String::from("None")
+			};
+		write!(f, "{0: <90}|{1: <77}", self.item, str)
+	}
+}
+
+impl fmt::Debug for AttachedDecorations<Armor> {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		write!(f, "{}", self)
 	}
 }

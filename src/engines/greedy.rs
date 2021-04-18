@@ -16,11 +16,35 @@ use crate::datatypes::{
 	charm::Charm,
 };
 use crate::engines::{EnginesManager, Engine};
+use crate::datatypes::skill::SkillsLevel;
+/*
+struct MagicValue<T> {
+	pub item: Arc<T>,
+	pub value: i16,
+}
 
+trait Item {
+	fn get_skills(&self) -> SkillsLevel;
+	fn get_slots(&self) -> [u8; MAX_SLOTS];
+}
+
+impl MagicValue<T> where T: Item {
+	fn new(item: T) -> Self {
+		let value = item.get_skills();
+		MagicValue {
+			item: Arc::new(item),
+			value,
+		}
+	}
+
+}
+*/
 pub(crate) struct Greedy {
+	// Engine Related
 	forge: Arc<Forge>,
 	constrains: HashMap<ID, Level>,
-
+	// Greedy related
+	current_constrains: HashMap<ID, Level>,
 	armors: RefCell<Vec<Arc<Armor>>>,
 	charms: RefCell<Vec<Arc<Charm>>>,
 	decorations: RefCell<Vec<Arc<Decoration>>>,
@@ -45,35 +69,38 @@ impl Greedy {
 		*/
 		todo!()
 	}
-
+/*
 	fn print_filter(&self) {
 		println!("Armors:");
-		/*
 		for i in self.armors.borrow().iter() {
 			if i.value > 0 {
 				println!("\t{}", i.to_string());
 			}
 		}
-		*/
 		println!("Charms:");
-		/*for (c, val) in self.charms.borrow().iter() {
+		for (c, val) in self.charms.borrow().iter() {
 			if *val > 0 {
 				println!("\t{0:<50} | {1:<2}", c.to_string(), val);
 			}
-		}*/
+		}
 		println!("Decorations:");
-		/*for (d, val) in self.decorations.borrow().iter() {
+		for (d, val) in self.decorations.borrow().iter() {
 			if *val > 0 {
 				println!("\t{0:<50} | {1:<2}", d.to_string(), val);
 			}
-		}*/
+		}
 	}
+	*/
 
 	fn filter(&self) {
-		let mut tmp = self.forge.get_charms_filtered(&self.constrains);
-		//tmp.sort_by(|a, b| { b.1.cmp(&a.1) });
+		return;
+	}
+
+	fn init(&self) {
+		let mut tmp = self.forge.get_charms_filtered(&self.current_constrains);
+		//tmp.sort_by(|a, b| { b.cmp(&a) });
 		self.charms.replace(tmp);
-		let mut tmp = self.forge.get_decorations_filtered(&self.constrains);
+		let mut tmp = self.forge.get_decorations_filtered(&self.current_constrains);
 		//tmp.sort_by(|a, b| { b.1.cmp(&a.1) });
 		self.decorations.replace(tmp);
 
@@ -143,9 +170,11 @@ impl fmt::Debug for Greedy {
 
 impl Engine for Greedy {
 	fn new(forge: Arc<Forge>, constrains: HashMap<ID, Level>) -> Self {
+		let copy = constrains.clone();
 		Greedy {
 			forge,
 			constrains,
+			current_constrains: copy,
 			armors: Default::default(),
 			charms: Default::default(),
 			decorations: Default::default()
@@ -153,13 +182,11 @@ impl Engine for Greedy {
 	}
 
 	fn run(&self) -> Equipment {
-		self.filter();
+		self.init();
 		let mut result = Equipment::new();
 		let mut impossible = false;
 		while self.check_constrains(&result).not() && result.is_full().not() && impossible.not() {
 			self.filter();
-			// self.print_requirements();
-			//self.print_filter();
 			let mut i = 0;
 			let mut done = true;
 			while done {  // Loop until a armor is suited for placement

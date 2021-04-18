@@ -33,4 +33,5 @@ pub type Decorations = HashMap<ID, Arc<Decoration>>;
 pub type Charms = HashMap<ID, Arc<Charm>>;
 
 pub const MAX_SLOTS: usize = 3;
+
 pub const SHARPNESS_LEVELS: usize = 7;

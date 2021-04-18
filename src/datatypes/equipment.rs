@@ -15,7 +15,7 @@ use std::borrow::Borrow;
 use crate::datatypes::weapon::Weapon;
 use crate::datatypes::armor::Armor;
 use crate::datatypes::charm::Charm;
-use crate::datatypes::types::ArmorClass;
+use crate::datatypes::types::{ArmorClass, Item};
 use crate::datatypes::decoration::AttachedDecorations;
 use crate::datatypes::tool::Tool;
 
@@ -81,26 +81,22 @@ impl Equipment {
 	}
 
 	fn add_weapon_skills(&self, skills_sum: &mut HashMap<ID, Level>) {
-		if let Some(deco_container) = &self.weapon {
-			if let Some(skill) = &deco_container.item.skill {
-				*skills_sum.entry(skill.get_id()).or_insert(1) += 1;
-			}
+		if let Some(weapon) = &self.weapon {
+			weapon.get_skills_chained(skills_sum);
 		}
 	}
 
 	fn add_armors_skills(&self, skills_sum: &mut HashMap<ID, Level>) {
 		for i in self.set.iter() {
 			if let Some(armor) = i {
-				armor.add_skills(skills_sum);
+				armor.get_skills_chained(skills_sum);
 			}
 		}
 	}
 
 	fn add_charm_skills(&self, skills_sum: &mut HashMap<ID, Level>) {
 		if let Some(charm) = &self.charm {
-			for skill in charm.skills.get_skills() {
-				*skills_sum.entry(skill.get_id()).or_insert(skill.level) += skill.level;
-			}
+			charm.get_skills_chained(skills_sum);
 		}
 	}
 

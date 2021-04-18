@@ -82,7 +82,7 @@ impl UI<AttachedDecorations<Armor>> for GtkArmour {
 			self.skill[i].show();
 		}
 		for (i, slot_size) in piece.slots.iter().enumerate() {
-			self.slots[i].update(&item.deco[i], *slot_size);
+			self.slots[i].update(&item.get_deco(i), *slot_size);
 		}
 	}
 }

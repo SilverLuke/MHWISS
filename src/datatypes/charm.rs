@@ -5,9 +5,10 @@ use std::{
 	collections::HashMap,
 };
 use crate::datatypes::{
-	ID,
-	skill::{Skill, HasSkills, SkillLevel, SkillsLevel},
-	armor::Armor
+	ID, Level,
+	skill::{Skill, SkillLevel, SkillsLevel},
+	armor::Armor,
+	types::Item,
 };
 
 pub struct Charm {
@@ -31,24 +32,24 @@ impl Charm {
 	}
 }
 
-impl HasSkills for Charm {
-	fn has_skills(&self, query: &HashMap<ID, u8>) -> bool {
-		for skill in self.skills.get_skills() {
-			if query.get(&skill.get_id()).is_some() {
-				return true;
-			}
-		}
-		false
+impl Item for Charm {
+	fn has_skills(&self, query: &HashMap<u16, u8>) -> bool {
+		self.skills.contains_hash(query)
 	}
 
-	fn get_skills_rank(&self, query: &HashMap<ID, u8>) -> u8 {
-		let mut sum = 0;
-		for skill in self.skills.get_skills() {
-			if query.get(&skill.get_id()).is_some() {
-				sum += skill.level;
-			}
-		}
-		sum
+	fn get_skills_chained(&self, chained: &mut HashMap<u16, u8>) {
+		self.skills.put_in(chained);
+	}
+
+	fn get_skills_hash(&self) -> HashMap<ID, Level> {
+		self.skills.as_hash()
+	}
+
+	fn get_skills_iter(&self) -> Box<dyn Iterator<Item=&SkillLevel> + '_> {
+		self.skills.get_skills()
+	}
+
+	fn get_slots(&self) -> Option<Vec<u8>> {
+		None
 	}
 }
-

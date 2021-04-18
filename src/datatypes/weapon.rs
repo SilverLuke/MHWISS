@@ -7,9 +7,10 @@ use std::{
 use crate::datatypes::{
 	ID, Level, MAX_SLOTS, SHARPNESS_LEVELS,
 	types::{WeaponClass, Element, ElderSeal},
-	skill::{Skill, SetSkill, HasSkills, SkillLevel, SkillsLevel},
-	decoration::HasDecorations
+	skill::{Skill, SetSkill, SkillLevel, SkillsLevel},
+	types::Item,
 };
+use std::collections::hash_map::Entry;
 
 pub struct Weapon {
 	pub id: ID,
@@ -28,33 +29,48 @@ pub struct Weapon {
 	pub skill: Option<SkillLevel>
 }
 
-impl fmt::Display for Weapon {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(f, "{}[{}]", self.name, self.id)
-	}
-}
-
-impl HasDecorations for Weapon {
-	fn get_slots(&self) -> [u8; 3] {
-		self.slots
-	}
-
-	fn get_skills(&self) -> Box<dyn Iterator<Item=&SkillLevel> + '_> {
-		Box::new(self.skill.iter())
-	}
-}
-
-impl HasSkills for Weapon {
-	fn has_skills(&self, query: &HashMap<ID, Level>) -> bool {
-		todo!()
-	}
-	fn get_skills_rank(&self, query: &HashMap<ID, Level>) -> u8 {
-		todo!()
-	}
-}
-
 impl Weapon {
 	pub fn new(id: ID, previous_id: Option<ID>, class: WeaponClass, name: String, attack_true: u16, affinity: i8, sharpness: Option<[u8; 7]>, defense: u8, slots: [u8; 3], elements: Vec<(Element, u16)>, element_hidden: bool, elderseal: ElderSeal, armorset_bonus_id: Option<Arc<SetSkill>>, skill: Option<SkillLevel>) -> Self {
 		Weapon { id, previous_id, class, name, attack_true, affinity, sharpness, defense, slots, elements, element_hidden, elderseal, armorset_skill: armorset_bonus_id, skill }
+	}
+}
+
+impl Item for Weapon {
+	fn has_skills(&self, query: &HashMap<ID, Level>) -> bool {
+		if let Some(skill) = &self.skill {
+			return query.contains_key(&skill.get_id());
+		}
+		false
+	}
+
+	fn get_skills_chained(&self, chained: &mut HashMap<ID, Level>) {
+		if let Some(skill) = &self.skill {
+			match chained.entry(skill.get_id()) {
+				Entry::Occupied(mut o) => o.insert(o.get() + skill.level),
+				Entry::Vacant(v) => *v.insert(skill.level)
+			};
+		}
+	}
+
+	fn get_skills_hash(&self) -> HashMap<ID, Level> {
+		let mut ret: HashMap<ID, Level> = Default::default();
+		if let Some(skill) = &self.skill {
+			ret.insert(skill.get_id(), skill.level);
+		}
+		ret
+	}
+
+	fn get_skills_iter(&self) -> Box<dyn Iterator<Item=&SkillLevel> + '_> {
+		Box::new(self.skill.iter())
+	}
+
+	fn get_slots(&self) -> Option<Vec<u8>> {
+		Some(Vec::from(self.slots))
+	}
+}
+
+impl fmt::Display for Weapon {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		write!(f, "{}[{}]", self.name, self.id)
 	}
 }

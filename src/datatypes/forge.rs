@@ -1,14 +1,17 @@
-use std::collections::HashMap;
-use std::rc::Rc;
-use std::cell::{RefCell};
-
-use crate::datatypes::{Skills, SetSkills, Armors, Sets, Decorations, Charms, Weapons, ID, Level};
-use crate::datatypes::skill::{Skill, HasSkills};
-use crate::datatypes::armor::Armor;
-use crate::datatypes::charm::Charm;
-use crate::datatypes::decoration::Decoration;
+use std::{
+	sync::Arc,
+	cell::RefCell,
+	collections::HashMap
+};
+use crate::datatypes::{
+	*,
+	types::Item,
+	skill::Skill,
+	armor::Armor,
+	charm::Charm,
+	decoration::Decoration,
+};
 use crate::db;
-use std::sync::Arc;
 
 pub struct Forge {
 	pub skills: Skills,  // Len 168

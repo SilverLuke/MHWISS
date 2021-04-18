@@ -6,10 +6,12 @@ use std::{
 };
 use crate::datatypes::{
     ID, Level, MAX_SLOTS,
-    types::{ArmorClass, Gender, Rank},
-    skill::{Skill, SetSkill, HasSkills, SkillLevel, SkillsLevel},
-    decoration::HasDecorations,
+    types::{ArmorClass, Gender, ArmorRank},
+    skill::{Skill, SetSkill, SkillLevel, SkillsLevel},
 };
+use crate::datatypes::types::Item;
+use rusqlite::OpenFlags;
+use std::ops::Not;
 
 pub struct Armor {
     pub id: u16,
@@ -35,38 +37,6 @@ impl Armor {
     pub fn add_setskill(&mut self, setskill: &Arc<SetSkill>) {
         self.setskill = Some(Arc::clone(setskill));
     }
-
-}
-
-impl HasDecorations for Armor {
-    fn get_slots(&self) -> [u8; MAX_SLOTS] {
-        self.slots
-    }
-
-    fn get_skills(&self) -> Box<dyn Iterator<Item=&SkillLevel> + '_> {
-        Box::new(self.skills.get_skills())
-    }
-}
-
-impl HasSkills for Armor {
-    fn has_skills(&self, query: &HashMap<ID, u8>) -> bool {
-        for skill in self.skills.get_skills() {
-            if query.get(&skill.get_id()).is_some() {
-                return true;
-            }
-        }
-        false
-    }
-
-    fn get_skills_rank(&self, query: &HashMap<ID, u8>) -> u8 {
-        let mut sum = 0;
-        for skill in self.skills.get_skills() {
-            if query.get(&skill.get_id()).is_some() {
-                sum += skill.level;
-            }
-        }
-        sum
-    }
 }
 
 impl fmt::Display for Armor {
@@ -86,16 +56,39 @@ impl PartialEq for Armor {
 }
 impl Eq for Armor {}
 
+impl Item for Armor {
+    fn has_skills(&self, query: &HashMap<ID, Level>) -> bool {
+        self.skills.contains_hash(query)
+    }
+
+    fn get_skills_chained(&self, chained: &mut HashMap<ID, Level>) {
+        self.skills.put_in(chained);
+    }
+
+    fn get_skills_hash(&self) -> HashMap<ID, Level> {
+        self.skills.as_hash()
+    }
+
+    fn get_skills_iter(&self) -> Box<dyn Iterator<Item=&SkillLevel> + '_> {
+        self.skills.get_skills()
+    }
+
+    fn get_slots(&self) -> Option<Vec<u8>> {
+        Some(Vec::from(self.slots))
+    }
+}
+
+
 pub struct ArmorSet {
     pub id: u16,
     pub name: String,
-    pub rank: Rank,  // TODO Duplicate you cannot have a HR set with LR o MR armour
+    pub rank: ArmorRank,
     set: [Option<Arc<Armor>>; 5],
     armorset_skill: Option<Arc<SetSkill>>,
 }
 
 impl ArmorSet {
-    pub fn new(id: u16, name: String, rank: Rank, armorset_skill: Option<Arc<SetSkill>>) -> Self {
+    pub fn new(id: u16, name: String, rank: ArmorRank, armorset_skill: Option<Arc<SetSkill>>) -> Self {
         ArmorSet { id, name, rank, set: [None, None, None, None, None], armorset_skill}
     }
 

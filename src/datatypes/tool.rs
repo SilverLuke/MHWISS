@@ -7,10 +7,9 @@ use std::{
 
 use crate::datatypes::{
 	ID, Level,
-	skill::{Skill, HasSkills, SkillLevel, SkillsLevel},
-	decoration::HasDecorations
+	types::Item,
+	skill::{Skill, SkillLevel, SkillsLevel},
 };
-use std::fmt::Formatter;
 
 pub struct Tool {
 	id: ID,
@@ -23,33 +22,35 @@ impl Tool {
 		Tool {
 			id: 1,
 			name: String::from("Test"),
-			slots: [1,4],
+			slots: [1, 4],
 		}
 	}
 }
 
-impl HasDecorations for Tool {
-	fn get_slots(&self) -> [u8; 3] {
+impl Item for Tool {
+	fn has_skills(&self, query: &HashMap<u16, u8>) -> bool {
+		false
+	}
+
+	fn get_skills_chained(&self, chained: &mut HashMap<u16, u8>) {
 		todo!()
 	}
 
-	fn get_skills(&self) -> Box<dyn Iterator<Item=&SkillLevel>> {
-		todo!()
-	}
-}
-
-impl HasSkills for Tool {
-	fn has_skills(&self, query: &HashMap<ID, Level>) -> bool {
+	fn get_skills_hash(&self) -> HashMap<u16, u8> {
 		todo!()
 	}
 
-	fn get_skills_rank(&self, query: &HashMap<ID, Level>) -> u8 {
+	fn get_skills_iter(&self) -> Box<dyn Iterator<Item=&SkillLevel>> {
 		todo!()
+	}
+
+	fn get_slots(&self) -> Option<Vec<u8>> {
+		Some(Vec::from(self.slots))
 	}
 }
 
 impl fmt::Display for Tool {
-	fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		write!(f, "{}", self.name)
 	}
 }
