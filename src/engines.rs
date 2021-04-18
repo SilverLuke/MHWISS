@@ -13,6 +13,7 @@ use std::{
 		hash_map::Entry,
 		HashMap,
 	},
+	slice::Iter,
 };
 use itertools::Itertools;
 use glib::Sender;
@@ -26,13 +27,15 @@ use crate::datatypes::{
 	forge::Forge,
 };
 use crate::ui::ui::Callback;
-
 use crate::engines::{
 	greedy::Greedy,
 	genetic::Genetic,
 };
+use strum::{EnumIter, Display, EnumString};
 
-enum Engines {
+
+#[derive(Display, EnumString, EnumIter)]
+pub enum Engines {
 	Greedy,
 	Genetic,
 }
@@ -67,10 +70,9 @@ impl EnginesManager {
 		}
 	}
 
-	pub fn run(&self) {
+	pub fn run(&self, engine_type: Engines) {
 		let forge = Arc::clone(&self.forge);
 		let constrains = self.skills_constraints.borrow().clone();
-		let engine_type = Engines::Greedy;
 		let sender = self.sender.clone();
 		std::thread::spawn(move || {
 			let engine =

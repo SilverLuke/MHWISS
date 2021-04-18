@@ -1,17 +1,17 @@
-use std::{env,
+use std::{
+	env,
 	env::args,
 	rc::Rc,
 	sync::Arc,
-	collections::HashMap
+	collections::HashMap,
+	str::FromStr,
 };
-use gtk::{
-	prelude::*,
-	Application,
-};
+use gtk::{prelude::*, Application, ComboBox, Label, ComboBoxText};
 use glib::{Sender, Receiver};
 use gio::prelude::*;
 use gdk_pixbuf::Pixbuf;
 use itertools::Itertools;
+use strum::IntoEnumIterator;
 use crate::ui::{
 	NORMAL_SIZE_ICON, SMALL_SIZE_ICON,
 	pages::{
@@ -27,7 +27,11 @@ use crate::datatypes::{
 	types::{Element, ArmorClass},
 	equipment::Equipment,
 };
-use crate::engines::EnginesManager;
+use crate::engines::{
+	Engines,
+	EnginesManager,
+};
+use gio::ListStore;
 
 pub enum Callback {
 	Done(Equipment)
@@ -66,6 +70,7 @@ pub struct Ui {
 	window: gtk::ApplicationWindow,
 	find_btn: gtk::Button,
 	lang_combo: gtk::ComboBox,
+	engines_combo: gtk::ComboBoxText,
 	images: Rc<HashMap<String, Pixbuf>>,
 
 	notebook: gtk::Notebook,
@@ -99,9 +104,14 @@ impl Ui {
 		let window = builder.get_object("main window").unwrap();
 		let find_btn = builder.get_object("find btn").unwrap();
 		let lang_combo = builder.get_object("lang combo").unwrap();
-
+		let engines_combo:ComboBoxText = builder.get_object("engines combo").unwrap();
 		let images = Rc::new(Ui::load_images());
 		let pages = Pages::new(&builder, Rc::clone(&images));
+
+		for (i, val) in Engines::iter().enumerate() {
+			engines_combo.insert(i as i32, None, val.to_string().as_ref());
+		}
+		engines_combo.set_active(Some(0));
 
 		let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 		searcher.add_callback(sender);
@@ -111,6 +121,7 @@ impl Ui {
 			window,
 			find_btn,
 			lang_combo,
+			engines_combo,
 			images,
 
 			notebook: builder.get_object("notebook").unwrap(),
@@ -133,7 +144,8 @@ impl Ui {
 		let app = Rc::clone(self);
 		self.find_btn.connect_clicked(move |_btn| {
 			println!("{}", app.searcher);
-			app.searcher.run();
+			let engine = Engines::from_str(app.engines_combo.get_active_text().unwrap().as_str()).unwrap();
+			app.searcher.run(engine);
 		});
 
 		let app= Rc::clone(self);

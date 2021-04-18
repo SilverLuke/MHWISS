@@ -6,14 +6,15 @@ use std::{
 	sync::{Arc, Mutex, Once},
 	thread,
 	thread::sleep,
-	time::Duration
+	time::Duration,
+	collections::HashMap,
 };
 
 use crate::datatypes::{
 	forge::Forge,
 	equipment::Equipment,
 	ID, Level, MAX_SLOTS,
-	types::{ArmorClass, Gender, ArmorRank},
+	types::{ArmorClass, Gender, ArmorRank, Item},
 	skill::{Skill, SkillLevel, SkillsLevel},
 	decoration::AttachedDecorations,
 };
@@ -23,8 +24,6 @@ use crate::engines::{
 	genetic::Genetic,
 	Engine
 };
-use std::collections::HashMap;
-use crate::datatypes::types::Item;
 
 #[derive(Clone)]
 struct Shared {
