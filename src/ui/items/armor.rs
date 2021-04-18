@@ -84,5 +84,9 @@ impl UI<AttachedDecorations<Armor>> for GtkArmour {
 		for (i, slot_size) in piece.slots.iter().enumerate() {
 			self.slots[i].update(&item.get_deco(i), *slot_size);
 		}
+		self.defence.set_text(piece.defence[2].to_string().as_str());
+		for (i, elem) in piece.elements.iter().enumerate() {
+			self.elements[i].set_text(elem.to_string().as_str());
+		}
 	}
 }
