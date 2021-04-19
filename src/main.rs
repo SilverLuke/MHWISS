@@ -6,6 +6,7 @@ use std::sync::Arc;
 use crate::datatypes::forge::Forge;
 use crate::engines::EnginesManager;
 use crate::ui::ui::Ui;
+use crate::db::DB;
 
 mod ui;
 mod datatypes;
@@ -14,7 +15,9 @@ mod db;
 
 fn main() {
 	let mut forge = Forge::new();
-	forge.load_all("it");
+	let db = DB::new();
+	db.set_lang("it".to_string());
+	forge.load_all(db);
 	let forge = Arc::new(forge);
 	let em = EnginesManager::new(Arc::clone(&forge));
 	let app = Ui::new(forge, em);

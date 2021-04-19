@@ -11,7 +11,7 @@ use crate::datatypes::{
 	charm::Charm,
 	decoration::Decoration,
 };
-use crate::db;
+use crate::db::DB;
 
 pub struct Forge {
 	pub skills: Skills,  // Len 168
@@ -36,10 +36,6 @@ impl Forge {
 		}
 	}
 
-	pub fn new_from(origin: Arc<Self>) -> Self {
-		todo!()
-	}
-
 	pub fn get_skill_from_name(&self, name: &str) -> Option<Arc<Skill>> {
 		for (_, skill) in self.skills.iter() {
 			if skill.name == name {
@@ -48,7 +44,6 @@ impl Forge {
 		}
 		None
 	}
-
 
 	pub fn get_armors_filtered(&self, skills_req: &HashMap<ID, Level>) -> Vec<Arc<Armor>> {
 		let mut ret: Vec<Arc<Armor>>  = Default::default();
@@ -81,9 +76,7 @@ impl Forge {
 		ret
 	}
 
-	pub fn load_all(&mut self, lang: &str) {
-		let db = db::DB::new();
-		db.set_lang(lang.to_string());
+	pub fn load_all(&mut self, db: DB) {
 		db.load_skills(&mut self.skills);
 		db.load_setskills(&mut self.set_skills, &self.skills);
 		db.load_armors(&mut self.armors, &self.skills, &self.set_skills);

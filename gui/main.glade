@@ -8,20 +8,6 @@
     <property name="step-increment">1</property>
     <property name="page-increment">10</property>
   </object>
-  <object class="GtkListStore" id="lang_list">
-    <columns>
-      <!-- column-name lang -->
-      <column type="gchararray"/>
-    </columns>
-    <data>
-      <row>
-        <col id="0" translatable="yes">Italiano</col>
-      </row>
-      <row>
-        <col id="0" translatable="yes">Inglese</col>
-      </row>
-    </data>
-  </object>
   <object class="GtkApplicationWindow" id="main window">
     <property name="can-focus">False</property>
     <property name="default-width">800</property>
@@ -3101,17 +3087,10 @@
         <property name="title" translatable="yes">MHWIASS</property>
         <property name="show-close-button">True</property>
         <child>
-          <object class="GtkComboBox" id="lang combo">
+          <object class="GtkComboBoxText" id="languages combo">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="model">lang_list</property>
-            <property name="active">0</property>
-            <child>
-              <object class="GtkCellRendererText" id="lang text"/>
-              <attributes>
-                <attribute name="text">0</attribute>
-              </attributes>
-            </child>
+            <property name="active-id">0</property>
           </object>
           <packing>
             <property name="pack-type">end</property>
@@ -3136,11 +3115,10 @@
             </child>
             <child>
               <object class="GtkButton" id="find btn">
-                <property name="label">gtk-find</property>
+                <property name="label" translatable="yes">Find</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
-                <property name="use-stock">True</property>
                 <property name="always-show-image">True</property>
               </object>
               <packing>

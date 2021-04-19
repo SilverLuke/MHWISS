@@ -32,6 +32,7 @@ use crate::engines::{
 	EnginesManager,
 };
 use gio::ListStore;
+use crate::db::DB;
 
 pub enum Callback {
 	Done(Equipment)
@@ -69,7 +70,7 @@ pub struct Ui {
 	application: gtk::Application,
 	window: gtk::ApplicationWindow,
 	find_btn: gtk::Button,
-	lang_combo: gtk::ComboBox,
+	lang_combo: gtk::ComboBoxText,
 	engines_combo: gtk::ComboBoxText,
 	images: Rc<HashMap<String, Pixbuf>>,
 
@@ -103,15 +104,21 @@ impl Ui {
 
 		let window = builder.get_object("main window").unwrap();
 		let find_btn = builder.get_object("find btn").unwrap();
-		let lang_combo = builder.get_object("lang combo").unwrap();
+		let lang_combo:ComboBoxText = builder.get_object("languages combo").unwrap();
 		let engines_combo:ComboBoxText = builder.get_object("engines combo").unwrap();
 		let images = Rc::new(Ui::load_images());
 		let pages = Pages::new(&builder, Rc::clone(&images));
 
 		for (i, val) in Engines::iter().enumerate() {
-			engines_combo.insert(i as i32, None, val.to_string().as_ref());
+			engines_combo.insert(i as i32, Some(val.to_string().as_str()), val.to_string().as_str());
 		}
-		engines_combo.set_active(Some(0));
+		engines_combo.set_active_id(Some(Engines::Greedy.to_string().as_str()));
+
+		let db = DB::new();
+		for (i, (id, name)) in db.load_languages().iter().enumerate() {
+			lang_combo.insert(i as i32, Some(id), name.as_str())
+		}
+		lang_combo.set_active_id(Some("it"));
 
 		let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 		searcher.add_callback(sender);

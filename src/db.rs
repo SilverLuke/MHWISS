@@ -29,6 +29,20 @@ impl DB {
 		}
 	}
 
+	pub fn load_languages(&self) -> Vec<(String, String)> {
+		let mut statement = self.connection.prepare(
+			"SELECT id, name FROM language;").unwrap();
+		let str = &*self.lang.borrow();
+		let mut rows = statement.query(params![]).unwrap();
+		let mut ret = Vec::new();
+		while let Some(row) = rows.next().unwrap() {
+			let id : String = row.get(row.column_index("id").unwrap()).unwrap();
+			let name : String  = row.get(row.column_index("name").unwrap()).unwrap();
+			ret.push((id, name));
+		}
+		ret
+	}
+
 	pub fn set_lang(&self, lang: String) {
 		self.lang.replace(lang);
 	}
