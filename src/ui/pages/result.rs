@@ -75,7 +75,8 @@ impl ResultPage {
 		}
 	}
 
-	pub fn update(&self, best: &Equipment) {
+	pub fn update(&self, best_list: Vec<Equipment>) {
+		let best = best_list.first().unwrap();
 		self.weapon.update(&best.weapon);
 		for (i, piece) in self.armors.iter().enumerate() {
 			piece.update(&best.set[i]);
@@ -83,6 +84,10 @@ impl ResultPage {
 		self.charm.update(&best.charm);
 		for (i, tool) in self.tools.iter().enumerate() {
 			tool.update(&best.tools[i]);
+		}
+		for i in best_list {
+			// TODO
+			//self.list.add()
 		}
 	}
 }

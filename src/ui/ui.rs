@@ -35,7 +35,7 @@ use gio::ListStore;
 use crate::db::DB;
 
 pub enum Callback {
-	Done(Equipment)
+	Done(Vec<Equipment>)
 }
 
 struct Pages {
@@ -150,7 +150,6 @@ impl Ui {
 
 		let app = Rc::clone(self);
 		self.find_btn.connect_clicked(move |_btn| {
-			println!("{}", app.searcher);
 			let engine = Engines::from_str(app.engines_combo.get_active_text().unwrap().as_str()).unwrap();
 			app.searcher.run(engine);
 		});
@@ -163,9 +162,10 @@ impl Ui {
 
 	fn process_callbacks(self: &Rc<Self>, action: Callback) -> glib::Continue {
 		match action {
-			Callback::Done(sample) => {
-				self.pages.found_page.update(&sample);
+			Callback::Done(results) => {
+				self.pages.found_page.update(results);
 				self.notebook.set_current_page(Some(self.notebook.get_n_pages() - 1));
+				self.searcher.ended();
 			}
 		}
 		glib::Continue(true)

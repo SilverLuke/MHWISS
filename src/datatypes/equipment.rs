@@ -15,7 +15,7 @@ use std::borrow::Borrow;
 use crate::datatypes::weapon::Weapon;
 use crate::datatypes::armor::Armor;
 use crate::datatypes::charm::Charm;
-use crate::datatypes::types::{ArmorClass, Item};
+use crate::datatypes::types::{ArmorClass, Item, Wearable};
 use crate::datatypes::decoration::AttachedDecorations;
 use crate::datatypes::tool::Tool;
 
@@ -59,6 +59,11 @@ impl fmt::Display for Equipment {
 	}
 }
 
+impl Wearable for Weapon {}
+impl Wearable for Armor {}
+impl Wearable for Charm {}
+impl Wearable for Tool {}
+
 impl Equipment {
 	pub fn new() -> Self {
 		Equipment {
@@ -69,14 +74,50 @@ impl Equipment {
 		}
 	}
 
-	pub fn try_add_armor(&mut self, armor: &AttachedDecorations<Armor>) -> Result<(), &str> {
+	pub fn try_add_weapon(&mut self, weapon: AttachedDecorations<Weapon>) -> Result<(), &str> {
+		if self.weapon.is_some() {
+			Err("Space already taken")
+		} else {
+			println!("Added:\t{}", &weapon.item);
+			self.weapon = Some(weapon);
+			Ok(())
+		}
+	}
+
+	pub fn try_add_armor(&mut self, armor: AttachedDecorations<Armor>) -> Result<(), &str> {
 		let i = armor.item.class as usize;
 		if self.set[i].is_some() {
 			Err("Space already taken")
 		} else {
-			self.set[i] = Some(armor.clone());
-			println!("Added:\n\t{}", armor.item);
+			println!("Added:\t{}", &armor.item);
+			self.set[i] = Some(armor);
 			Ok(())
+		}
+	}
+
+	pub fn try_add_charm(&mut self, charm: Arc<Charm>) -> Result<(), &str> {
+		if self.charm.is_some() {
+			Err("Space already taken")
+		} else {
+			println!("Added:\t{}", &charm);
+			self.charm = Some(charm);
+			Ok(())
+		}
+	}
+
+	pub fn try_add_tool(&mut self, tool: AttachedDecorations<Tool>) -> Result<(), &str> {
+		let mut index = None;
+		for (i, t) in &mut self.tools.iter().enumerate() {
+			if t.is_none() {
+				index = Some(i);
+				println!("Added:\t{}", tool.item);
+			}
+		}
+		if let Some(i) = index {
+			self.tools[i] = Some(tool);
+			return Ok(());
+		} else {
+			Err("Space already taken")
 		}
 	}
 
@@ -100,7 +141,7 @@ impl Equipment {
 		}
 	}
 
-	pub fn get_skills(&self) -> HashMap<ID, Level> {
+	pub fn get_skills(&self) -> HashMap<ID, Level> {  // TODO implemets Item trait ??
 		let mut skills_sum: HashMap<ID, Level> = Default::default();
 		self.add_weapon_skills(&mut skills_sum);
 		self.add_armors_skills(&mut skills_sum);

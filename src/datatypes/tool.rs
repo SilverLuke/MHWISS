@@ -12,7 +12,7 @@ use crate::datatypes::{
 };
 
 pub struct Tool {
-	id: ID,
+	pub(crate) id: ID,
 	pub name: String,
 	slots: [u8; 2],
 }

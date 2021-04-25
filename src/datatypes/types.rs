@@ -3,6 +3,7 @@ use std::{
 	fmt::Formatter,
 	slice::Iter,
 	collections::HashMap,
+	any::Any,
 };
 use crate::datatypes::{
 	ID, Level,
@@ -245,7 +246,7 @@ impl ElderSeal {
 	}
 }
 
-pub trait Item {
+pub trait Item : Any {
 	fn has_skills(&self, query: &HashMap<ID, Level>) -> bool;
 	fn get_skills_chained(&self, chained: &mut HashMap<ID, Level>);
 	fn get_skills_hash(&self) -> HashMap<ID, Level>;
@@ -254,3 +255,5 @@ pub trait Item {
 }
 
 pub trait Decorable {}
+
+pub trait Wearable {}

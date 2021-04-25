@@ -63,6 +63,9 @@ impl UI<AttachedDecorations<Weapon>> for GtkWeapon {
 		self.skill.set_text("-");
 		self.element[0].set_text("");
 		self.element[1].set_text("");
+		for slot in self.slots.iter() {
+			slot.empty(0);
+		}
 	}
 
 	fn show(&self, item: &AttachedDecorations<Weapon>) {

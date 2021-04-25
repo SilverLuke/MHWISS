@@ -16,17 +16,15 @@ pub(crate) struct Genetic {
 }
 
 impl Genetic {
-
-}
-
-impl Engine for Genetic {
-	fn new(forge: Arc<Forge>, constrains: HashMap<ID, Level>) -> Self {
+	pub(crate) fn new(forge: Arc<Forge>, constrains: HashMap<ID, Level>) -> Self {
 		Genetic {
 
 		}
 	}
+}
 
-	fn run(&self) -> Equipment {
-		Equipment::new()
+impl Engine for Genetic {
+	fn run(&mut self) -> Vec<Equipment> {
+		vec![Equipment::new()]
 	}
 }

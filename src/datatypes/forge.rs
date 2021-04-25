@@ -45,6 +45,17 @@ impl Forge {
 		None
 	}
 
+	pub fn get_weapons_filtered(&self, skills_req: &HashMap<ID, Level>) -> Vec<Arc<Weapon>> {
+		let mut ret: Vec<Arc<Weapon>>  = Default::default();
+		for (_id, weapon) in self.weapons.iter() {
+			if weapon.has_skills(&skills_req) {
+				ret.push(Arc::clone(weapon));
+			}
+		}
+		ret.shrink_to_fit();
+		ret
+	}
+
 	pub fn get_armors_filtered(&self, skills_req: &HashMap<ID, Level>) -> Vec<Arc<Armor>> {
 		let mut ret: Vec<Arc<Armor>>  = Default::default();
 		for (_id, armor) in self.armors.iter() {

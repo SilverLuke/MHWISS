@@ -129,14 +129,13 @@ impl<T> AttachedDecorations<T> where T: Item + Decorable {
 		}
 	}
 
-	fn replace_deco(&mut self, index: usize, decoration: Arc<Decoration>) -> Option<Arc<Decoration>>{
+	fn replace_deco(&mut self, index: usize, decoration: Arc<Decoration>) -> Option<Arc<Decoration>> {
 		if index < self.decorations.len() {
-			std::mem::replace( &mut self.decorations[index], Some(decoration))
+			std::mem::replace(&mut self.decorations[index], Some(decoration))
 		} else {
 			None
 		}
 	}
-
 }
 
 impl<T> Item for AttachedDecorations<T> where T: Item {

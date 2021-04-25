@@ -17,7 +17,7 @@ pub struct Weapon {
 	previous_id: Option<ID>,
 	pub class: WeaponClass,
 	pub name: String,
-	attack_true: u16,
+	pub attack_true: u16,
 	affinity: i8,
 	sharpness: Option<[u8; SHARPNESS_LEVELS]>,
 	defense: u8,

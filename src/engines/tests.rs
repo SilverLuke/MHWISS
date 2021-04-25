@@ -24,6 +24,7 @@ use crate::engines::{
 	genetic::Genetic,
 	Engine
 };
+use crate::db::DB;
 
 #[derive(Clone)]
 struct Shared {
@@ -33,7 +34,9 @@ struct Shared {
 impl Shared {
 	fn new() -> Self {
 		let mut forge = Forge::new();
-		forge.load_all("it");
+		let db = DB::new();
+		db.set_lang("it".to_string());
+		forge.load_all(db);
 		Shared {
 			forge: Arc::new(forge),
 		}
@@ -60,13 +63,14 @@ fn greedy() {
 	let forge = shared.forge;
 	let searcher = EnginesManager::new(forge.clone());
 
-	searcher.add_constraint(forge.get_skill_from_name("Battitore").unwrap().id, 5);
+	searcher.add_constraint(forge.get_skill_from_name("Artigiano").unwrap().id, 3);
+	//searcher.add_constraint(forge.get_skill_from_name("Battitore").unwrap().id, 5);
 	//engines.add_skill_requirement(datatypes.get_skill("Angelo custode").unwrap(), 1);
 	//engines.add_skill_requirement(datatypes.get_skill("Critico elementale").unwrap(), 1);
 
-	let engine = Greedy::new(Arc::clone(&forge), searcher.skills_constraints.borrow().clone());
+	let mut engine = Greedy::new(Arc::clone(&forge), searcher.skills_constraints.borrow().clone());
 	let res = engine.run();
-	println!("Result:\n{}", res);
+	println!("Result:\n{}", res.first().expect("No equipment found"));
 	assert!(true);
 }
 
@@ -78,13 +82,13 @@ fn genetic() {
 	let forge = shared.forge;
 	let searcher = EnginesManager::new(forge.clone());
 
-	searcher.add_constraint(forge.get_skill_from_name("Battitore").unwrap().id, 5);
+	searcher.add_constraint(forge.get_skill_from_name("Artigiano").unwrap().id, 3);
 	//engines.add_skill_requirement(datatypes.get_skill("Angelo custode").unwrap(), 1);
 	//engines.add_skill_requirement(datatypes.get_skill("Critico elementale").unwrap(), 1);
 
-	let engine = Genetic::new(Arc::clone(&forge), searcher.skills_constraints.borrow().clone());
+	let mut engine = Genetic::new(Arc::clone(&forge), searcher.skills_constraints.borrow().clone());
 	let res = engine.run();
-	println!("Result:\n{}", res);
+	println!("Result:\n{}", res.first().expect("No equipment found"));
 	assert!(true);
 }
 
