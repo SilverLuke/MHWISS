@@ -69,6 +69,12 @@ impl Item for Weapon {
 	}
 }
 
+impl PartialEq for Weapon {
+	fn eq(&self, other: &Self) -> bool {
+		self.id == other.id
+	}
+}
+
 impl fmt::Display for Weapon {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "{}[{}]", self.name, self.id)

@@ -54,3 +54,9 @@ impl fmt::Display for Tool {
 		write!(f, "{}", self.name)
 	}
 }
+
+impl PartialEq for Tool {
+	fn eq(&self, other: &Self) -> bool {
+		self.id == other.id
+	}
+}

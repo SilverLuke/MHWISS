@@ -53,3 +53,9 @@ impl Item for Charm {
 		None
 	}
 }
+
+impl PartialEq for Charm {
+	fn eq(&self, other: &Self) -> bool {
+		self.id == other.id
+	}
+}

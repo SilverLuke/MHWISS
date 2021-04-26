@@ -12,6 +12,8 @@ mod ui;
 mod datatypes;
 mod engines;
 mod db;
+#[cfg(test)]
+mod test;
 
 fn main() {
 	let mut forge = Forge::new();

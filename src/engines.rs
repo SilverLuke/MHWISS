@@ -1,5 +1,5 @@
-mod greedy;
-mod genetic;
+pub(crate) mod greedy;
+pub(crate) mod genetic;
 
 use std::{
 	fmt,
@@ -43,15 +43,15 @@ pub enum Engines {
 	Genetic,
 }
 
-trait Engine {
+pub(crate) trait Engine {
 	fn run(&mut self) -> Vec<Equipment>;
 }
 
 pub struct EnginesManager {
-	pub(crate) forge: Arc<Forge>,
+	forge: Arc<Forge>,
 	skills_constraints: RefCell<HashMap<ID, Level>>,
 	sender: Option<Sender<Callback>>,
-	pub(crate) running: Cell<bool>,
+	running: Cell<bool>,
 }
 
 impl EnginesManager {
@@ -104,6 +104,10 @@ impl EnginesManager {
 	pub fn ended(&self) {
 		self.running.replace(false);
 	}
+
+	pub fn get_constrains(&self) -> HashMap<ID, Level> {
+		self.skills_constraints.borrow().clone()
+	}
 }
 
 impl fmt::Display for EnginesManager {
@@ -115,7 +119,3 @@ impl fmt::Display for EnginesManager {
 		write!(f, "{}", str)
 	}
 }
-
-#[cfg(test)]
-#[path = "engines/tests.rs"]
-mod tests;

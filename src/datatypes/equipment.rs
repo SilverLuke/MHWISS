@@ -48,20 +48,23 @@ impl fmt::Display for Equipment {
 		};
 
 		for (i, tool) in self.tools.iter().enumerate() {
-			str = format!("{0:}\t{1: <6}:", str, format!("tool {}", i+1));
+			str = format!("{0:}\t{1: <6}:", str, format!("tool {}", i + 1));
 			str = match tool {
 				Some(tool) => format!("{} {}\n", str, tool.item),
 				None => format!("{} None\n", str),
 			}
 		}
-		str.remove(str.len()-1);
+		str.remove(str.len() - 1);
 		write!(f, "{}", str)
 	}
 }
 
 impl Wearable for Weapon {}
+
 impl Wearable for Armor {}
+
 impl Wearable for Charm {}
+
 impl Wearable for Tool {}
 
 impl Equipment {
@@ -159,5 +162,19 @@ impl Equipment {
 		}
 		let tmp = self.set.len();
 		count == tmp
+	}
+}
+
+impl PartialEq for Equipment {
+	fn eq(&self, other: &Self) -> bool {
+		self.weapon == other.weapon &&
+			self.set[0] == self.set[0] &&
+			self.set[1] == self.set[1] &&
+			self.set[2] == self.set[2] &&
+			self.set[3] == self.set[3] &&
+			self.set[4] == self.set[4] &&
+			self.charm == self.charm &&
+			self.tools[0] == self.tools[0] &&
+			self.tools[1] == self.tools[1]
 	}
 }

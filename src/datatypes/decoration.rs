@@ -4,15 +4,18 @@ use std::{
 	cell::RefCell,
 	collections::{HashMap, hash_map::Entry},
 };
+use itertools::{
+	Itertools,
+	EitherOrBoth::{Both, Left, Right}
+};
 use crate::datatypes::{
 	ID, Level, MAX_SLOTS,
-	types::Item,
+	types::{Item, Decorable},
 	skill::{Skill, SkillLevel, SkillsLevel},
-	armor::Armor
+	armor::Armor,
+	weapon::Weapon,
+	tool::Tool,
 };
-use crate::datatypes::types::Decorable;
-use crate::datatypes::weapon::Weapon;
-use crate::datatypes::tool::Tool;
 
 pub struct Decoration {
 	pub id: ID,
@@ -56,6 +59,12 @@ impl Item for Decoration {
 
 	fn get_slots(&self) -> Option<Vec<u8>> {
 		None
+	}
+}
+
+impl PartialEq for Decoration {
+	fn eq(&self, other: &Self) -> bool {
+		self.id == other.id
 	}
 }
 
@@ -207,5 +216,23 @@ impl fmt::Display for AttachedDecorations<Armor> {
 impl fmt::Debug for AttachedDecorations<Armor> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "{}", self)
+	}
+}
+
+impl<T> PartialEq for AttachedDecorations<T> where T: PartialEq + Item {
+	fn eq(&self, other: &Self) -> bool {
+		if self.decorations.len() == other.decorations.len() {
+			let mut equals = true;
+			for it in self.decorations.iter().zip_longest(other.decorations.iter()) {
+				equals &= match it {
+					Both(x, y) => x == y,
+					Left(x) => unreachable!(),
+					Right(y) => unreachable!(),
+				}
+			}
+			self.item == other.item && equals
+		} else {
+			false
+		}
 	}
 }
