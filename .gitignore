@@ -1,6 +1,6 @@
-Cargo.lock
-/target
+res/gui/*.glade~
 **/*.rs.bk
-.idea
-gui/*.glade~
+/target
+Cargo.lock
 .tokeignore
+.idea

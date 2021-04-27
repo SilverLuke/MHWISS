@@ -25,7 +25,7 @@ impl SkillsPage {
 
 	pub fn show(&self, application: Rc<Ui>, forge: &Arc<Forge>) {  // TODO: Add skill dependecy
 		for skill in forge.skills.values().sorted_by(|a, b| { a.name.cmp(&b.name) }) {
-			let builder = Ui::get_builder("gui/skill box.glade".to_string());
+			let builder = Ui::get_builder("res/gui/skill box.glade".to_string());
 			let skill_box: gtk::Box = builder.get_object("box").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();
 			let adjustment: gtk::Adjustment = builder.get_object("adjustment").unwrap();
@@ -33,7 +33,7 @@ impl SkillsPage {
 
 			let style = skill_box.get_style_context();
 			let provider = gtk::CssProvider::new();
-			provider.load_from_path("gui/style.css").unwrap();
+			provider.load_from_path("res/gui/style.css").unwrap();
 			style.add_provider(&provider, gtk::STYLE_PROVIDER_PRIORITY_USER);
 			style.add_class("skillBox");  // TODO: Better implementation using glades => Add this feature in glade
 
@@ -52,7 +52,7 @@ impl SkillsPage {
 		}
 
 		for skill in forge.set_skills.values().sorted_by(|a, b| { a.name.cmp(&b.name) }) {
-			let builder = Ui::get_builder("gui/skill box.glade".to_string());
+			let builder = Ui::get_builder("res/gui/skill box.glade".to_string());
 			let skill_box: gtk::Box = builder.get_object("box").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();
 			let adjustment: gtk::Adjustment = builder.get_object("adjustment").unwrap();
@@ -60,7 +60,7 @@ impl SkillsPage {
 
 			let style = skill_box.get_style_context();
 			let provider = gtk::CssProvider::new();
-			provider.load_from_path("gui/style.css").unwrap();
+			provider.load_from_path("res/gui/style.css").unwrap();
 			style.add_provider(&provider, gtk::STYLE_PROVIDER_PRIORITY_USER);
 			style.add_class("skillBox");  // TODO: Better implementation using glades => Add this feature in glade
 

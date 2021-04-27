@@ -95,10 +95,10 @@ impl Ui {
 
 	pub fn new(forge: Arc<Forge>, mut searcher: EnginesManager) -> Rc<Self> {
 		gtk::init().unwrap_or_else(|_| panic!("Failed to initialize GTK."));
-		let builder = Ui::get_builder("gui/main.glade".to_string());
+		let builder = Ui::get_builder("res/gui/main.glade".to_string());
 
 		let application = Application::new(
-			Some("mhwi.ass"),
+			Some("mhwi.ss"),
 			Default::default()
 		).expect("Initialization failed...");
 
@@ -186,7 +186,7 @@ impl Ui {
 			(String::from("mantle"), String::from("equipment/mantle.svg"), NORMAL_SIZE_ICON),
 			(String::from("mantle empty"), String::from("equipment/mantle empty.svg"), NORMAL_SIZE_ICON),
 			(String::from("booster"), String::from("equipment/booster.svg"), NORMAL_SIZE_ICON),
-			(String::from("slot none"), String::from("ui/slot none.svg"), SMALL_SIZE_ICON),
+			(String::from("slot none"), String::from("equipment/slot/none.svg"), SMALL_SIZE_ICON),
 		];
 		// for i in Weapons::iterator(){}
 		for i in Element::iterator() {
@@ -205,13 +205,13 @@ impl Ui {
 
 		for i in 1..=4 {
 			for j in 0..=i {  // slot <slot size> <deco size>
-				resources.push((format!("slot {} {}", i, j), format!("ui/slot {} {}.svg", i, j), SMALL_SIZE_ICON));
+				resources.push((format!("slot {} {}", i, j), format!("equipment/slot/{} {}.svg", i, j), SMALL_SIZE_ICON));
 			}
 		}
 
 		let mut hash: HashMap<String, Pixbuf> = Default::default();
 		resources.into_iter().for_each(|(name, path, size)| {
-			let real_path = format!("MHWorldData/images/{}", path);
+			let real_path = format!("res/images/{}", path);
 			hash.insert(name, Pixbuf::from_file_at_scale(&real_path, size, size, true).expect(&path));
 		});
 		hash
@@ -224,7 +224,7 @@ impl Ui {
 	}
 
 	pub(crate) fn set_fixed_image(builder: &gtk::Builder, id: &str, path: &str, size: i32) {
-		let path = format!("MHWorldData/images/{}", path);
+		let path = format!("res/images/{}", path);
 		let image: gtk::Image = builder.get_object(id).expect(id);
 		image.set_from_pixbuf(
 			Some(&Pixbuf::from_file_at_scale(&path, size, size, true).expect(path.as_str()))

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   version="1.1"
+   id="svg4"
+   sodipodi:docname="ic_equipment_mantle_empty.svg"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)">
+  <metadata
+     id="metadata10">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs8" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1080"
+     inkscape:window-height="629"
+     id="namedview6"
+     showgrid="false"
+     inkscape:zoom="0.87467484"
+     inkscape:cx="5.0496012"
+     inkscape:cy="256"
+     inkscape:window-x="0"
+     inkscape:window-y="634"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg4" />
+  <path
+     d="M364.5 298.13l-64.22-92.04l83.8-66.02l-105.49-80.43H125.56V224.4c-13.43 15.94-20.4 31.73-20.4 47.65c0 16.26 3.24 29.54 10.24 39.32L56.63 452.6h398.74c-49.32-59.37-86.17-104.32-110.55-134.83l19.68-19.64zm-223.75-89.5h14.96V91.29H188v117.34h32.44V74.83h-79.69v133.8zm132.48-133.8h-43.3v133.8h42.57l87.2-68.7l-86.47-65.1zm18.25 145.2H150.94c-20.4 18.6-30.6 35.95-30.6 52.01c0 17.59 4.3 29.61 12.87 36.07l17.59 21.5l41.15-37.66l41.37 38.2l39.51-38.56l38.35 38.33l13.28-13.3l20.29-20.24l-53.27-76.36zM79.4 437.4h341.34c-33.7-42.37-62.6-78.62-86.66-108.74l-23 22.65l-38.39-38.37l-39.1 38.14l-41.7-38.5l-42.64 39.03l-22.7-27.52L79.4 437.4z"
+     fill="#C2BFBF"
+     id="path2"
+     style="fill-rule:evenodd;" />
+</svg>

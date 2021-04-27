@@ -23,7 +23,7 @@ impl ArmorsPage {
 
 	pub fn show(&self, forge: &Arc<Forge>) {
 		for set in forge.sets.values().sorted_by(|a, b| { a.id.cmp(&b.id) }) {
-			let builder = Ui::get_builder("gui/set box.glade".to_string());
+			let builder = Ui::get_builder("res/gui/set box.glade".to_string());
 			let set_row: gtk::ListBoxRow = builder.get_object("row").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();
 
