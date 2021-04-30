@@ -21,14 +21,15 @@ use crate::datatypes::{Level, ID,
 	types
 };
 use crate::engines::{EnginesManager, Engine};
+use crate::datatypes::types::Decorable;
 
 type MagicValue = i16;
 
 enum Wearable {
-	Weapon(MagicValueContainer<Weapon>),
-	Armor(MagicValueContainer<Armor>),
+	Weapon(MagicValueContainer<AttachedDecorations<Weapon>>),
+	Armor(MagicValueContainer<AttachedDecorations<Armor>>),
 	Charm(MagicValueContainer<Charm>),
-	Tool(MagicValueContainer<Tool>),
+	Tool(MagicValueContainer<AttachedDecorations<Tool>>),
 }
 
 impl Wearable {
@@ -43,10 +44,10 @@ impl Wearable {
 
 	fn get_second_prop(&self) -> u16 {
 		match self {
-			Wearable::Weapon(i) => i.item.attack_true,
-			Wearable::Armor(i) => i.item.defence[2] as u16,
+			Wearable::Weapon(i) => i.item.item.attack_true,
+			Wearable::Armor(i) => i.item.item.defence[2] as u16,
 			Wearable::Charm(i) => i.item.id,
-			Wearable::Tool(i) => i.item.id,
+			Wearable::Tool(i) => i.item.item.id,
 		}
 	}
 
@@ -59,12 +60,12 @@ impl Wearable {
 		}
 	}
 
-	fn recalculate(&mut self, constrains: &HashMap<ID, Level>) {
+	fn recalculate(&mut self, constrains: &HashMap<ID, Level>, deco: &Vec<MagicValueContainer<Decoration>>) {
 		match self {
-			Wearable::Weapon(item) => item.recalculate(constrains),
-			Wearable::Armor(item) => item.recalculate(constrains),
+			Wearable::Weapon(item) => item.recalculate_slots(constrains, deco),
+			Wearable::Armor(item) => item.recalculate_slots(constrains, deco),
 			Wearable::Charm(item) => item.recalculate(constrains),
-			Wearable::Tool(item) => item.recalculate(constrains),
+			Wearable::Tool(item) => item.recalculate_slots(constrains, deco),
 		}
 	}
 }
@@ -95,14 +96,7 @@ struct MagicValueContainer<T: Item> {
 }
 
 impl<T: Item> MagicValueContainer<T> {
-	fn new(item: Arc<T>) -> Self {
-		MagicValueContainer {
-			item,
-			value: 0,
-		}
-	}
-
-	fn new_with_value(item: Arc<T>, constraint: &HashMap<ID, Level>) -> Self {
+	fn new(item: Arc<T>, constraint: &HashMap<ID, Level>) -> Self {
 		let value = MagicValueContainer::<T>::skill_value(&item.get_skills_hash(), constraint);
 		MagicValueContainer {
 			item,
@@ -112,7 +106,7 @@ impl<T: Item> MagicValueContainer<T> {
 
 	fn with_slots(item: Arc<T>, constraint: &HashMap<ID, Level>, deco: &Vec<MagicValueContainer<Decoration>>) -> Self {
 		let value = MagicValueContainer::<T>::skill_value(&item.get_skills_hash(), constraint);
-		let deco_val = MagicValueContainer::<T>::decoration_value(item.get_slots(), deco);
+		let deco_val = MagicValueContainer::<T>::decoration_value(item.get_slots().unwrap(), deco);
 		MagicValueContainer {
 			item,
 			value: value + deco_val,
@@ -124,22 +118,38 @@ impl<T: Item> MagicValueContainer<T> {
 		for (id, val) in item {
 			value += match constraint.get(id) {
 				None => 0i16,
-				Some(v) => *v as i16,
+				Some(v) => *v as MagicValue,
 			};
 		}
 		value
 	}
 
-	fn decoration_value(slots: Option<Vec<u8>>, deco: &Vec<MagicValueContainer<Decoration>>) -> MagicValue {
-		if let Some(vec) = slots {
-			return 0;
-			vec.len() as i16;
+	fn decoration_value(slots: Vec<u8>, decorations: &Vec<MagicValueContainer<Decoration>>) -> MagicValue {  // Sum of the value of best decorations applicable.
+		let mut val = 0;
+		let mut i = 0;
+		for deco in decorations {
+			if let Some(slot_size) = slots.get(i) {
+				if deco.item.size == *slot_size {
+					i += 1;
+					val += deco.value;
+				}
+			} else {
+				break;
+			}
 		}
-		0
+		val
 	}
 
 	fn recalculate(&mut self, constrains: &HashMap<ID, Level>) {
 		self.value = MagicValueContainer::<T>::skill_value(&self.item.get_skills_hash(), constrains);
+	}
+
+	fn recalculate_slots(&mut self, constrains: &HashMap<ID, Level>, deco: &Vec<MagicValueContainer<Decoration>>) {
+		let skill_val = MagicValueContainer::<T>::skill_value(&self.item.get_skills_hash(), constrains);
+		let deco_val = if let Some(slots) = self.item.get_slots() {
+			MagicValueContainer::<T>::decoration_value(slots, deco)
+		} else { 0 };
+		self.value = skill_val + deco_val;
 	}
 
 	fn get(&self) -> &Arc<T> {
@@ -182,22 +192,25 @@ impl Greedy {
 		let copy = constrains.clone();
 		let mut decorations: Vec<MagicValueContainer<Decoration>> = Default::default();
 		let mut wearable: Vec<Wearable> = Default::default();
+
 		for decoration in forge.get_decorations_filtered(&copy).iter() {
-			let container = MagicValueContainer::new_with_value(Arc::clone(decoration), &copy);
+			let container = MagicValueContainer::new(Arc::clone(decoration), &copy);
 			decorations.push(container);
 		}
 		decorations.sort_by(|a, b| { b.cmp(&a) }); // Sorting descending
 
 		for charm in forge.get_charms_filtered(&copy).iter() {
-			let container = MagicValueContainer::new(Arc::clone(charm));
+			let container = MagicValueContainer::new(Arc::clone(charm), &copy);
 			wearable.push(Wearable::Charm(container));
 		}
 		for armor in forge.get_armors_filtered(&copy).iter() {
-			let container = MagicValueContainer::with_slots(Arc::clone(armor), &copy, &decorations);
+			let deco_conta = AttachedDecorations::new(Arc::clone(armor));
+			let container = MagicValueContainer::with_slots(Arc::new(deco_conta), &copy, &decorations);  // TODO remove this Arc::new()
 			wearable.push(Wearable::Armor(container));
 		}
 		for weapon in forge.get_weapons_filtered(&copy).iter() {
-			let container = MagicValueContainer::with_slots(Arc::clone(weapon), &copy, &decorations);
+			let deco_conta = AttachedDecorations::new(Arc::clone(weapon));
+			let container = MagicValueContainer::with_slots(Arc::new(deco_conta), &copy, &decorations);
 			wearable.push(Wearable::Weapon(container));
 		}
 		// TODO add tools
@@ -220,12 +233,10 @@ impl Greedy {
 		self.decorations.sort_by(|a, b| { b.cmp(&a) }); // Sorting descending
 
 		for w in self.wearable.iter_mut() {
-			w.recalculate(&self.current_constrains);
+			w.recalculate(&self.current_constrains, &self.decorations);
 		}
 		self.wearable.retain(|i| i.get_value() > 0);
-		self.wearable.sort_by(|a, b| { b.cmp(&a) }); // Sorting descending
-		// TODO add tools
-		self.wearable.sort_by(|a, b| b.cmp(&a)); // Sorting descending
+		self.wearable.sort_by(|a, b| { b.cmp(&a) });
 	}
 
 	fn remove_constrains(&mut self, skills: HashMap<ID, Level>) {
@@ -234,7 +245,7 @@ impl Greedy {
 				Entry::Occupied(mut o) => {
 					let remaining: i16 = *o.get() as i16 - val as i16;
 					if remaining <= 0 {
-						dbg!(o.remove());
+						o.remove();
 					} else {
 						o.insert(remaining as u8);
 					}
@@ -257,7 +268,64 @@ impl Greedy {
 				None => satisfied = false,
 			}
 		}
-		dbg!(satisfied)
+		satisfied
+	}
+
+	fn apply_best_decorations<T: Item + Decorable>(&self, item: &mut AttachedDecorations<T>) {
+		let mut i = 0;
+		for deco in &self.decorations {
+			item.try_add_deco(Arc::clone(&deco.item));
+		}
+	}
+}
+
+impl Engine for Greedy {
+	fn run(&mut self) -> Vec<Equipment> {
+		let mut result = Equipment::new();
+		let mut impossible = false;
+		while self.satisfy_constraint(&result).not() && result.is_full().not() && impossible.not() {
+			let mut i = 0;
+			let mut insered = false;
+			while insered.not() {  // Loop until a weareable item is suited for placement
+				match self.wearable.get(i) {
+					Some(piece) => {
+						let result = match piece {
+							Wearable::Weapon(item) => {
+								let mut weapon = (**item.get()).clone();
+								self.apply_best_decorations(&mut weapon);
+								result.try_add_weapon(weapon)
+							},
+							Wearable::Armor(item) => {
+								let mut armor = (**item.get()).clone();
+								self.apply_best_decorations(&mut armor);
+								result.try_add_armor(armor)
+							},
+							Wearable::Tool(item) => {
+								let mut tool = (**item.get()).clone();
+								self.apply_best_decorations(&mut tool);
+								result.try_add_tool(tool)
+							},
+							Wearable::Charm(item) => result.try_add_charm(Arc::clone(item.get())),
+						}.is_ok();
+						if result {
+							if let Some(skills) = piece.get_skills() {
+								self.remove_constrains(skills);
+							}
+							insered = true;  // Go for the next piece
+						} else {
+							i += 1;
+						}
+					},
+					None => {
+						println!("IMPOSSIBLE");
+						insered = true;  // No more armor to be tested
+						impossible = true;  // So no configuration exist (Maybe???)
+					}
+				};
+			}
+			self.filter();
+		}
+		vec![result]
 	}
 }
 
@@ -285,43 +353,5 @@ impl fmt::Debug for Greedy {
 		}
 		*/
 		write!(f, "{}##################\n", str)
-	}
-}
-
-impl Engine for Greedy {
-	fn run(&mut self) -> Vec<Equipment> {
-		let mut result = Equipment::new();
-		let mut impossible = false;
-		while self.satisfy_constraint(&result).not() && result.is_full().not() && impossible.not() {
-			let mut i = 0;
-			let mut inserted = false;
-			while inserted.not() {  // Loop until a weareable item is suited for placement
-				match self.wearable.get(i) {
-					Some(piece) => {
-						let result = match piece {
-							Wearable::Weapon(item) => result.try_add_weapon(AttachedDecorations::new(Arc::clone(item.get()))),
-							Wearable::Armor(item) => result.try_add_armor(AttachedDecorations::new(Arc::clone(item.get()))),
-							Wearable::Charm(item) => result.try_add_charm(Arc::clone(item.get())),
-							Wearable::Tool(item) => result.try_add_tool(AttachedDecorations::new(Arc::clone(item.get()))),
-						}.is_ok();
-						if result {
-							if let Some(skills) = piece.get_skills() {
-								self.remove_constrains(skills);
-							}
-							inserted = true;  // Go for the next piece
-						} else {
-							i += 1;
-						}
-					},
-					None => {
-						println!("IMPOSSIBLE");
-						inserted = false;  // No more armor to be tested
-						impossible = true;  // So no configuration exist (Maybe???)
-					}
-				};
-			}
-			self.filter();
-		}
-		vec![result]
 	}
 }

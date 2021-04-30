@@ -7,7 +7,7 @@ use std::{
 
 use crate::datatypes::{
 	ID, Level,
-	types::Item,
+	types::{Item, Decorable},
 	skill::{Skill, SkillLevel, SkillsLevel},
 };
 
@@ -46,6 +46,12 @@ impl Item for Tool {
 
 	fn get_slots(&self) -> Option<Vec<u8>> {
 		Some(Vec::from(self.slots))
+	}
+}
+
+impl Decorable for Tool {
+	fn get_slots(&self) -> Vec<u8> {
+		Vec::from(self.slots)
 	}
 }
 

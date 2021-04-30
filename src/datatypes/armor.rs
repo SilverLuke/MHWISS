@@ -6,11 +6,9 @@ use std::{
 };
 use crate::datatypes::{
     ID, Level, MAX_SLOTS,
-    types::{ArmorClass, Gender, ArmorRank},
+    types::{ArmorClass, Gender, ArmorRank, Item, Decorable},
     skill::{Skill, SetSkill, SkillLevel, SkillsLevel},
 };
-use crate::datatypes::types::Item;
-use rusqlite::OpenFlags;
 use std::ops::Not;
 
 pub struct Armor {
@@ -77,6 +75,13 @@ impl Item for Armor {
         Some(Vec::from(self.slots))
     }
 }
+
+impl Decorable for Armor {
+    fn get_slots(&self) -> Vec<u8> {
+        Vec::from(self.slots)
+    }
+}
+
 
 
 pub struct ArmorSet {

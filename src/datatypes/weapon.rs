@@ -2,15 +2,13 @@ use std::{
 	fmt,
 	sync::Arc,
 	cell::RefCell,
-	collections::HashMap,
+	collections::{HashMap, hash_map::Entry},
 };
 use crate::datatypes::{
 	ID, Level, MAX_SLOTS, SHARPNESS_LEVELS,
-	types::{WeaponClass, Element, ElderSeal},
+	types::{WeaponClass, Element, ElderSeal, Decorable, Item},
 	skill::{Skill, SetSkill, SkillLevel, SkillsLevel},
-	types::Item,
 };
-use std::collections::hash_map::Entry;
 
 pub struct Weapon {
 	pub id: ID,
@@ -66,6 +64,13 @@ impl Item for Weapon {
 
 	fn get_slots(&self) -> Option<Vec<u8>> {
 		Some(Vec::from(self.slots))
+	}
+
+}
+
+impl Decorable for Weapon {
+	fn get_slots(&self) -> Vec<u8> {
+		Vec::from(self.slots)
 	}
 }
 

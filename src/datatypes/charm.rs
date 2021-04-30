@@ -48,7 +48,6 @@ impl Item for Charm {
 	fn get_skills_iter(&self) -> Box<dyn Iterator<Item=&SkillLevel> + '_> {
 		self.skills.get_skills()
 	}
-
 	fn get_slots(&self) -> Option<Vec<u8>> {
 		None
 	}

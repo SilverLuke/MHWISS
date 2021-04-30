@@ -246,14 +246,16 @@ impl ElderSeal {
 	}
 }
 
-pub trait Item : Any {
+pub trait Item {
 	fn has_skills(&self, query: &HashMap<ID, Level>) -> bool;
-	fn get_skills_chained(&self, chained: &mut HashMap<ID, Level>);
 	fn get_skills_hash(&self) -> HashMap<ID, Level>;
+	fn get_skills_chained(&self, chained: &mut HashMap<ID, Level>);
 	fn get_skills_iter(&self) -> Box<dyn Iterator<Item=&SkillLevel> + '_>;
 	fn get_slots(&self) -> Option<Vec<u8>>;
 }
 
-pub trait Decorable {}
+pub trait Decorable {
+	fn get_slots(&self) -> Vec<u8>;
+}
 
 pub trait Wearable {}

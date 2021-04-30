@@ -16,6 +16,7 @@ use crate::datatypes::{
 	weapon::Weapon,
 	tool::Tool,
 };
+use std::borrow::Borrow;
 
 pub struct Decoration {
 	pub id: ID,
@@ -68,12 +69,12 @@ impl PartialEq for Decoration {
 	}
 }
 
-pub struct AttachedDecorations<T: Item> {
+pub struct AttachedDecorations<T: Item + Decorable> {
 	pub item: Arc<T>,
 	pub decorations: Vec<Option<Arc<Decoration>>>,
 }
 
-impl<T> Clone for AttachedDecorations<T> where T: Item {
+impl<T> Clone for AttachedDecorations<T> where T: Item + Decorable {
 	fn clone(&self) -> Self {
 		AttachedDecorations {
 			item: Arc::clone(&self.item),
@@ -82,15 +83,9 @@ impl<T> Clone for AttachedDecorations<T> where T: Item {
 	}
 }
 
-impl Decorable for Weapon {}
-
-impl Decorable for Armor {}
-
-impl Decorable for Tool {}
-
 impl<T> AttachedDecorations<T> where T: Item + Decorable {
 	pub fn new(item: Arc<T>) -> Self {
-		let item_slots = item.get_slots().unwrap();
+		let item_slots = Decorable::get_slots(item.as_ref());
 		let deco = vec![None; item_slots.len()];
 		AttachedDecorations {
 			item,
@@ -110,31 +105,30 @@ impl<T> AttachedDecorations<T> where T: Item + Decorable {
 	}
 
 	pub fn try_add_deco(&mut self, decoration: Arc<Decoration>) -> Result<(), &str> {
-		if let Some(slots) = self.item.get_slots() {
-			for (i, size) in slots.iter().enumerate().rev() {
-				if *size >= decoration.size && self.is_empty(i) {
-					self.set_deco(i, decoration);
-					return Ok(());
-				}
+		for (i, size) in  Decorable::get_slots(self.item.as_ref()).iter().enumerate().rev() {
+			if *size >= decoration.size && self.is_empty(i) {
+				self.set_deco(i, decoration);
+				return Ok(());
 			}
-			Err("No space left")
-		} else {
-			Err("This object do not have slots")
 		}
+		Err("No space left")
 	}
 
 	pub(crate) fn get_deco(&self, index: usize) -> Option<Arc<Decoration>> {
 		if let Some(hit) = self.decorations.get(index) {
-			return hit.clone();  // TODO: this .clone() is right???
+			return hit.clone();
 		}
 		None
 	}
 
 	fn set_deco(&mut self, index: usize, decoration: Arc<Decoration>) {
-		let empty = self.decorations.get(index).unwrap().is_none();  // TODO to many unwrap ?
-		let size = *self.item.get_slots().unwrap().get(index).unwrap() >= decoration.size;
-		if empty && size {  // decos.len() > index &&
-			self.decorations[index] = Some(decoration);
+		if let Some(deco) = self.decorations.get(index) {
+			let empty = deco.is_none();
+			let item_slots = Decorable::get_slots(self.item.as_ref());
+			let size = *item_slots.get(index).unwrap() >= decoration.size;
+			if empty && size {  // decos.len() > index &&
+				self.decorations[index] = Some(decoration);
+			}
 		}
 	}
 
@@ -145,9 +139,13 @@ impl<T> AttachedDecorations<T> where T: Item + Decorable {
 			None
 		}
 	}
+
+	fn get_slots(&self) -> Option<Vec<u8>> {
+		Item::get_slots(self)
+	}
 }
 
-impl<T> Item for AttachedDecorations<T> where T: Item {
+impl<T> Item for AttachedDecorations<T> where T: Item + Decorable {
 	fn has_skills(&self, query: &HashMap<ID, Level>) -> bool {
 		self.item.has_skills(query) || {
 			for deco in self.decorations.iter() {
@@ -186,7 +184,25 @@ impl<T> Item for AttachedDecorations<T> where T: Item {
 	}
 
 	fn get_slots(&self) -> Option<Vec<u8>> {
-		self.item.get_slots()
+		Item::get_slots(self.item.borrow() as &T)
+	}
+}
+
+impl<T> PartialEq for AttachedDecorations<T> where T: PartialEq + Item + Decorable {
+	fn eq(&self, other: &Self) -> bool {
+		if self.decorations.len() == other.decorations.len() {
+			let mut equals = true;
+			for it in self.decorations.iter().zip_longest(other.decorations.iter()) {
+				equals &= match it {
+					Both(x, y) => x == y,
+					Left(x) => unreachable!(),
+					Right(y) => unreachable!(),
+				}
+			}
+			self.item == other.item && equals
+		} else {
+			false
+		}
 	}
 }
 
@@ -216,23 +232,5 @@ impl fmt::Display for AttachedDecorations<Armor> {
 impl fmt::Debug for AttachedDecorations<Armor> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "{}", self)
-	}
-}
-
-impl<T> PartialEq for AttachedDecorations<T> where T: PartialEq + Item {
-	fn eq(&self, other: &Self) -> bool {
-		if self.decorations.len() == other.decorations.len() {
-			let mut equals = true;
-			for it in self.decorations.iter().zip_longest(other.decorations.iter()) {
-				equals &= match it {
-					Both(x, y) => x == y,
-					Left(x) => unreachable!(),
-					Right(y) => unreachable!(),
-				}
-			}
-			self.item == other.item && equals
-		} else {
-			false
-		}
 	}
 }
