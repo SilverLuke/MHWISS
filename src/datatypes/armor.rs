@@ -88,7 +88,7 @@ pub struct ArmorSet {
     pub id: u16,
     pub name: String,
     pub rank: ArmorRank,
-    set: [Option<Arc<Armor>>; 5],
+    pub set: [Option<Arc<Armor>>; 5],
     armorset_skill: Option<Arc<SetSkill>>,
 }
 

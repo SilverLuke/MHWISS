@@ -16,33 +16,49 @@ use crate::ui::{items::{armor::GtkArmour,
 	tool::GtkTool,
 	UI,
 	weapon::GtkWeapon,
-	}, NORMAL_SIZE_ICON,
+}, NORMAL_SIZE_ICON,
 	SMALL_SIZE_ICON
 };
 use crate::ui::ui::Ui;
+use std::sync::Arc;
+use crate::datatypes::forge::Forge;
+use itertools::Itertools;
 
 pub struct ResultPage {
+	forge: Arc<Forge>,
 	weapon: GtkWeapon,
 	armors: Vec<GtkArmour>,
 	charm: GtkCharm,
 	tools: [GtkTool; 2],
-	list: gtk::ListBox,
+	results_list: gtk::ListBox,
+	skills_summary: gtk::ListBox,
+	decorations_summary: gtk::ListBox,
+	defences_summary: Vec<gtk::Label>,
 	images: Rc<HashMap<String, Pixbuf>>,
 }
 
 impl ResultPage {
-	pub fn new(builder: &gtk::Builder, images: Rc<HashMap<String, Pixbuf>>) -> Self {
+	pub fn new(forge: Arc<Forge>, builder: &gtk::Builder, images: Rc<HashMap<String, Pixbuf>>) -> Self {
 		let iter = ArmorClass::iterator();
 		let mut armors = Vec::with_capacity(iter.len());
 		for piece in iter {
 			armors.push(GtkArmour::new(&builder, *piece, Rc::clone(&images)));
 		}
+		let mut defences_summary = Vec::with_capacity(Element::iter_element().len() + 1);
+		defences_summary.push(builder.get_object("total defence").unwrap());
+		for ele in Element::iter_element() {
+			defences_summary.push(builder.get_object(format!("total {}", ele.to_string()).as_str()).unwrap());
+		}
 		let f = ResultPage {
+			forge,
 			weapon: GtkWeapon::new(builder, Rc::clone(&images)),
 			armors,
 			charm: GtkCharm::new(builder, Rc::clone(&images)),
 			tools: [GtkTool::new(builder, 0, Rc::clone(&images)), GtkTool::new(builder, 1, Rc::clone(&images))],
-			list: builder.get_object("results list").unwrap(),
+			results_list: builder.get_object("results list").unwrap(),
+			skills_summary: builder.get_object("skills summary").unwrap(),
+			decorations_summary: builder.get_object("decorations summary").unwrap(),
+			defences_summary,
 			images,
 		};
 		f.set_fixed_images(builder);
@@ -73,6 +89,12 @@ impl ResultPage {
 				Ui::set_image(&img, element.to_string().as_str(), &self.images);
 			}
 		}
+
+		Ui::set_fixed_image(builder, "total defense image", "ui/defense.svg", SMALL_SIZE_ICON);
+		for element in Element::iter_element() {
+			let img: gtk::Image = builder.get_object(&format!("total {} image", element.to_string())).expect(element.to_string().as_str());
+			Ui::set_image(&img, element.to_string().as_str(), &self.images);
+		}
 	}
 
 	pub fn update(&self, best_list: Vec<Equipment>) {
@@ -82,12 +104,43 @@ impl ResultPage {
 			piece.update(&best.set[i]);
 		}
 		self.charm.update(&best.charm);
-		for (i, tool) in self.tools.iter().enumerate() {
+		for (i, tool) in self.tools.iter().enumerate() {  // Tools
 			tool.update(&best.tools[i]);
 		}
-		for i in best_list {
+		for i in &best_list {
 			// TODO
 			//self.list.add()
 		}
+
+		// Populate the skills summary ListBox
+		self.skills_summary.forall(|i| { self.skills_summary.remove(i) });
+		for (id, lev) in best.get_skills().iter().sorted_by(|(id, lev), (a, b)| { b.cmp(&lev) }) {  // Skills Summary
+			let builder = Ui::get_builder("res/gui/summary row.glade".to_string());
+			let name: gtk::Label = builder.get_object("skill name").unwrap();
+			name.set_text(format!("{} {}", self.forge.skills.get(id).unwrap().name, lev).as_str());
+			let row: gtk::ListBoxRow = builder.get_object("skill row").unwrap();
+			self.skills_summary.add(&row);
+		}
+		// Populate the decorations summary ListBox
+		self.decorations_summary.forall(|i| { self.decorations_summary.remove(i) });
+		for (id, quantity) in best.get_decorations().iter().sorted_by(|(id, quantiy), (i, q)| { q.cmp(&quantiy) }) {  // Skills Summary
+			let builder = Ui::get_builder("res/gui/summary row.glade".to_string());
+			let deco = self.forge.decorations.get(id).unwrap();
+			let image: gtk::Image = builder.get_object("decoration image").unwrap();
+			Ui::set_image(&image, format!("slot {} {}", deco.size, deco.size).as_str(), &self.images);
+			let name: gtk::Label = builder.get_object("decoration name").unwrap();
+			name.set_text(deco.name.as_str());
+			let quantity_label: gtk::Label = builder.get_object("decoration quantity").unwrap();
+			quantity_label.set_text(format!("x{}", quantity).as_str());
+			let row: gtk::ListBoxRow = builder.get_object("decoration row").unwrap();
+			self.decorations_summary.add(&row);
+		}
+		// Final statistics
+		self.defences_summary.get(0).unwrap().set_text(best.get_defence().to_string().as_str());
+		self.defences_summary.get(1).unwrap().set_text(best.get_fire_defence().to_string().as_str());
+		self.defences_summary.get(2).unwrap().set_text(best.get_water_defence().to_string().as_str());
+		self.defences_summary.get(3).unwrap().set_text(best.get_thunder_defence().to_string().as_str());
+		self.defences_summary.get(4).unwrap().set_text(best.get_ice_defence().to_string().as_str());
+		self.defences_summary.get(5).unwrap().set_text(best.get_dragon_defence().to_string().as_str());
 	}
 }

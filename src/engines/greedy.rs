@@ -279,6 +279,9 @@ impl Greedy {
 	}
 }
 
+// TODO add how the engine works.
+// FIXME Maybe the engine do not use charms
+
 impl Engine for Greedy {
 	fn run(&mut self) -> Vec<Equipment> {
 		let mut result = Equipment::new();

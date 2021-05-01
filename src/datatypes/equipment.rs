@@ -15,7 +15,7 @@ use std::borrow::Borrow;
 use crate::datatypes::weapon::Weapon;
 use crate::datatypes::armor::Armor;
 use crate::datatypes::charm::Charm;
-use crate::datatypes::types::{ArmorClass, Item, Wearable};
+use crate::datatypes::types::{ArmorClass, Item, Wearable, Element};
 use crate::datatypes::decoration::AttachedDecorations;
 use crate::datatypes::tool::Tool;
 
@@ -151,6 +151,89 @@ impl Equipment {
 		self.add_charm_skills(&mut skills_sum);
 		skills_sum.shrink_to_fit();
 		skills_sum
+	}
+
+	fn add_or_insert(hash: &mut HashMap<ID, u8>, decorations: &Vec<Option<Arc<Decoration>>>) {
+		for i in decorations {
+			if let Some(j) = i {
+				hash.entry(j.id)
+					.and_modify(|e| { *e += 1 })
+					.or_insert(1);
+			}
+		}
+	}
+
+	pub fn get_decorations(&self) -> HashMap<ID, u8> {
+		let mut ret: HashMap<ID, u8> = Default::default();
+		if let Some(w) = &self.weapon {
+			Equipment::add_or_insert(&mut ret, &w.decorations);
+		}
+		for piece in &self.set {
+			if let Some(p) = piece {
+				Equipment::add_or_insert(&mut ret, &p.decorations);
+			}
+		}
+		for tool in &self.tools {
+			if let Some(t) = tool {
+				Equipment::add_or_insert(&mut ret, &t.decorations);
+			}
+		}
+		ret
+	}
+
+	pub fn get_defence(&self) -> u16 {
+		let mut total: u16 = 0;
+		for piece in &self.set {
+			if let Some(p) = piece {
+				total += p.item.defence[2] as u16;
+			}
+		}
+		total
+	}
+	pub fn get_fire_defence(&self) -> i16 {
+		let mut total: i16 = 0;
+		for piece in &self.set {
+			if let Some(p) = piece {
+				total += *p.item.elements.get(Element::Fire as usize).unwrap() as i16;
+			}
+		}
+		total
+	}
+	pub fn get_water_defence(&self) -> i16 {
+		let mut total: i16 = 0;
+		for piece in &self.set {
+			if let Some(p) = piece {
+				total += *p.item.elements.get(Element::Water as usize).unwrap() as i16;
+			}
+		}
+		total
+	}
+	pub fn get_thunder_defence(&self) -> i16 {
+		let mut total: i16 = 0;
+		for piece in &self.set {
+			if let Some(p) = piece {
+				total += *p.item.elements.get(Element::Thunder as usize).unwrap() as i16;
+			}
+		}
+		total
+	}
+	pub fn get_ice_defence(&self) -> i16 {
+		let mut total: i16 = 0;
+		for piece in &self.set {
+			if let Some(p) = piece {
+				total += *p.item.elements.get(Element::Ice as usize).unwrap() as i16;
+			}
+		}
+		total
+	}
+	pub fn get_dragon_defence(&self) -> i16 {
+		let mut total: i16 = 0;
+		for piece in &self.set {
+			if let Some(p) = piece {
+				total += *p.item.elements.get(Element::Dragon as usize).unwrap() as i16;
+			}
+		}
+		total
 	}
 
 	pub fn is_full(&self) -> bool {

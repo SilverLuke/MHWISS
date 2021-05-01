@@ -9,7 +9,7 @@ use std::{
 use gtk::{prelude::*, Application, ComboBox, Label, ComboBoxText};
 use glib::{Sender, Receiver};
 use gio::prelude::*;
-use gdk_pixbuf::Pixbuf;
+use gdk_pixbuf::{Pixbuf, InterpType};
 use itertools::Itertools;
 use strum::IntoEnumIterator;
 use crate::ui::{
@@ -47,13 +47,13 @@ struct Pages {
 }
 
 impl Pages {
-	pub fn new(builder: &gtk::Builder, images: Rc<HashMap<String, Pixbuf>>) -> Self {
+	pub fn new(forge: &Arc<Forge>, builder: &gtk::Builder, images: &Rc<HashMap<String, Pixbuf>>) -> Self {
 		Pages {
 			skills_page: SkillsPage::new(&builder),
-			armors_page: ArmorsPage::new(&builder),
+			armors_page: ArmorsPage::new(&builder, Rc::clone(&images)),
 			decos_page: DecorationsPage::new(&builder),
 			charms_page: CharmsPage::new(&builder),
-			found_page: ResultPage::new(builder, images),
+			found_page: ResultPage::new(Arc::clone(forge), builder, Rc::clone(&images)),
 		}
 	}
 
@@ -107,7 +107,7 @@ impl Ui {
 		let lang_combo:ComboBoxText = builder.get_object("languages combo").unwrap();
 		let engines_combo:ComboBoxText = builder.get_object("engines combo").unwrap();
 		let images = Rc::new(Ui::load_images());
-		let pages = Pages::new(&builder, Rc::clone(&images));
+		let pages = Pages::new(&forge, &builder, &images);
 
 		for (i, val) in Engines::iter().enumerate() {
 			engines_combo.insert(i as i32, Some(val.to_string().as_str()), val.to_string().as_str());
@@ -175,6 +175,9 @@ impl Ui {
 		self.pages.show(Rc::clone(self));
 		self.window.show_all();
 		let args: Vec<String> = args().collect();
+		self.searcher.add_constraint(10, 10);
+		self.searcher.run(Engines::Greedy);
+
 		self.application.run(&args);
 	}
 
@@ -187,6 +190,7 @@ impl Ui {
 			(String::from("mantle empty"), String::from("equipment/mantle empty.svg"), NORMAL_SIZE_ICON),
 			(String::from("booster"), String::from("equipment/booster.svg"), NORMAL_SIZE_ICON),
 			(String::from("slot none"), String::from("equipment/slot/none.svg"), SMALL_SIZE_ICON),
+			(String::from("armor missing"), String::from("ui/armor missing.svg"), SMALL_SIZE_ICON),
 		];
 		// for i in Weapons::iterator(){}
 		for i in Element::iterator() {
@@ -218,11 +222,15 @@ impl Ui {
 	}
 
 	pub(crate) fn set_image(image: &gtk::Image, key: &str, images: &Rc<HashMap<String, Pixbuf>>) {
-		let pixbuf = images.get(key);
-		assert_ne!(pixbuf, None);
-		image.set_from_pixbuf(pixbuf);
+		let pixbuf = images.get(key).expect(&key);
+		image.set_from_pixbuf(Some(pixbuf));
 	}
 
+	pub(crate) fn set_image_scaled(image: &gtk::Image, key: &str, size:i32, images: &Rc<HashMap<String, Pixbuf>>) {  // TODO add in the images structure already scaled pixbuf
+		let pixbuf = images.get(key).expect(&key);
+		let pixbuf = Pixbuf::scale_simple(pixbuf, size, size, InterpType::Nearest);
+		image.set_from_pixbuf(Some(&pixbuf.unwrap()));
+	}
 	pub(crate) fn set_fixed_image(builder: &gtk::Builder, id: &str, path: &str, size: i32) {
 		let path = format!("res/images/{}", path);
 		let image: gtk::Image = builder.get_object(id).expect(id);
