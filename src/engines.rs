@@ -50,7 +50,7 @@ pub(crate) trait Engine {
 pub struct EnginesManager {
 	forge: Arc<Forge>,
 	skills_constraints: RefCell<HashMap<ID, Level>>,
-	sender: Option<Sender<Callback>>,
+	sender: RefCell<Option<Sender<Callback>>>,
 	running: Cell<bool>,
 }
 
@@ -59,7 +59,7 @@ impl EnginesManager {
 		let searcher = EnginesManager {
 			forge,
 			skills_constraints: Default::default(),
-			sender: None,
+			sender: RefCell::new(None),
 			running: Cell::new(false),
 		};
 		searcher
@@ -73,35 +73,50 @@ impl EnginesManager {
 		}
 	}
 
-	pub fn run(&self, engine_type: Engines) {
-		if self.running.get().not() {
-			self.running.replace(true);
-			let forge = Arc::clone(&self.forge);
-			let constrains = self.skills_constraints.borrow().clone();
-			let sender = self.sender.clone();
-
-			Builder::new().name(engine_type.to_string().into()).spawn(move || {
-				let mut engine = match engine_type {
-					Engines::Greedy => Box::new(Greedy::new(forge, constrains)) as Box<dyn Engine>,
-					Engines::Genetic => Box::new(Genetic::new(forge, constrains)) as Box<dyn Engine>,
-				};
-				let best_equipment = engine.run();
-
-				println!("{}", best_equipment.first().unwrap());
-				if let Some(sender) = sender {
-					sender.send(Callback::Done(best_equipment)).unwrap();
-				}
-			});
-		} else {
-			println!("Add gui pop-up, engine already running");
-		}
+	pub fn clean_constrains(&self) {
+		self.skills_constraints.replace(Default::default());
 	}
 
-	pub fn add_callback(&mut self, sender: Sender<Callback>) {
-		self.sender = Some(sender);
+	pub fn run(&self, engine_type: Engines) -> Result<(), ()>{
+		if self.skills_constraints.borrow().len() > 0 {
+			if self.running.get().not() {
+				self.running.replace(true);
+				let forge = Arc::clone(&self.forge);
+				let constrains = self.skills_constraints.borrow().clone();
+				let sender = self.sender.try_borrow().unwrap().clone();
+				//self.sender.replace(sender.clone());
+				println!("Constrains: {:?}", self.skills_constraints.borrow());
+				Builder::new().name(engine_type.to_string().into()).spawn(move || {
+					let mut engine = match engine_type {
+						Engines::Greedy => Box::new(Greedy::new(forge, constrains)) as Box<dyn Engine>,
+						Engines::Genetic => Box::new(Genetic::new(forge, constrains)) as Box<dyn Engine>,
+					};
+					let best_equipment = engine.run();
+
+					if let Some(sender) = sender {
+						let err = sender.send(Callback::Done(best_equipment));
+						println!("{:?}", err);
+					} else {
+						println!("No ui callback");
+					}
+				});
+			} else {
+				println!("Add gui info, engine already running");
+				return Err(());
+			}
+		} else {
+			println!("Add gui info, no constrains");
+			return Err(());
+		}
+		Ok(())
+	}
+
+	pub fn add_callback(&self, sender: Sender<Callback>) {
+		self.sender.replace(Some(sender));
 	}
 
 	pub fn ended(&self) {
+		println!("ENDED");
 		self.running.replace(false);
 	}
 

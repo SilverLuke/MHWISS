@@ -37,8 +37,8 @@
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="primary-icon-name">edit-find-symbolic</property>
-                    <property name="primary-icon-activatable">False</property>
-                    <property name="primary-icon-sensitive">False</property>
+                    <property name="secondary-icon-activatable">False</property>
+                    <property name="secondary-icon-sensitive">False</property>
                   </object>
                   <packing>
                     <property name="expand">True</property>
@@ -47,7 +47,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton">
+                  <object class="GtkButton" id="reset constrains btn">
                     <property name="label" translatable="yes">Reset</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -56,6 +56,7 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
+                    <property name="pack-type">end</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
@@ -79,6 +80,10 @@
                       <object class="GtkBox">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="margin-start">4</property>
+                        <property name="margin-end">4</property>
+                        <property name="margin-top">4</property>
+                        <property name="margin-bottom">4</property>
                         <property name="orientation">vertical</property>
                         <child>
                           <object class="GtkFlowBox" id="skill list">
@@ -86,7 +91,11 @@
                             <property name="can-focus">False</property>
                             <property name="valign">start</property>
                             <property name="homogeneous">True</property>
+                            <property name="column-spacing">4</property>
+                            <property name="row-spacing">4</property>
                             <property name="min-children-per-line">1</property>
+                            <property name="selection-mode">none</property>
+                            <property name="activate-on-single-click">False</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -98,8 +107,6 @@
                           <object class="GtkBox">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="margin-start">5</property>
-                            <property name="margin-end">5</property>
                             <property name="margin-top">5</property>
                             <property name="margin-bottom">5</property>
                             <property name="spacing">10</property>
@@ -149,12 +156,16 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkFlowBox" id="skill set">
+                          <object class="GtkFlowBox" id="skill set list">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="valign">start</property>
                             <property name="homogeneous">True</property>
+                            <property name="column-spacing">4</property>
+                            <property name="row-spacing">4</property>
                             <property name="min-children-per-line">1</property>
+                            <property name="selection-mode">none</property>
+                            <property name="activate-on-single-click">False</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -476,16 +487,16 @@
           <object class="GtkBox" id="deco box">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-start">5</property>
-            <property name="margin-end">5</property>
-            <property name="margin-top">5</property>
-            <property name="margin-bottom">5</property>
             <property name="orientation">vertical</property>
             <property name="spacing">5</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="margin-start">5</property>
+                <property name="margin-end">5</property>
+                <property name="margin-top">5</property>
+                <property name="margin-bottom">5</property>
                 <property name="spacing">5</property>
                 <child>
                   <object class="GtkSearchEntry" id="decoration search bar">
@@ -507,7 +518,7 @@
                     <property name="can-focus">False</property>
                     <property name="layout-style">expand</property>
                     <child>
-                      <object class="GtkSpinButton">
+                      <object class="GtkSpinButton" id="quantity deco">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="progress-pulse-step">1</property>
@@ -521,7 +532,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="set deco">
+                      <object class="GtkButton" id="set quantity deco">
                         <property name="label" translatable="yes">Set</property>
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
@@ -560,13 +571,56 @@
                       <object class="GtkBox">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="margin-start">4</property>
+                        <property name="margin-end">4</property>
+                        <property name="margin-top">4</property>
+                        <property name="margin-bottom">4</property>
                         <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkFlowBox" id="deco lev1">
+                          <object class="GtkBox">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="homogeneous">True</property>
-                            <property name="min-children-per-line">1</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="spacing">10</property>
+                            <child>
+                              <object class="GtkSeparator">
+                                <property name="height-request">3</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="valign">center</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Size 1 </property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkSeparator">
+                                <property name="height-request">3</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="valign">center</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -575,10 +629,12 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkFlowBox" id="deco lev2">
+                          <object class="GtkFlowBox" id="deco lev1">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="homogeneous">True</property>
+                            <property name="column-spacing">4</property>
+                            <property name="row-spacing">4</property>
                             <property name="min-children-per-line">1</property>
                           </object>
                           <packing>
@@ -588,11 +644,50 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkFlowBox" id="deco lev3">
+                          <object class="GtkBox">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="homogeneous">True</property>
-                            <property name="min-children-per-line">1</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="spacing">10</property>
+                            <child>
+                              <object class="GtkSeparator">
+                                <property name="height-request">3</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="valign">center</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Size 2</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkSeparator">
+                                <property name="height-request">3</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="valign">center</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -601,16 +696,152 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkFlowBox" id="deco lev4">
+                          <object class="GtkFlowBox" id="deco lev2">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="homogeneous">True</property>
+                            <property name="column-spacing">4</property>
+                            <property name="row-spacing">4</property>
                             <property name="min-children-per-line">1</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
                             <property name="position">3</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="spacing">10</property>
+                            <child>
+                              <object class="GtkSeparator">
+                                <property name="height-request">3</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="valign">center</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Size 3</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkSeparator">
+                                <property name="height-request">3</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="valign">center</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">4</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkFlowBox" id="deco lev3">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="homogeneous">True</property>
+                            <property name="column-spacing">4</property>
+                            <property name="row-spacing">4</property>
+                            <property name="min-children-per-line">1</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">5</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="spacing">10</property>
+                            <child>
+                              <object class="GtkSeparator">
+                                <property name="height-request">3</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="valign">center</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">0</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="label" translatable="yes">Size 4</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkSeparator">
+                                <property name="height-request">3</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="valign">center</property>
+                              </object>
+                              <packing>
+                                <property name="expand">True</property>
+                                <property name="fill">True</property>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">6</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkFlowBox" id="deco lev4">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="homogeneous">True</property>
+                            <property name="column-spacing">4</property>
+                            <property name="row-spacing">4</property>
+                            <property name="min-children-per-line">1</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">7</property>
                           </packing>
                         </child>
                       </object>

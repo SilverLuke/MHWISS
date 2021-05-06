@@ -7,7 +7,7 @@ use std::{
 	str::FromStr,
 };
 use gtk::{prelude::*, Application, ComboBox, Label, ComboBoxText};
-use glib::{Sender, Receiver};
+use glib::{Sender, Receiver, Object};
 use gio::prelude::*;
 use gdk_pixbuf::{Pixbuf, InterpType};
 use itertools::Itertools;
@@ -33,6 +33,7 @@ use crate::engines::{
 };
 use gio::ListStore;
 use crate::db::DB;
+use std::borrow::BorrowMut;
 
 pub enum Callback {
 	Done(Vec<Equipment>)
@@ -47,9 +48,9 @@ struct Pages {
 }
 
 impl Pages {
-	pub fn new(forge: &Arc<Forge>, builder: &gtk::Builder, images: &Rc<HashMap<String, Pixbuf>>) -> Self {
+	pub fn new(builder: &gtk::Builder, images: &Rc<HashMap<String, Pixbuf>>, forge: &Arc<Forge>, em: &Rc<EnginesManager>) -> Self {
 		Pages {
-			skills_page: SkillsPage::new(&builder),
+			skills_page: SkillsPage::new(&builder, em),
 			armors_page: ArmorsPage::new(&builder, Rc::clone(&images)),
 			decos_page: DecorationsPage::new(&builder),
 			charms_page: CharmsPage::new(&builder),
@@ -58,11 +59,10 @@ impl Pages {
 	}
 
 	pub fn show(&self, app: Rc<Ui>) {  // Todo move this to the costructor this methods do not show anything they load things
-		let forge = Arc::clone(&app.forge);
-		self.skills_page.show(app, &forge);
-		self.armors_page.show(&forge);
-		self.decos_page.show(&forge);
-		self.charms_page.show(&forge);
+		self.skills_page.show(&app);
+		self.armors_page.show(&app.forge);
+		self.decos_page.show(&app.forge);
+		self.charms_page.show(&app.forge);
 	}
 }
 
@@ -77,8 +77,8 @@ pub struct Ui {
 	notebook: gtk::Notebook,
 	pages: Pages,
 
-	forge: Arc<Forge>,
-	pub(crate) searcher: EnginesManager,
+	pub(crate) forge: Arc<Forge>,
+	pub(crate) engine_manager: Rc<EnginesManager>,
 }
 
 impl Ui {
@@ -93,7 +93,7 @@ impl Ui {
 		gtk::Builder::from_file(glade)  // ToDo: Use new_from_resurces with some cargo tricks
 	}
 
-	pub fn new(forge: Arc<Forge>, mut searcher: EnginesManager) -> Rc<Self> {
+	pub fn new(forge: Arc<Forge>, mut engine_manager: Rc<EnginesManager>) -> Rc<Self> {
 		gtk::init().unwrap_or_else(|_| panic!("Failed to initialize GTK."));
 		let builder = Ui::get_builder("res/gui/main.glade".to_string());
 
@@ -106,22 +106,24 @@ impl Ui {
 		let find_btn = builder.get_object("find btn").unwrap();
 		let lang_combo:ComboBoxText = builder.get_object("languages combo").unwrap();
 		let engines_combo:ComboBoxText = builder.get_object("engines combo").unwrap();
+
 		let images = Rc::new(Ui::load_images());
-		let pages = Pages::new(&forge, &builder, &images);
+		let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
+		engine_manager.add_callback(sender);
+		let pages = Pages::new(&builder, &images, &forge, &engine_manager);
 
 		for (i, val) in Engines::iter().enumerate() {
 			engines_combo.insert(i as i32, Some(val.to_string().as_str()), val.to_string().as_str());
 		}
 		engines_combo.set_active_id(Some(Engines::Greedy.to_string().as_str()));
 
-		let db = DB::new();
+		let db = DB::new();  // ToDo remove this create the db object one time
 		for (i, (id, name)) in db.load_languages().iter().enumerate() {
 			lang_combo.insert(i as i32, Some(id), name.as_str())
 		}
 		lang_combo.set_active_id(Some("it"));
 
-		let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
-		searcher.add_callback(sender);
+
 
 		let app = Rc::new(Self {
 			application,
@@ -135,13 +137,13 @@ impl Ui {
 			pages,
 
 			forge,
-			searcher,
+			engine_manager,
 		});
-		app.setup_signals(receiver);
+		app.connect_signals(receiver);
 		app
 	}
 
-	fn setup_signals(self: &Rc<Self>, receiver: Receiver<Callback>) {
+	fn connect_signals(self: &Rc<Self>, receiver: Receiver<Callback>) {
 		let window = self.window.clone();
 		self.application.connect_activate(move |app| {
 			app.add_window(&window);
@@ -151,32 +153,29 @@ impl Ui {
 		let app = Rc::clone(self);
 		self.find_btn.connect_clicked(move |_btn| {
 			let engine = Engines::from_str(app.engines_combo.get_active_text().unwrap().as_str()).unwrap();
-			app.searcher.run(engine);
+			app.engine_manager.run(engine);
 		});
 
 		let app= Rc::clone(self);
 		receiver.attach(None, move |action| {
-			app.process_callbacks(action)
-		});
-	}
-
-	fn process_callbacks(self: &Rc<Self>, action: Callback) -> glib::Continue {
-		match action {
-			Callback::Done(results) => {
-				self.pages.found_page.update(results);
-				self.notebook.set_current_page(Some(self.notebook.get_n_pages() - 1));
-				self.searcher.ended();
+			match action {
+				Callback::Done(results) => {
+					app.engine_manager.ended();
+					app.pages.found_page.update(results);
+					app.notebook.set_current_page(Some(app.notebook.get_n_pages() - 1));
+				}
 			}
-		}
-		glib::Continue(true)
+			glib::Continue(true)
+		});
 	}
 
 	pub fn start(self: &Rc<Self>) {
 		self.pages.show(Rc::clone(self));
 		self.window.show_all();
 		let args: Vec<String> = args().collect();
-		self.searcher.add_constraint(10, 10);
-		self.searcher.run(Engines::Greedy);
+
+		//self.searcher.add_constraint(10, 10);  // TODO add cmd args
+		//self.searcher.run(Engines::Greedy);
 
 		self.application.run(&args);
 	}
@@ -231,6 +230,7 @@ impl Ui {
 		let pixbuf = Pixbuf::scale_simple(pixbuf, size, size, InterpType::Nearest);
 		image.set_from_pixbuf(Some(&pixbuf.unwrap()));
 	}
+
 	pub(crate) fn set_fixed_image(builder: &gtk::Builder, id: &str, path: &str, size: i32) {
 		let path = format!("res/images/{}", path);
 		let image: gtk::Image = builder.get_object(id).expect(id);

@@ -21,7 +21,7 @@ fn main() {
 	db.set_lang("it".to_string());
 	forge.load_all(db);
 	let forge = Arc::new(forge);
-	let em = EnginesManager::new(Arc::clone(&forge));
+	let em = Rc::new(EnginesManager::new(Arc::clone(&forge)));
 	let app = Ui::new(forge, em);
 	app.start();
 }
