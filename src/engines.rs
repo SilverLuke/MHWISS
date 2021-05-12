@@ -1,41 +1,29 @@
-pub(crate) mod greedy;
-pub(crate) mod genetic;
-
 use std::{
-	fmt,
-	rc::Rc,
-	ops::Not,
-	sync::Arc,
-	cell::RefCell,
-	borrow::Borrow,
-	cmp::Ordering,
-	collections::{
-		hash_map::Entry,
-		HashMap,
-	},
-	slice::Iter,
+    cell::RefCell,
+    collections::HashMap,
+    fmt,
+    ops::Not,
+    sync::Arc,
 };
-use itertools::Itertools;
+use std::cell::Cell;
+use std::thread::Builder;
+
 use glib::Sender;
+use strum::{Display, EnumIter, EnumString};
 
 use crate::datatypes::{
-	*,
-	equipment::Equipment,
-	armor::Armor,
-	charm::Charm,
-	decoration::{Decoration, AttachedDecorations},
-	forge::Forge,
+    *,
+    equipment::Equipment,
+    forge::Forge,
 };
-use crate::ui::ui::Callback;
 use crate::engines::{
-	greedy::Greedy,
-	genetic::Genetic,
+    genetic::Genetic,
+    greedy::Greedy,
 };
-use strum::{EnumIter, Display, EnumString};
-use std::thread::Builder;
-use std::sync::Mutex;
-use std::sync::atomic::AtomicBool;
-use std::cell::Cell;
+use crate::ui::Callback;
+
+pub(crate) mod greedy;
+pub(crate) mod genetic;
 
 #[derive(Display, EnumString, EnumIter)]
 pub enum Engines {
@@ -77,7 +65,7 @@ impl EnginesManager {
 		self.skills_constraints.replace(Default::default());
 	}
 
-	pub fn run(&self, engine_type: Engines) -> Result<(), ()>{
+	pub fn run(&self, engine_type: Engines) -> Result<(), &str>{
 		if self.skills_constraints.borrow().len() > 0 {
 			if self.running.get().not() {
 				self.running.replace(true);
@@ -99,14 +87,12 @@ impl EnginesManager {
 					} else {
 						println!("No ui callback");
 					}
-				});
+				}).unwrap();
 			} else {
-				println!("Add gui info, engine already running");
-				return Err(());
+				return Err("Add gui info, engine already running");
 			}
 		} else {
-			println!("Add gui info, no constrains");
-			return Err(());
+			return Err("Add gui info, no constrains");
 		}
 		Ok(())
 	}
@@ -116,12 +102,7 @@ impl EnginesManager {
 	}
 
 	pub fn ended(&self) {
-		println!("ENDED");
 		self.running.replace(false);
-	}
-
-	pub fn get_constrains(&self) -> HashMap<ID, Level> {
-		self.skills_constraints.borrow().clone()
 	}
 }
 

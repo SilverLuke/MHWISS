@@ -1,15 +1,13 @@
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::datatypes::{
-	armor::{Armor, ArmorSet},
-	charm::Charm,
-	decoration::Decoration,
-	skill::{SetSkill, Skill},
-	weapon::Weapon,
+    armor::{Armor, ArmorSet},
+    charm::Charm,
+    decoration::Decoration,
+    skill::{SetSkill, Skill},
+    weapon::Weapon,
 };
-use std::fmt;
-use std::sync::Arc;
 
 pub mod forge;
 pub mod skill;

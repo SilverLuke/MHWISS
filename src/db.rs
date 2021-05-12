@@ -1,18 +1,28 @@
-use std::cell::RefCell;
-use std::borrow::{Borrow, BorrowMut};
+use std::{
+	str::FromStr,
+	borrow::{Borrow, BorrowMut},
+	cell::RefCell,
+	sync::Arc,
+};
 use rusqlite::{Connection, params, Row};
 
 use crate::datatypes::{
 	*,
-	types::{Gender, ArmorClass, ArmorRank, Element, ElderSeal, WeaponClass},
-	skill::{Skill, SetSkill},
-	weapon::Weapon,
+	charm::Charm,
 	decoration::Decoration,
-	charm::Charm
+	skill::{SetSkill, Skill},
+	types::{ArmorClass, ArmorRank, ElderSeal, Element, Gender, WeaponClass},
+	weapon::Weapon
 };
 use crate::datatypes::armor::{Armor, ArmorSet};
-use std::sync::Arc;
-use crate::datatypes::skill::{SkillsLevel, SkillLevel};
+use crate::datatypes::skill::{SkillLevel, SkillsLevel};
+/*
+fn make_ascii_titlecase(s: &mut str) -> &str {
+	if let Some(r) = s.get_mut(0..1) {
+		r.make_ascii_uppercase();
+	}
+	s
+}*/
 
 pub struct DB {
 	connection: rusqlite::Connection,
@@ -32,12 +42,11 @@ impl DB {
 	pub fn load_languages(&self) -> Vec<(String, String)> {
 		let mut statement = self.connection.prepare(
 			"SELECT id, name FROM language;").unwrap();
-		let str = &*self.lang.borrow();
 		let mut rows = statement.query(params![]).unwrap();
 		let mut ret = Vec::new();
 		while let Some(row) = rows.next().unwrap() {
-			let id : String = row.get(row.column_index("id").unwrap()).unwrap();
-			let name : String  = row.get(row.column_index("name").unwrap()).unwrap();
+			let id: String = row.get(row.column_index("id").unwrap()).unwrap();
+			let name: String = row.get(row.column_index("name").unwrap()).unwrap();
 			ret.push((id, name));
 		}
 		ret
@@ -123,7 +132,7 @@ ORDER BY unlocks_id;").unwrap();
 					armorset_id, armorset_bonus_id,
 					male, female,
 					slot_1, slot_2, slot_3,
-					defense_base, defense_max, defense_augment_max, fire, water, thunder, ice, dragon,
+					defense_base, defense_max, defense_augment_max, Fire, water, thunder, ice, dragon,
 					skilltree_id, level
 				FROM armor
 					LEFT JOIN armor_skill ON armor_skill.armor_id == armor.id
@@ -146,10 +155,11 @@ ORDER BY unlocks_id;").unwrap();
 				row.get(row.column_index("dragon").unwrap()).unwrap(),
 			];
 			let gender = Gender::new(row.get(row.column_index("male").unwrap()).unwrap(), row.get(row.column_index("female").unwrap()).unwrap());
+			let class = ArmorClass::from_str(row.get::<usize, String>(row.column_index("armor_type").unwrap()).unwrap().as_str()).expect("Parse error");
 			let mut armor = Armor::new(
 				row.get(row.column_index("id").unwrap()).unwrap(),
 				row.get(row.column_index("name").unwrap()).unwrap(),
-				ArmorClass::new(row.get(row.column_index("armor_type").unwrap()).unwrap()),
+				class,
 				gender,
 				slots,
 				defence,
@@ -201,14 +211,18 @@ WHERE armorset_text.lang_id = ?1;").unwrap();
 			let id = row.get(row.column_index("armorset_id").unwrap()).unwrap();
 			let armor_id = row.get(row.column_index("armor_id").unwrap()).unwrap();
 			let name = row.get(row.column_index("name").unwrap()).unwrap();
-			let rank = ArmorRank::new(row.get(row.column_index("rank").unwrap()).unwrap());
+			let rank: ArmorRank = ArmorRank::from_str(
+				row.get::<usize, String>(row.column_index("rank").unwrap())
+					.unwrap()
+					.as_str()
+			).expect("Parse Error");
 			let skill = {
 				if let Ok(id) = row.get(row.column_index("armorset_bonus_id").unwrap()) {
 					Some(Arc::clone(setskills.borrow().get(&id).unwrap()))
 				} else { None }
 			};
 			let mut set = ArmorSet::new(id, name, rank, skill);
-			set.add_piece(armors.borrow().get(&armor_id).unwrap());
+			set.add_armor(armors.borrow().get(&armor_id).unwrap());
 			set
 		}
 
@@ -220,7 +234,7 @@ WHERE armorset_text.lang_id = ?1;").unwrap();
 			id = row.get(row.column_index("armorset_id").unwrap()).unwrap();
 			if set.id == id {
 				let armor_id = row.get(row.column_index("armor_id").unwrap()).unwrap();
-				set.add_piece(armors.borrow().get(&armor_id).unwrap());
+				set.add_armor(armors.borrow().get(&armor_id).unwrap());
 			} else {
 				sets.borrow_mut().insert(set.id, Arc::new(set));
 				set = new_set(row, &armors, &setskills);
@@ -244,7 +258,6 @@ WHERE armorset_text.lang_id = ?1;").unwrap();
 			let skill_id = &row.get(row.column_index("skilltree_id").unwrap()).unwrap();
 			let skill = Arc::clone(skills.borrow().get(skill_id).unwrap());
 			let level = row.get(row.column_index("skilltree_level").unwrap()).unwrap();
-			;
 			deco_skills.update_or_append(SkillLevel::new(skill, level));
 
 			if let Ok(tmp) = row.get(row.column_index("skilltree2_id").unwrap()) {
@@ -320,7 +333,7 @@ WHERE lang_id = ?1").unwrap();
 		while let Some(row) = rows.next().unwrap() {
 			let id = row.get(row.column_index("id").unwrap()).unwrap();
 			let prev = row.get(row.column_index("previous_weapon_id").unwrap()).ok();
-			let class = WeaponClass::new(row.get(row.column_index("weapon_type").unwrap()).unwrap());
+			let class = WeaponClass::from_str(row.get::<usize, String>(row.column_index("weapon_type").unwrap()).unwrap().as_str()).expect("Parse Error");
 			let name = row.get_unwrap(row.column_index("name").unwrap());
 			let affinity = row.get_unwrap(row.column_index("affinity").unwrap());
 			let attack = row.get_unwrap(row.column_index("attack_true").unwrap());
@@ -344,12 +357,13 @@ WHERE lang_id = ?1").unwrap();
 
 			let mut elements = Vec::new();
 
-			if let Ok(e) = row.get(row.column_index("element1").unwrap()) {
-				elements.push((Element::new(e), row.get_unwrap(row.column_index("element1_attack").unwrap())));
+			if let Ok(e) = row.get::<usize, String>(row.column_index("element1").unwrap()) {
+				elements.push((Element::from_str(e.to_lowercase().as_str()).expect("Parse error"), row.get_unwrap(row.column_index("element1_attack").unwrap())));
 			}
-			if let Ok(e) = row.get(row.column_index("element2").unwrap()) {
-				elements.push((Element::new(e), row.get_unwrap(row.column_index("element2_attack").unwrap())));
+			if let Ok(e) =  row.get::<usize, String>(row.column_index("element2").unwrap()) {
+				elements.push((Element::from_str(e.to_lowercase().as_str()).expect("Parse error"), row.get_unwrap(row.column_index("element2_attack").unwrap())));
 			}
+			elements.shrink_to_fit();
 			let element_hidden = row.get(row.column_index("element_hidden").unwrap()).unwrap();
 			let elderseal = ElderSeal::new(row.get(row.column_index("element_hidden").unwrap()).ok());
 			let armoset_bonus = {

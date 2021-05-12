@@ -1,19 +1,17 @@
-#![allow(dead_code, unused)]
-
 use std::rc::Rc;
 use std::sync::Arc;
 
+use crate::db::DB;
 use crate::datatypes::forge::Forge;
 use crate::engines::EnginesManager;
-use crate::ui::ui::Ui;
-use crate::db::DB;
+use crate::ui::Ui;
 
 mod ui;
 mod datatypes;
 mod engines;
 mod db;
 #[cfg(test)]
-mod test;
+mod tests;
 
 fn main() {
 	let mut forge = Forge::new();

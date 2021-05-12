@@ -1,36 +1,22 @@
+mod datatype;
+mod greedy;
+mod genetic;
+
 use std::{
-	borrow::Borrow,
 	mem,
-	ops::Not,
-	rc::Rc,
-	sync::{Arc, Mutex, Once},
-	thread,
-	thread::sleep,
-	time::Duration,
+	sync::{Arc, Once},
 	collections::HashMap,
 };
+
 use crate::datatypes::{
 	forge::Forge,
-	equipment::Equipment,
-	ID, Level, MAX_SLOTS,
-	types::{ArmorClass, Gender, ArmorRank, Item},
-	skill::{Skill, SkillLevel, SkillsLevel},
-	decoration::AttachedDecorations,
-};
-use crate::engines::{
-	EnginesManager,
-	greedy::Greedy,
-	genetic::Genetic,
-	Engine
+	ID, Level,
 };
 use crate::db::DB;
 
-mod greedy;
-mod genetic;
-mod datatype;
-
 struct Shared {
 	forge: Arc<Forge>,
+	constrains : Arc<HashMap<ID, Level>>
 }
 
 impl Shared {
@@ -40,8 +26,12 @@ impl Shared {
 		db.set_lang("it".to_string());
 		forge.load_all(db);
 		forge.print_stat();
+		let mut constrains : HashMap<ID, Level> = Default::default();
+		constrains.insert(forge.get_skill_from_name("Occhio critico").unwrap().id, 4);
+		constrains.insert(forge.get_skill_from_name("Artigiano").unwrap().id, 3);
 		Arc::new(Shared {
 			forge: Arc::new(forge),
+			constrains: Arc::new(constrains),
 		})
 	}
 

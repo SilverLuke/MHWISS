@@ -1,15 +1,15 @@
 use std::{
+    collections::HashMap,
     fmt,
     sync::Arc,
-    cell::RefCell,
-    collections::{HashMap, hash_map::Entry},
 };
+use strum::EnumCount;
+
 use crate::datatypes::{
     ID, Level, MAX_SLOTS,
-    types::{ArmorClass, Gender, ArmorRank, Item, Decorable},
-    skill::{Skill, SetSkill, SkillLevel, SkillsLevel},
+    skill::{SetSkill, Skill, SkillLevel, SkillsLevel},
+    types::{ArmorClass, ArmorRank, Decorable, Gender, Item},
 };
-use std::ops::Not;
 
 pub struct Armor {
     pub id: u16,
@@ -82,28 +82,30 @@ impl Decorable for Armor {
     }
 }
 
-
-
 pub struct ArmorSet {
     pub id: u16,
     pub name: String,
     pub rank: ArmorRank,
-    pub set: [Option<Arc<Armor>>; 5],
+    pub armors: [Option<Arc<Armor>>; ArmorClass::COUNT],
     armorset_skill: Option<Arc<SetSkill>>,
 }
 
 impl ArmorSet {
     pub fn new(id: u16, name: String, rank: ArmorRank, armorset_skill: Option<Arc<SetSkill>>) -> Self {
-        ArmorSet { id, name, rank, set: [None, None, None, None, None], armorset_skill}
+        ArmorSet { id, name, rank, armors: [None, None, None, None, None], armorset_skill}
     }
 
-    pub fn add_piece(&mut self, armor: &Arc<Armor>) {
+    pub fn add_armor(&mut self, armor: &Arc<Armor>) {
         let i = armor.class as usize;
-        if self.set[i].is_some() {
+        if self.armors[i].is_some() {
             panic!("Element of a set already full");
         }
         else {
-            self.set[i] = Some(Arc::clone(armor));
+            self.armors[i] = Some(Arc::clone(armor));
         }
+    }
+
+    pub fn get_armor(&self, id: ArmorClass) -> &Option<Arc<Armor>> {
+        self.armors.get(id as usize).unwrap()
     }
 }

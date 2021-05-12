@@ -1,12 +1,12 @@
 use std::{
-	fmt,
-	sync::Arc,
-	cell::RefCell,
-	collections::{
-		HashMap,
-		hash_map::Entry,
+    collections::{
+        hash_map::Entry,
+        HashMap,
 	},
+    fmt,
+    sync::Arc,
 };
+
 use crate::datatypes::{ID, Level};
 
 pub struct Skill {
@@ -132,7 +132,7 @@ impl SkillsLevel {
 	}
 
 	pub fn contains_hash(&self, list: &HashMap<ID, Level>) -> bool {
-		for (id, lev) in list.iter() {
+		for (id, _lev) in list.iter() {
 			if self.contains_id(*id) {
 				return true;
 			}

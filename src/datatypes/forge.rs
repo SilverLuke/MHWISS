@@ -1,15 +1,15 @@
 use std::{
-	sync::Arc,
-	cell::RefCell,
-	collections::HashMap
+    collections::HashMap,
+    sync::Arc
 };
+
 use crate::datatypes::{
-	*,
-	types::Item,
-	skill::Skill,
-	armor::Armor,
-	charm::Charm,
-	decoration::Decoration,
+    *,
+    armor::Armor,
+    charm::Charm,
+    decoration::Decoration,
+    skill::Skill,
+    types::Item,
 };
 use crate::db::DB;
 

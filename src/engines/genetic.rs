@@ -1,16 +1,15 @@
+#![allow(unused_variables)]
 use std::{
-	sync::Arc,
-	collections::HashMap
+    collections::HashMap,
+    sync::Arc
 };
+
 use crate::datatypes::{
-	ID, Level,
-	equipment::Equipment,
-	forge::Forge,
+    equipment::Equipment, forge::Forge,
+    ID,
+    Level,
 };
-use crate::engines::{
-	Engine,
-	EnginesManager
-};
+use crate::engines::Engine;
 
 pub(crate) struct Genetic {
 }

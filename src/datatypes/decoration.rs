@@ -1,22 +1,20 @@
 use std::{
-	fmt,
-	sync::Arc,
-	cell::RefCell,
-	collections::{HashMap, hash_map::Entry},
-};
-use itertools::{
-	Itertools,
-	EitherOrBoth::{Both, Left, Right}
-};
-use crate::datatypes::{
-	ID, Level, MAX_SLOTS,
-	types::{Item, Decorable},
-	skill::{Skill, SkillLevel, SkillsLevel},
-	armor::Armor,
-	weapon::Weapon,
-	tool::Tool,
+    collections::HashMap,
+    fmt,
+    sync::Arc,
 };
 use std::borrow::Borrow;
+
+use itertools::{
+    EitherOrBoth::{Both, Left, Right},
+    Itertools
+};
+
+use crate::datatypes::{
+    armor::Armor, ID, Level,
+    skill::{SkillLevel, SkillsLevel},
+    types::{Decorable, Item},
+};
 
 pub struct Decoration {
 	pub id: ID,
@@ -195,8 +193,8 @@ impl<T> PartialEq for AttachedDecorations<T> where T: PartialEq + Item + Decorab
 			for it in self.decorations.iter().zip_longest(other.decorations.iter()) {
 				equals &= match it {
 					Both(x, y) => x == y,
-					Left(x) => unreachable!(),
-					Right(y) => unreachable!(),
+					Left(_x) => unreachable!(),
+					Right(_y) => unreachable!(),
 				}
 			}
 			self.item == other.item && equals
@@ -209,7 +207,7 @@ impl<T> PartialEq for AttachedDecorations<T> where T: PartialEq + Item + Decorab
 impl fmt::Display for AttachedDecorations<Armor> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		// ToDo use: runtime-fmt
-		let mut str =
+		let str =
 			if self.decorations.len() > 0 {
 				let mut deco_str = [String::new(), String::new(), String::new()];  // TODO refactor this shit please
 				for (i, d) in self.decorations.iter().enumerate() {

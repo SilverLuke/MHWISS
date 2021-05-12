@@ -1,14 +1,14 @@
+#![allow(dead_code, unused, unused_variables)]
+
 use std::{
+	collections::HashMap,
 	fmt,
-	sync::Arc,
-	cell::RefCell,
-	collections::{HashMap, hash_map::Entry},
 };
 
 use crate::datatypes::{
-	ID, Level,
-	types::{Item, Decorable},
-	skill::{Skill, SkillLevel, SkillsLevel},
+	ID,
+	skill::SkillLevel,
+	types::{Decorable, Item},
 };
 
 pub struct Tool {
@@ -18,7 +18,7 @@ pub struct Tool {
 }
 
 impl Tool {
-	fn new(id:ID, name:String) -> Self {
+	fn new(id: ID, name: String) -> Self {
 		Tool {
 			id: 1,
 			name: String::from("Test"),

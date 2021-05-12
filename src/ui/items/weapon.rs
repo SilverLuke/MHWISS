@@ -1,18 +1,14 @@
-use crate::datatypes::types::*;
+use std::collections::HashMap;
+use std::rc::Rc;
+
+use gdk_pixbuf::Pixbuf;
 use gtk::{Builder, ImageExt, LabelExt, WidgetExt};
 use gtk::prelude::BuilderExtManual;
-use crate::datatypes::armor::Armor;
-use std::collections::HashMap;
-use gdk_pixbuf::Pixbuf;
+
+use crate::datatypes::decoration::AttachedDecorations;
 use crate::datatypes::weapon::Weapon;
 use crate::ui::items::slots::GtkSlot;
 use crate::ui::items::UI;
-use crate::datatypes::decoration::AttachedDecorations;
-use crate::datatypes::skill::Skill;
-use crate::datatypes::{ID, Level};
-use std::rc::Rc;
-use std::collections::hash_map::RandomState;
-use std::fmt::Pointer;
 
 pub struct GtkWeapon {
 	name: gtk::Label,
@@ -76,7 +72,7 @@ impl UI<AttachedDecorations<Weapon>> for GtkWeapon {
 			self.skill.set_text(weapon_skill.to_string().as_str());
 			self.skill.show();
 		}
-		for (i, size) in weapon.slots.iter().enumerate() {
+		for (i, _size) in weapon.slots.iter().enumerate() {
 			self.slots[i].empty(0);
 		}
 	}

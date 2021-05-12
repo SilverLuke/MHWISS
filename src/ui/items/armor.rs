@@ -1,15 +1,15 @@
-use crate::datatypes::types::*;
+use std::collections::HashMap;
+use std::rc::Rc;
+
+use gdk_pixbuf::Pixbuf;
 use gtk::{Builder, ImageExt, LabelExt, WidgetExt};
 use gtk::prelude::BuilderExtManual;
+
 use crate::datatypes::armor::Armor;
-use std::collections::HashMap;
-use gdk_pixbuf::Pixbuf;
+use crate::datatypes::decoration::AttachedDecorations;
+use crate::datatypes::types::*;
 use crate::ui::items::slots::*;
 use crate::ui::items::UI;
-use gio::FileEnumeratorExt;
-use crate::datatypes::decoration::AttachedDecorations;
-use std::collections::hash_map::RandomState;
-use std::rc::Rc;
 
 pub struct GtkArmour {
 	name: gtk::Label,
@@ -28,7 +28,8 @@ impl GtkArmour {
 		let iter = Element::iter_element();
 		let mut elements = Vec::with_capacity(iter.len());
 		for ele in iter {
-			elements.push(builder.get_object(format!("{} {}", ele.to_string(), piece_id).as_str()).unwrap());
+			let msg = format!("{} {}", ele.to_string().to_lowercase(), piece_id);
+			elements.push(builder.get_object(&msg).expect(&msg) );
 		}
 
 		let mut slots = Vec::with_capacity(3);

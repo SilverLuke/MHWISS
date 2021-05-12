@@ -1,23 +1,19 @@
 use std::{
-	fmt,
-	rc::Rc,
-	ops::Not,
-	sync::Arc,
-	cell::RefCell,
-	collections::{
-		hash_map::Entry,
-		HashMap,
-	},
+    collections::HashMap,
+    fmt,
+    sync::Arc,
 };
-use itertools::Itertools;
-use crate::datatypes::*;
-use std::borrow::Borrow;
-use crate::datatypes::weapon::Weapon;
-use crate::datatypes::armor::Armor;
-use crate::datatypes::charm::Charm;
-use crate::datatypes::types::{ArmorClass, Item, Wearable, Element};
-use crate::datatypes::decoration::AttachedDecorations;
-use crate::datatypes::tool::Tool;
+use strum::IntoEnumIterator;
+
+use crate::datatypes::{
+	*,
+	armor::Armor,
+	charm::Charm,
+	decoration::AttachedDecorations,
+	tool::Tool,
+	weapon::Weapon,
+	types::{ArmorClass, Element, Item, Wearable},
+};
 
 pub struct Equipment {
 	pub weapon: Option<AttachedDecorations<Weapon>>,
@@ -34,10 +30,10 @@ impl fmt::Display for Equipment {
 			None => format!("\tweapon: None\n")
 		};
 
-		for i in ArmorClass::iterator() {
+		for i in ArmorClass::iter() {
 			str = format!("{0:}\t{1: <6}:", str, i.to_string());
-			str = match self.set.get(*i as usize).expect("ERROR: Result print out of bounds") {
-				Some(armor) => format!("{} {}\n", str, armor.item),
+			str = match self.set.get(i as usize).expect("ERROR: Result print out of bounds") {
+				Some(armor) => format!("{} {}\n", str, armor.item.to_string()),
 				None => format!("{} None\n", str),
 			}
 		}

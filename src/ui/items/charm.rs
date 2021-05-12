@@ -1,13 +1,13 @@
-use crate::ui::items::slots::GtkSlot;
-use gtk::{Builder, ImageExt, LabelExt, WidgetExt};
-use gtk::prelude::BuilderExtManual;
-use crate::datatypes::charm::Charm;
-use crate::ui::items::UI;
 use std::collections::HashMap;
-use gdk_pixbuf::Pixbuf;
-use std::collections::hash_map::RandomState;
 use std::rc::Rc;
 use std::sync::Arc;
+
+use gdk_pixbuf::Pixbuf;
+use gtk::{Builder, ImageExt, LabelExt, WidgetExt};
+use gtk::prelude::BuilderExtManual;
+
+use crate::datatypes::charm::Charm;
+use crate::ui::items::UI;
 
 pub struct GtkCharm {
 	name: gtk::Label,

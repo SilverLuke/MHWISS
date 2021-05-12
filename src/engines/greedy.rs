@@ -1,27 +1,23 @@
 use std::{
-	fmt,
-	cell::RefCell,
-	ops::Not,
-	rc::Rc,
-	sync::Arc,
-	cmp::Ordering,
-	collections::{HashMap, hash_map::Entry},
-	any::Any,
+    cmp::Ordering,
+    collections::{hash_map::Entry, HashMap},
+    fmt,
+    ops::Not,
+    sync::Arc,
 };
-use crate::datatypes::{Level, ID,
-	skill::SkillsLevel,
-	forge::Forge,
-	equipment::Equipment,
-	weapon::Weapon,
-	armor::Armor,
-	charm::Charm,
-	tool::Tool,
-	decoration::{AttachedDecorations, Decoration},
-	types::Item,
-	types
+
+use crate::datatypes::{armor::Armor, charm::Charm,
+                       decoration::{AttachedDecorations, Decoration},
+                       equipment::Equipment,
+                       forge::Forge,
+                       ID,
+                       Level,
+                       tool::Tool,
+                       types::Item,
+                       weapon::Weapon
 };
-use crate::engines::{EnginesManager, Engine};
 use crate::datatypes::types::Decorable;
+use crate::engines::Engine;
 
 type MagicValue = i16;
 
@@ -56,7 +52,7 @@ impl Wearable {
 			Wearable::Weapon(i) => Some(i.item.get_skills_hash()),
 			Wearable::Armor(i) => Some(i.item.get_skills_hash()),
 			Wearable::Charm(i) => Some(i.item.get_skills_hash()),
-			Wearable::Tool(i) => None,
+			Wearable::Tool(_i) => None,
 		}
 	}
 
@@ -115,7 +111,7 @@ impl<T: Item> MagicValueContainer<T> {
 
 	fn skill_value(item: &HashMap<ID, Level>, constraint: &HashMap<ID, Level>) -> MagicValue {
 		let mut value = 0;
-		for (id, val) in item {
+		for (id, _val) in item {
 			value += match constraint.get(id) {
 				None => 0i16,
 				Some(v) => *v as MagicValue,
@@ -250,7 +246,7 @@ impl Greedy {
 						o.insert(remaining as u8);
 					}
 				}
-				Entry::Vacant(v) => (), // println!("Skill {} not in requirements", self.forge.skills.get(&id).unwrap().name)
+				Entry::Vacant(_) => (), // println!("Skill {} not in requirements", self.forge.skills.get(&id).unwrap().name)
 			};
 		}
 	}
@@ -272,9 +268,8 @@ impl Greedy {
 	}
 
 	fn apply_best_decorations<T: Item + Decorable>(&self, item: &mut AttachedDecorations<T>) {
-		let mut i = 0;
 		for deco in &self.decorations {
-			item.try_add_deco(Arc::clone(&deco.item));
+			let _ = item.try_add_deco(Arc::clone(&deco.item));
 		}
 	}
 }

@@ -1,14 +1,16 @@
 use std::{
-	fmt,
-	sync::Arc,
-	cell::RefCell,
-	collections::{HashMap, hash_map::Entry},
+    collections::{hash_map::Entry, HashMap},
+    fmt,
+    sync::Arc,
 };
+
 use crate::datatypes::{
-	ID, Level, MAX_SLOTS, SHARPNESS_LEVELS,
-	types::{WeaponClass, Element, ElderSeal, Decorable, Item},
-	skill::{Skill, SetSkill, SkillLevel, SkillsLevel},
+    ID, Level, MAX_SLOTS, SHARPNESS_LEVELS,
+    skill::{SetSkill, SkillLevel},
+    types::{Decorable, ElderSeal, Element, Item, WeaponClass},
 };
+
+#[allow(dead_code)]
 
 pub struct Weapon {
 	pub id: ID,

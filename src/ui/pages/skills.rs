@@ -1,13 +1,13 @@
-use crate::ui::ui::Ui;
-use gtk::{Builder, WidgetExt, CssProviderExt, StyleContextExt, LabelExt, AdjustmentExt, FlowBoxExt, FlowBoxChild, SizeGroupMode};
-use gtk::prelude::BuilderExtManual;
 use std::rc::Rc;
-use crate::datatypes::forge::Forge;
-use std::sync::Arc;
-use itertools::Itertools;
+
 use gio::prelude::*;
+use gtk::{AdjustmentExt, Builder, CssProviderExt, FlowBoxChild, FlowBoxExt, LabelExt, SizeGroupMode, StyleContextExt, WidgetExt};
 use gtk::prelude::*;
+use gtk::prelude::BuilderExtManual;
+use itertools::Itertools;
+
 use crate::engines::EnginesManager;
+use crate::ui::{Ui, get_builder};
 
 pub(crate) struct SkillsPage {
 	skill_list: gtk::FlowBox,
@@ -35,7 +35,7 @@ impl SkillsPage {
 	fn connect_signals(&self, em: &Rc<EnginesManager>) {
 		let skill_list = self.skill_list.clone();
 		let armorset_skill_list = self.armorset_skill_list.clone();
-		self.search_bar.connect_search_changed(move |sb| {
+		self.search_bar.connect_search_changed(move |_sb| {
 			skill_list.invalidate_filter();
 			armorset_skill_list.invalidate_filter();
 		});
@@ -57,7 +57,7 @@ impl SkillsPage {
 		let em_ref = Rc::clone(em);
 		let skill_list = self.skill_list.clone();
 		let armorset_skill_list = self.armorset_skill_list.clone();
-		self.reset_btn.connect_clicked(move |btn| {
+		self.reset_btn.connect_clicked(move |_btn| {
 			println!("RESET");
 			em_ref.clean_constrains();
 			let resetter = |w: &gtk::Widget| {
@@ -78,7 +78,7 @@ impl SkillsPage {
 		let forge = &application.forge;
 		let size_group : gtk::SizeGroup = gtk::SizeGroup::new(SizeGroupMode::Both);
 		for skill in forge.skills.values().sorted_by(|a, b| { a.name.cmp(&b.name) }) {
-			let builder = Ui::get_builder("res/gui/skill box.glade".to_string());
+			let builder = get_builder("res/gui/skill box.glade".to_string());
 			let skill_flowbox: gtk::FlowBoxChild = builder.get_object("flowbox").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();
 			let adjustment: gtk::Adjustment = builder.get_object("adjustment").unwrap();
@@ -107,7 +107,7 @@ impl SkillsPage {
 		}
 
 		for skill in forge.set_skills.values().sorted_by(|a, b| { a.name.cmp(&b.name) }) {
-			let builder = Ui::get_builder("res/gui/skill box.glade".to_string());
+			let builder = get_builder("res/gui/skill box.glade".to_string());
 			let skill_flowbox: gtk::FlowBoxChild = builder.get_object("flowbox").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();
 			let adjustment: gtk::Adjustment = builder.get_object("adjustment").unwrap();

@@ -1,23 +1,15 @@
 use std::{
 	borrow::Borrow,
-	mem,
-	ops::Not,
-	rc::Rc,
-	sync::{Arc, Mutex, Once},
-	thread,
-	thread::sleep,
-	time::Duration,
+	sync::Arc,
 	collections::HashMap,
 };
 use crate::datatypes::{
-	forge::Forge,
-	equipment::Equipment,
-	ID, Level, MAX_SLOTS,
-	types::{ArmorClass, Gender, ArmorRank, Item},
-	skill::{Skill, SkillLevel, SkillsLevel},
+	ID, Level,
+	types::Item,
+	skill::{SkillLevel, SkillsLevel},
 	decoration::AttachedDecorations,
 };
-use crate::test::Shared;
+use crate::tests::Shared;
 
 #[test]
 fn attached_decorations() {

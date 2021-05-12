@@ -1,14 +1,13 @@
 use std::{
-	fmt,
-	sync::Arc,
-	cell::RefCell,
-	collections::HashMap,
+    collections::HashMap,
+    fmt,
+    sync::Arc,
 };
+
 use crate::datatypes::{
-	ID, Level,
-	skill::{Skill, SkillLevel, SkillsLevel},
-	armor::Armor,
-	types::Item,
+    ID, Level,
+    skill::{Skill, SkillLevel, SkillsLevel},
+    types::Item,
 };
 
 pub struct Charm {

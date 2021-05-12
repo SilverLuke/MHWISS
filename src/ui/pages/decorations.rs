@@ -1,9 +1,11 @@
-use gtk::{Builder, SizeGroupMode, FlowBoxChild};
-use gtk::prelude::*;
-use crate::ui::ui::Ui;
 use std::sync::Arc;
-use crate::datatypes::forge::Forge;
+
+use gtk::{Builder, FlowBoxChild, SizeGroupMode};
+use gtk::prelude::*;
 use itertools::Itertools;
+
+use crate::datatypes::forge::Forge;
+use crate::ui::get_builder;
 
 pub(crate) struct DecorationsPage {
 	deco_list: [gtk::FlowBox; 4],
@@ -32,7 +34,7 @@ impl DecorationsPage {
 	fn connect_signals(&self) {
 		// Search functionality
 		let decos = self.deco_list.clone();
-		self.search_bar.connect_search_changed(move |sb| {
+		self.search_bar.connect_search_changed(move |_sb| {
 			for flowbox in &decos {
 				flowbox.invalidate_filter();
 			}
@@ -55,7 +57,7 @@ impl DecorationsPage {
 		// Set quantity btn
 		let quantity = self.quantity_btn.clone();
 		let flowboxes = self.deco_list.clone();
-		self.set_quantity_btn.connect_clicked(move |btn| {
+		self.set_quantity_btn.connect_clicked(move |_btn| {
 			let quantity = quantity.get_value();
 			let setter = |w: &gtk::Widget| {
 				let gtkbox: gtk::Box = ((w.downcast_ref::<gtk::FlowBoxChild>().unwrap()).get_child().unwrap()).downcast_ref::<gtk::Box>().unwrap().clone();
@@ -75,7 +77,7 @@ impl DecorationsPage {
 	pub fn show(&self, forge: &Arc<Forge>) {
 		let size_group: gtk::SizeGroup = gtk::SizeGroup::new(SizeGroupMode::Both);
 		for (_, deco) in forge.decorations.iter().sorted_by(|(_, a), (_, b)| { a.name.cmp(&b.name) }) {
-			let builder = Ui::get_builder("res/gui/deco box.glade".to_string());
+			let builder = get_builder("res/gui/deco box.glade".to_string());
 			let deco_flowbox_child: gtk::FlowBoxChild = builder.get_object("flowbox").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();
 

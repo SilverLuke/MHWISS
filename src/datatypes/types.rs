@@ -1,40 +1,43 @@
 use std::{
-	fmt,
-	fmt::Formatter,
-	slice::Iter,
-	collections::HashMap,
-	any::Any,
+    collections::HashMap,
+    slice::Iter,
 };
+use strum::{Display, EnumIter, EnumString, EnumCount};
+
 use crate::datatypes::{
-	ID, Level,
-	types::{
-		Element::{Fire, Water, Thunder, Ice, Dragon, Poison, Sleep, Paralysis, Blast, Stun},
-		ArmorClass::{Head, Chest, Arms, Waist, Legs},
-		WeaponClass::{Bow, ChargeBlade, DualBlade, GreatSword, Gunlance, Hammer, HeavyBowgun, HuntingHorn, InsectGlaive, Lance, LightBowgun, Longsword, SwitchAxe, SwordAndShield},
+    ID, Level,
+    skill::SkillLevel,
+    types::{
+        Element::{Blast, Dragon, Fire, Ice, Paralysis, Poison, Sleep, Stun, Thunder, Water},
 	},
-	skill::SkillLevel,
 };
 
 // Elements
+#[derive(Display, EnumString, EnumIter)]
 pub enum Element {
-	Fire = 0,
+	#[strum(serialize = "fire")]
+	Fire,
+	#[strum(serialize = "water")]
 	Water,
+	#[strum(serialize = "thunder")]
 	Thunder,
+	#[strum(serialize = "ice")]
 	Ice,
+	#[strum(serialize = "dragon")]
 	Dragon,
+	#[strum(serialize = "poison")]
 	Poison,
+	#[strum(serialize = "sleep")]
 	Sleep,
+	#[strum(serialize = "paralysis")]
 	Paralysis,
+	#[strum(serialize = "blast")]
 	Blast,
+	#[strum(serialize = "stun")]
 	Stun,
 }
 
 impl Element {
-	pub fn iterator() -> Iter<'static, Element> {
-		static ELEMENTS: [Element; 10] = [Fire, Water, Thunder, Ice, Dragon, Poison, Sleep, Paralysis, Blast, Stun];
-		ELEMENTS.iter()
-	}
-
 	pub fn iter_element() -> Iter<'static, Element> {
 		static ELEMENTS: [Element; 5] = [Fire, Water, Thunder, Ice, Dragon];
 		ELEMENTS.iter()
@@ -44,98 +47,34 @@ impl Element {
 		static ELEMENTS: [Element; 5] = [Poison, Sleep, Paralysis, Blast, Stun];
 		ELEMENTS.iter()
 	}
-
-	pub fn new(element: String) -> Element {
-		match element.as_ref() {
-			"Fire" => Element::Fire,
-			"Water" => Element::Water,
-			"Thunder" => Element::Thunder,
-			"Ice" => Element::Ice,
-			"Dragon" => Element::Dragon,
-			"Poison" => Element::Poison,
-			"Sleep" => Element::Sleep,
-			"Paralysis" => Element::Paralysis,
-			"Blast" => Element::Blast,
-			"Stun" => Element::Stun,
-			_ => panic!("error")
-		}
-	}
-}
-
-impl fmt::Display for Element {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		match self {
-			Element::Fire => write!(f, "fire"),
-			Element::Water => write!(f, "water"),
-			Element::Thunder => write!(f, "thunder"),
-			Element::Ice => write!(f, "ice"),
-			Element::Dragon => write!(f, "dragon"),
-			Element::Poison => write!(f, "poison"),
-			Element::Sleep => write!(f, "sleep"),
-			Element::Paralysis => write!(f, "paralysis"),
-			Element::Blast => write!(f, "blast"),
-			Element::Stun => write!(f, "stun"),
-		}
-	}
 }
 
 // Armor Class
-#[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Clone)]
+#[repr(usize)]
+#[derive(EnumCount, EnumString, EnumIter, Display, Copy, Clone)]
 pub enum ArmorClass {
-	Head = 0,
-	Chest = 1,
-	Arms = 2,
-	Waist = 3,
-	Legs = 4
-}
-
-impl ArmorClass {
-	pub fn iterator() -> Iter<'static, ArmorClass> {
-		static ARMOR_CLASS: [ArmorClass; 5] = [Head, Chest, Arms, Waist, Legs];
-		ARMOR_CLASS.iter()
-	}
-
-	pub fn new(armor_class: String) -> ArmorClass {
-		match armor_class.as_ref() {
-			"head" => Head,
-			"chest" => Chest,
-			"arms" => Arms,
-			"waist" => Waist,
-			"legs" => Legs,
-			_ => panic!("error")
-		}
-	}
-}
-
-impl fmt::Display for ArmorClass {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		match self {
-			Head => write!(f, "head"),
-			Chest => write!(f, "chest"),
-			Arms => write!(f, "arms"),
-			Waist => write!(f, "waist"),
-			Legs => write!(f, "legs"),
-		}
-	}
+	#[strum(serialize = "head")]
+	Head,
+	#[strum(serialize = "chest")]
+	Chest,
+	#[strum(serialize = "arms")]
+	Arms,
+	#[strum(serialize = "waist")]
+	Waist,
+	#[strum(serialize = "legs")]
+	Legs,
 }
 
 // ArmorSet rank level
-#[derive(Copy, Clone)]
+#[repr(usize)]
+#[derive(EnumCount, EnumString, EnumIter, Display, Copy, Clone)]
 pub enum ArmorRank {
-	Low = 0,
+	#[strum(serialize = "LR")]
+	Low,
+	#[strum(serialize = "HR")]
 	High,
+	#[strum(serialize = "MR")]
 	Master,
-}
-
-impl ArmorRank {
-	pub fn new(rank: String) -> ArmorRank {
-		match rank.as_ref() {
-			"LR" => ArmorRank::Low,
-			"HR" => ArmorRank::High,
-			"MR" => ArmorRank::Master,
-			_ => panic!("error")
-		}
-	}
 }
 
 // Armor related. There are some armors only for some gender
@@ -158,69 +97,37 @@ impl Gender {
 }
 
 // Weapon type
+#[repr(usize)]
+#[derive(EnumCount, EnumString, EnumIter, Display, Copy, Clone)]
 pub enum WeaponClass {
-	Bow = 0,
+	#[strum(serialize = "bow")]
+	Bow,
+	#[strum(serialize = "charge-blade")]
 	ChargeBlade,
+	#[strum(serialize = "dual-blades")]
 	DualBlade,
+	#[strum(serialize = "great-sword")]
 	GreatSword,
+	#[strum(serialize = "gunlance")]
 	Gunlance,
+	#[strum(serialize = "hammer")]
 	Hammer,
+	#[strum(serialize = "heavy-bowgun")]
 	HeavyBowgun,
+	#[strum(serialize = "hunting-horn")]
 	HuntingHorn,
+	#[strum(serialize = "insect-glaive")]
 	InsectGlaive,
+	#[strum(serialize = "lance")]
 	Lance,
+	#[strum(serialize = "light-bowgun")]
 	LightBowgun,
+	#[strum(serialize = "long-sword")]
 	Longsword,
+	#[strum(serialize = "switch-axe")]
 	SwitchAxe,
-	SwordAndShield
-}
-
-impl WeaponClass {
-	pub fn iterator() -> Iter<'static, WeaponClass> {
-		static WEAPON_CLASS: [WeaponClass; 14] = [Bow, ChargeBlade, DualBlade, GreatSword, Gunlance, Hammer, HeavyBowgun, HuntingHorn, InsectGlaive, Lance, LightBowgun, Longsword, SwitchAxe, SwordAndShield];
-		WEAPON_CLASS.iter()
-	}
-
-	pub fn new(weapon_class: String) -> WeaponClass {
-		match weapon_class.as_ref() {
-			"bow" => Bow,
-			"charge-blade" => ChargeBlade,
-			"dual-blades" => DualBlade,
-			"great-sword" => GreatSword,
-			"gunlance" => Gunlance,
-			"hammer" => Hammer,
-			"heavy-bowgun" => HeavyBowgun,
-			"hunting-horn" => HuntingHorn,
-			"insect-glaive" => InsectGlaive,
-			"lance" => Lance,
-			"light-bowgun" => LightBowgun,
-			"long-sword" => Longsword,
-			"switch-axe" => SwitchAxe,
-			"sword-and-shield" => SwordAndShield,
-			_ => panic!("error")
-		}
-	}
-}
-
-impl fmt::Display for WeaponClass {
-	fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-		match self {
-			Bow => write!(f, "Bow"),
-			ChargeBlade => write!(f, "ChargeBlade"),
-			DualBlade => write!(f, "DualBlade"),
-			GreatSword => write!(f, "GreatSword"),
-			Gunlance => write!(f, "Gunlance"),
-			Hammer => write!(f, "Hammer"),
-			HeavyBowgun => write!(f, "HeavyBowgun"),
-			HuntingHorn => write!(f, "HuntingHorn"),
-			InsectGlaive => write!(f, "InsectGlaive"),
-			Lance => write!(f, "Lance"),
-			LightBowgun => write!(f, "LightBowgun"),
-			Longsword => write!(f, "Longsword"),
-			SwitchAxe => write!(f, "SwitchAxe"),
-			SwordAndShield => write!(f, "SwordAndShield"),
-		}
-	}
+	#[strum(serialize = "sword-and-shield")]
+	SwordAndShield,
 }
 
 // Elder Seal level only for weapons
