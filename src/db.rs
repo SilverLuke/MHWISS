@@ -1,7 +1,6 @@
 use std::{
 	str::FromStr,
 	borrow::{Borrow, BorrowMut},
-	cell::RefCell,
 	sync::Arc,
 };
 use rusqlite::{Connection, params, Row};
@@ -12,30 +11,23 @@ use crate::datatypes::{
 	decoration::Decoration,
 	skill::{SetSkill, Skill},
 	types::{ArmorClass, ArmorRank, ElderSeal, Element, Gender, WeaponClass},
-	weapon::Weapon
+	weapon::Weapon,
+	armor::{Armor, ArmorSet},
+	skill::{SkillLevel, SkillsLevel},
 };
-use crate::datatypes::armor::{Armor, ArmorSet};
-use crate::datatypes::skill::{SkillLevel, SkillsLevel};
-/*
-fn make_ascii_titlecase(s: &mut str) -> &str {
-	if let Some(r) = s.get_mut(0..1) {
-		r.make_ascii_uppercase();
-	}
-	s
-}*/
 
 pub struct DB {
 	connection: rusqlite::Connection,
-	lang: RefCell<String>,
+	lang: String,
 }
 
 impl DB {
-	pub fn new() -> Self {
+	pub fn new(lang: String) -> Self {
 		let conn = Connection::open_with_flags("MHWorldData/mhw.db", rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY).unwrap();
 
 		DB {
 			connection: conn,
-			lang: RefCell::new(String::from("en")),
+			lang,
 		}
 	}
 
@@ -52,10 +44,6 @@ impl DB {
 		ret
 	}
 
-	pub fn set_lang(&self, lang: String) {
-		self.lang.replace(lang);
-	}
-
 	pub fn load_skills(&self, skills: &mut Skills) {
 		let mut statement = self.connection.prepare(
 			"SELECT s.id, max_level, secret, unlocks_id, name, description
@@ -63,8 +51,7 @@ FROM skilltree AS s
 JOIN skilltree_text ON skilltree_text.id = s.id
 WHERE skilltree_text.lang_id = ?1
 ORDER BY unlocks_id;").unwrap();
-		let str = &*self.lang.borrow();
-		let mut rows = statement.query(params![str]).unwrap();
+		let mut rows = statement.query(params![&self.lang]).unwrap();
 
 		while let Some(row) = rows.next().unwrap() {
 			let unlock = row.get(row.column_index("unlocks_id").unwrap());
@@ -95,8 +82,7 @@ ORDER BY unlocks_id;").unwrap();
 		JOIN armorset_bonus_text AS abt ON abs.setbonus_id = abt.id
 		WHERE lang_id = ?1
 		ORDER BY setbonus_id;").unwrap();
-		let str = &*self.lang.borrow();
-		let mut rows = statement.query(params![str]).unwrap();
+		let mut rows = statement.query(params![&self.lang]).unwrap();
 
 		fn new_setskill(row: &Row, skills: &Skills) -> SetSkill {
 			let id = row.get(row.column_index("setbonus_id").unwrap()).unwrap();
@@ -138,8 +124,7 @@ ORDER BY unlocks_id;").unwrap();
 					LEFT JOIN armor_skill ON armor_skill.armor_id == armor.id
 					JOIN      armor_text ON armor.id = armor_text.id
 				WHERE lang_id =  ?1;").unwrap();
-		let str = &*self.lang.borrow();
-		let mut rows = statement.query(params![str]).unwrap();
+		let mut rows = statement.query(params![&self.lang]).unwrap();
 
 		fn new_armor(row: &Row, skills: &Skills, setskills: &SetSkills) -> Armor {
 			let slots = [row.get(row.column_index("slot_1").unwrap()).unwrap(),
@@ -204,8 +189,7 @@ FROM armorset
 	 JOIN armor ON armorset.id == armor.armorset_id
 	 JOIN armorset_text ON armorset_text.id == armorset.id
 WHERE armorset_text.lang_id = ?1;").unwrap();
-		let str = &*self.lang.borrow();
-		let mut rows = statement.query(params![str]).unwrap();
+		let mut rows = statement.query(params![&self.lang]).unwrap();
 
 		fn new_set(row: &Row, armors: &Armors, setskills: &SetSkills) -> ArmorSet {
 			let id = row.get(row.column_index("armorset_id").unwrap()).unwrap();
@@ -249,8 +233,7 @@ WHERE armorset_text.lang_id = ?1;").unwrap();
 				 FROM decoration
 				 JOIN decoration_text ON decoration_text.id == decoration.id
 				 WHERE lang_id == ?1").unwrap();
-		let str = &*self.lang.borrow();
-		let mut rows = statement.query(params![str]).unwrap();
+		let mut rows = statement.query(params![&self.lang]).unwrap();
 
 		while let Some(row) = rows.next().unwrap() {
 			let mut deco_skills = SkillsLevel::new();
@@ -283,8 +266,7 @@ FROM charm
 JOIN charm_skill cs on charm.id = cs.charm_id
 JOIN charm_text ct on charm.id = ct.id
 WHERE lang_id = ?1").unwrap();
-		let str = &*self.lang.borrow();
-		let mut rows = statement.query(params![str]).unwrap();
+		let mut rows = statement.query(params![&self.lang]).unwrap();
 
 
 		fn new_charm(row: &Row, skills: &Skills) -> Charm {
@@ -327,8 +309,7 @@ WHERE lang_id = ?1").unwrap();
 		LEFT JOIN weapon_skill ws ON weapon.id = ws.weapon_id
 		LEFT JOIN weapon_text wt ON weapon.id = wt.id
 		WHERE lang_id = ?1;").unwrap();
-		let str = &*self.lang.borrow();
-		let mut rows = statement.query(params![str]).unwrap();
+		let mut rows = statement.query(params![&self.lang]).unwrap();
 
 		while let Some(row) = rows.next().unwrap() {
 			let id = row.get(row.column_index("id").unwrap()).unwrap();

@@ -475,7 +475,7 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="hexpand">True</property>
-            <property name="label" translatable="yes">Armor set</property>
+            <property name="label" translatable="yes">Armors</property>
           </object>
           <packing>
             <property name="position">1</property>
@@ -865,7 +865,7 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="hexpand">True</property>
-            <property name="label" translatable="yes">Decoration</property>
+            <property name="label" translatable="yes">Decorations</property>
           </object>
           <packing>
             <property name="position">2</property>
@@ -885,7 +885,7 @@
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">TODO ???</property>
+                <property name="label" translatable="yes">To be implemented.</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -910,6 +910,48 @@
           </object>
           <packing>
             <property name="position">3</property>
+            <property name="tab-expand">True</property>
+            <property name="tab-fill">False</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="weapon box">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">To be implemented.</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="position">4</property>
+          </packing>
+        </child>
+        <child type="tab">
+          <object class="GtkLabel" id="weapons">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="hexpand">True</property>
+            <property name="label" translatable="yes">Weapons</property>
+          </object>
+          <packing>
+            <property name="position">4</property>
+            <property name="tab-expand">True</property>
             <property name="tab-fill">False</property>
           </packing>
         </child>
@@ -3657,7 +3699,7 @@
             </child>
           </object>
           <packing>
-            <property name="position">4</property>
+            <property name="position">5</property>
           </packing>
         </child>
         <child type="tab">
@@ -3665,10 +3707,11 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="hexpand">True</property>
-            <property name="label" translatable="yes">Result</property>
+            <property name="label" translatable="yes">Results</property>
           </object>
           <packing>
-            <property name="position">4</property>
+            <property name="position">5</property>
+            <property name="tab-expand">True</property>
             <property name="tab-fill">False</property>
           </packing>
         </child>
@@ -3684,6 +3727,7 @@
           <object class="GtkComboBoxText" id="languages combo">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="tooltip-text" translatable="yes">Restart the program to change language</property>
             <property name="active-id">0</property>
           </object>
           <packing>

@@ -24,7 +24,7 @@ impl Shared {
 		let mut forge = Forge::new();
 		let db = DB::new();
 		db.set_lang("it".to_string());
-		forge.load_all(db);
+		forge.load_all(&db);
 		forge.print_stat();
 		let mut constrains : HashMap<ID, Level> = Default::default();
 		constrains.insert(forge.get_skill_from_name("Occhio critico").unwrap().id, 4);

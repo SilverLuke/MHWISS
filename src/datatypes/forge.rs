@@ -87,7 +87,7 @@ impl Forge {
 		ret
 	}
 
-	pub fn load_all(&mut self, db: DB) {
+	pub fn load_all(&mut self, db: &DB) {
 		db.load_skills(&mut self.skills);
 		db.load_setskills(&mut self.set_skills, &self.skills);
 		db.load_armors(&mut self.armors, &self.skills, &self.set_skills);
