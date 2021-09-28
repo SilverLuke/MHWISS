@@ -1,13 +1,12 @@
-use crate::datatypes::types::*;
+use std::collections::HashMap;
+use std::rc::Rc;
+use std::sync::Arc;
+
+use gdk_pixbuf::Pixbuf;
 use gtk::{Builder, ImageExt, LabelExt};
 use gtk::prelude::BuilderExtManual;
-use crate::datatypes::armor::Armor;
-use std::collections::HashMap;
-use gdk_pixbuf::Pixbuf;
-use crate::ui::items::UI;
-use std::rc::Rc;
-use crate::datatypes::decoration::Decoration;
-use std::sync::Arc;
+
+use crate::data::db_types::decoration::Decoration;
 
 pub struct GtkSlot {
 	pub(crate) label: gtk::Label,

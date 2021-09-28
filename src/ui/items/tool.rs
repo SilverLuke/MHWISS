@@ -1,14 +1,16 @@
-use crate::ui::items::slots::GtkSlot;
-use gtk::{Builder, ImageExt, LabelExt, WidgetExt};
-use gtk::prelude::BuilderExtManual;
-use crate::datatypes::charm::Charm;
-use crate::ui::items::UI;
 use std::collections::HashMap;
-use gdk_pixbuf::Pixbuf;
-use crate::datatypes::decoration::AttachedDecorations;
-use crate::datatypes::tool::Tool;
-use std::collections::hash_map::RandomState;
 use std::rc::Rc;
+
+use gdk_pixbuf::Pixbuf;
+use gtk::{Builder, ImageExt, LabelExt};
+use gtk::prelude::BuilderExtManual;
+
+use crate::data::db_types::{
+	tool::Tool,
+};
+use crate::ui::items::slots::GtkSlot;
+use crate::ui::items::UI;
+use crate::data::mutable::attached_decorations::AttachedDecorations;
 
 pub struct GtkTool {
 	name: gtk::Label,

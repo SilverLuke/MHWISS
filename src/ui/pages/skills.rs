@@ -1,13 +1,15 @@
-use crate::ui::ui::Ui;
-use gtk::{Builder, WidgetExt, CssProviderExt, StyleContextExt, LabelExt, AdjustmentExt, FlowBoxExt, FlowBoxChild, SizeGroupMode};
-use gtk::prelude::BuilderExtManual;
 use std::rc::Rc;
-use crate::datatypes::forge::Forge;
-use std::sync::Arc;
-use itertools::Itertools;
+
 use gio::prelude::*;
+use gtk::{AdjustmentExt, Builder, CssProviderExt, FlowBoxChild, FlowBoxExt, LabelExt, SizeGroupMode, StyleContextExt, WidgetExt};
 use gtk::prelude::*;
+use gtk::prelude::BuilderExtManual;
+use itertools::Itertools;
+
 use crate::engines::EnginesManager;
+use crate::ui::{Ui, get_builder};
+use std::sync::Arc;
+use crate::data::db_types::skill::SkillLevel;
 
 pub(crate) struct SkillsPage {
 	skill_list: gtk::FlowBox,
@@ -21,7 +23,7 @@ impl SkillsPage {
 		let skill_list = builder.get_object("skill list").unwrap();
 		let armorset_skill_list = builder.get_object("skill set list").unwrap();
 		let search_bar = builder.get_object("skill search bar").unwrap();
-		let reset_btn = builder.get_object("reset constrains btn").unwrap();
+		let reset_btn = builder.get_object("reset constraints btn").unwrap();
 		let page = SkillsPage {
 			skill_list,
 			armorset_skill_list,
@@ -35,7 +37,7 @@ impl SkillsPage {
 	fn connect_signals(&self, em: &Rc<EnginesManager>) {
 		let skill_list = self.skill_list.clone();
 		let armorset_skill_list = self.armorset_skill_list.clone();
-		self.search_bar.connect_search_changed(move |sb| {
+		self.search_bar.connect_search_changed(move |_sb| {
 			skill_list.invalidate_filter();
 			armorset_skill_list.invalidate_filter();
 		});
@@ -57,7 +59,7 @@ impl SkillsPage {
 		let em_ref = Rc::clone(em);
 		let skill_list = self.skill_list.clone();
 		let armorset_skill_list = self.armorset_skill_list.clone();
-		self.reset_btn.connect_clicked(move |btn| {
+		self.reset_btn.connect_clicked(move |_btn| {
 			println!("RESET");
 			em_ref.clean_constrains();
 			let resetter = |w: &gtk::Widget| {
@@ -75,15 +77,14 @@ impl SkillsPage {
 	}
 
 	pub fn show(&self, application: &Rc<Ui>) {  // TODO: Add skill dependecy
-		let forge = &application.forge;
-		let size_group : gtk::SizeGroup = gtk::SizeGroup::new(SizeGroupMode::Both);
-		for skill in forge.skills.values().sorted_by(|a, b| { a.name.cmp(&b.name) }) {
-			let builder = Ui::get_builder("res/gui/skill box.glade".to_string());
+		let storage = &application.storage;
+		let size_group: gtk::SizeGroup = gtk::SizeGroup::new(SizeGroupMode::Both);
+		for skill in storage.skills.values().sorted_by(|a, b| { a.name.cmp(&b.name) }) {
+			let builder = get_builder("res/gui/skill box.glade".to_string());
 			let skill_flowbox: gtk::FlowBoxChild = builder.get_object("flowbox").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();
 			let adjustment: gtk::Adjustment = builder.get_object("adjustment").unwrap();
 			let level: gtk::SpinButton = builder.get_object("level").unwrap();
-
 
 			let style = skill_flowbox.get_style_context();
 			let provider = gtk::CssProvider::new();
@@ -91,27 +92,27 @@ impl SkillsPage {
 			style.add_provider(&provider, gtk::STYLE_PROVIDER_PRIORITY_USER);
 			style.add_class("FlowBoxSkill");  // TODO: Better implementation using glades => Add this feature in glade
 
-
 			name.set_text(skill.name.as_str());
 			name.set_tooltip_text(Some(skill.description.as_str()));
 			adjustment.set_upper(skill.max_level as f64);
 
 			let app = Rc::clone(&application);
-			let id = skill.id;
+			let skill_copy = Arc::clone(skill);
 			level.connect_value_changed(move |lev| {
-				app.engine_manager.add_constraint(id, lev.get_value() as u8);
+				let skill_level = SkillLevel::new(Arc::clone(&skill_copy), lev.get_value() as u8);
+				app.engine_manager.add_constraint(skill_level);
 			});
 			size_group.add_widget(&skill_flowbox);
 
 			self.skill_list.insert(&skill_flowbox, -1);
 		}
 
-		for skill in forge.set_skills.values().sorted_by(|a, b| { a.name.cmp(&b.name) }) {
-			let builder = Ui::get_builder("res/gui/skill box.glade".to_string());
+		for skill in storage.set_skills.values().sorted_by(|a, b| { a.name.cmp(&b.name) }) {
+			let builder = get_builder("res/gui/skill box.glade".to_string());
 			let skill_flowbox: gtk::FlowBoxChild = builder.get_object("flowbox").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();
 			let adjustment: gtk::Adjustment = builder.get_object("adjustment").unwrap();
-			let level: gtk::SpinButton = builder.get_object("level").unwrap();
+			let _level: gtk::SpinButton = builder.get_object("level").unwrap();
 
 			let style = skill_flowbox.get_style_context();
 			let provider = gtk::CssProvider::new();
@@ -121,12 +122,16 @@ impl SkillsPage {
 
 			name.set_text(skill.name.as_str());
 			adjustment.set_upper(skill.get_max() as f64);
-
+			/*
 			let app = Rc::clone(&application);
-			let id = skill.id;
+			let skill_copy = Arc::clone(skill);
+
+			TODO dependency skills?
 			level.connect_value_changed(move |lev| {
-				app.engine_manager.add_constraint(id, lev.get_value() as u8);
+				let skill_level = SkillLevel::new(skill_copy, lev.get_value() as u8);
+				app.engine_manager.add_constraint(skill_level);
 			});
+			*/
 			size_group.add_widget(&skill_flowbox);
 			self.armorset_skill_list.insert(&skill_flowbox, -1);
 		}

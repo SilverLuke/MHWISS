@@ -1,13 +1,13 @@
-use crate::ui::items::slots::GtkSlot;
-use gtk::{Builder, ImageExt, LabelExt, WidgetExt};
-use gtk::prelude::BuilderExtManual;
-use crate::datatypes::charm::Charm;
-use crate::ui::items::UI;
 use std::collections::HashMap;
-use gdk_pixbuf::Pixbuf;
-use std::collections::hash_map::RandomState;
 use std::rc::Rc;
 use std::sync::Arc;
+
+use gdk_pixbuf::Pixbuf;
+use gtk::{Builder, ImageExt, LabelExt, WidgetExt};
+use gtk::prelude::BuilderExtManual;
+
+use crate::data::db_types::charm::Charm;
+use crate::ui::items::UI;
 
 pub struct GtkCharm {
 	name: gtk::Label,
@@ -46,8 +46,8 @@ impl UI<Arc<Charm>> for GtkCharm {
 	fn show(&self, item: &Arc<Charm>) {
 		self.image.set_from_pixbuf(self.images.get("charm"));
 		self.name.set_text(item.name.as_str());
-		for (i, charm_skill) in item.skills.get_skills().enumerate() {
-			self.skill[i].set_text(format!("{} {}", charm_skill.skill.name, charm_skill.level).as_str());
+		for (i, charm_skill) in item.skills.iter().enumerate() {
+			self.skill[i].set_text(format!("{} {}", charm_skill.get_skill().name, charm_skill.get_level()).as_str());
 			self.skill[i].show();
 		}
 	}

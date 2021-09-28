@@ -1,46 +1,30 @@
-pub(crate) mod greedy;
-pub(crate) mod genetic;
-
 use std::{
-	fmt,
-	rc::Rc,
-	ops::Not,
-	sync::Arc,
-	cell::RefCell,
-	borrow::Borrow,
-	cmp::Ordering,
-	collections::{
-		hash_map::Entry,
-		HashMap,
-	},
-	slice::Iter,
+    cell::{RefCell, Cell},
+    fmt,
+    ops::Not,
+    sync::Arc,
+	thread::Builder,
 };
-use itertools::Itertools;
 use glib::Sender;
-
-use crate::datatypes::{
-	*,
-	equipment::Equipment,
-	armor::Armor,
-	charm::Charm,
-	decoration::{Decoration, AttachedDecorations},
-	forge::Forge,
+use strum::{Display, EnumIter, EnumString};
+use crate::data::{
+    mutable::equipment::Equipment,
+	db_storage::Storage,
+	db_types::skill::{SkillsLevel, SkillLevel},
 };
-use crate::ui::ui::Callback;
 use crate::engines::{
-	greedy::Greedy,
-	genetic::Genetic,
+    hill_climbing::HillClimbing,
+    greedy::Greedy,
 };
-use strum::{EnumIter, Display, EnumString};
-use std::thread::Builder;
-use std::sync::Mutex;
-use std::sync::atomic::AtomicBool;
-use std::cell::Cell;
+use crate::ui::Callback;
+
+pub(crate) mod greedy;
+pub(crate) mod hill_climbing;
 
 #[derive(Display, EnumString, EnumIter)]
 pub enum Engines {
 	Greedy,
-	Genetic,
+	HillClimbing,
 }
 
 pub(crate) trait Engine {
@@ -48,48 +32,44 @@ pub(crate) trait Engine {
 }
 
 pub struct EnginesManager {
-	forge: Arc<Forge>,
-	skills_constraints: RefCell<HashMap<ID, Level>>,
+	storage: Arc<Storage>,
+	constraints: RefCell<SkillsLevel>,
 	sender: RefCell<Option<Sender<Callback>>>,
 	running: Cell<bool>,
 }
 
 impl EnginesManager {
-	pub fn new(forge: Arc<Forge>) -> Self {
+	pub fn new(storage: Arc<Storage>) -> Self {
 		let searcher = EnginesManager {
-			forge,
-			skills_constraints: Default::default(),
+			storage,
+			constraints: RefCell::new(SkillsLevel::new()),
 			sender: RefCell::new(None),
 			running: Cell::new(false),
 		};
 		searcher
 	}
 
-	pub fn add_constraint(&self, skill_id: ID, lev: u8) {
-		if lev == 0 {
-			self.skills_constraints.borrow_mut().remove(&skill_id);
-		} else {
-			self.skills_constraints.borrow_mut().insert(skill_id, lev);
-		}
+	pub fn add_constraint(&self, skill: SkillLevel) {
+		self.constraints.borrow_mut().insert(skill);
 	}
 
 	pub fn clean_constrains(&self) {
-		self.skills_constraints.replace(Default::default());
+		self.constraints.replace(SkillsLevel::new());
 	}
 
-	pub fn run(&self, engine_type: Engines) -> Result<(), ()>{
-		if self.skills_constraints.borrow().len() > 0 {
+	pub fn run(&self, engine_type: Engines) -> Result<(), &str>{
+		if self.constraints.borrow().len() > 0 {
 			if self.running.get().not() {
 				self.running.replace(true);
-				let forge = Arc::clone(&self.forge);
-				let constrains = self.skills_constraints.borrow().clone();
+				let storage = Arc::clone(&self.storage);
+				let constraints = RefCell::clone(&self.constraints);
 				let sender = self.sender.try_borrow().unwrap().clone();
 				//self.sender.replace(sender.clone());
-				println!("Constrains: {:?}", self.skills_constraints.borrow());
+				println!("Constrains: {}", constraints.borrow());
 				Builder::new().name(engine_type.to_string().into()).spawn(move || {
 					let mut engine = match engine_type {
-						Engines::Greedy => Box::new(Greedy::new(forge, constrains)) as Box<dyn Engine>,
-						Engines::Genetic => Box::new(Genetic::new(forge, constrains)) as Box<dyn Engine>,
+						Engines::Greedy => Box::new(Greedy::new(storage, constraints.into_inner())) as Box<dyn Engine>,
+						Engines::HillClimbing => Box::new(HillClimbing::new(storage, constraints.into_inner())) as Box<dyn Engine>,
 					};
 					let best_equipment = engine.run();
 
@@ -99,14 +79,12 @@ impl EnginesManager {
 					} else {
 						println!("No ui callback");
 					}
-				});
+				}).unwrap();
 			} else {
-				println!("Add gui info, engine already running");
-				return Err(());
+				return Err("Add gui info, engine already running");
 			}
 		} else {
-			println!("Add gui info, no constrains");
-			return Err(());
+			return Err("Add gui info, no constraints");
 		}
 		Ok(())
 	}
@@ -116,20 +94,15 @@ impl EnginesManager {
 	}
 
 	pub fn ended(&self) {
-		println!("ENDED");
 		self.running.replace(false);
-	}
-
-	pub fn get_constrains(&self) -> HashMap<ID, Level> {
-		self.skills_constraints.borrow().clone()
 	}
 }
 
 impl fmt::Display for EnginesManager {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let mut str = String::new();
-		for (id, lev) in self.skills_constraints.borrow().iter() {
-			str = format!("{} <{}, {}>", str, &self.forge.skills.get(id).unwrap().name, lev);
+		for skill_level in self.constraints.borrow().iter() {
+			str = format!("{} <{}, {}>", str, skill_level.get_skill().name, skill_level.get_level());
 		}
 		write!(f, "{}", str)
 	}
