@@ -1,5 +1,5 @@
 use std::{
-	collections::HashMap,
+	collections::HashSet,
 	slice::Iter,
 	sync::Arc,
 };
@@ -25,14 +25,14 @@ pub type ID = u16;
 pub type Level = u8;
 
 
-pub type Weapons = HashMap<ID, Arc<Weapon>>;
-pub type Armors = HashMap<ID, Arc<Armor>>;
-pub type Charms = HashMap<ID, Arc<Charm>>;
-pub type Sets = HashMap<ID, Arc<ArmorSet>>;
-pub type Decorations = HashMap<ID, Arc<Decoration>>;
-pub type Skills = HashMap<ID, Arc<Skill>>;
-pub type SetSkills = HashMap<ID, Arc<SetSkill>>;
-pub type Tools = HashMap<ID, Arc<Tool>>;
+pub type Weapons =     HashSet<Arc<Weapon>>;
+pub type Armors =      HashSet<Arc<Armor>>;
+pub type Charms =      HashSet<Arc<Charm>>;
+pub type Sets =        HashSet<Arc<ArmorSet>>;
+pub type Decorations = HashSet<Arc<Decoration>>;
+pub type Skills =      HashSet<Arc<Skill>>;
+pub type SetSkills =   HashSet<Arc<SetSkill>>;
+pub type Tools =       HashSet<Arc<Tool>>;
 
 pub const MAX_SLOTS: usize = 3;
 pub const SHARPNESS_LEVELS: usize = 7;

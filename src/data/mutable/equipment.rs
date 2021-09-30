@@ -6,7 +6,6 @@ use std::{
 use strum::IntoEnumIterator;
 
 use crate::data::db_types::{
-	*,
 	ArmorClass, Element, HasSkills,
 	skill::SkillsLevel,
 	charm::Charm,
@@ -179,17 +178,17 @@ impl Equipment {
 		total
 	}
 
-	pub fn get_used_decorations(&self) -> HashMap<ID, u8> {
-		fn add_or_insert(hash: &mut HashMap<ID, u8>, decorations: &Vec<Option<Arc<Decoration>>>) {
+	pub fn get_used_decorations(&self) -> HashMap<Arc<Decoration>, u8> {
+		fn add_or_insert(collection: &mut HashMap<Arc<Decoration>, u8>, decorations: &Vec<Option<Arc<Decoration>>>) {
 			for i in decorations {
 				if let Some(j) = i {
-					hash.entry(j.id)
+					collection.entry(Arc::clone(j))
 						.and_modify(|e| { *e += 1 })
 						.or_insert(1);
 				}
 			}
 		}
-		let mut ret: HashMap<ID, u8> = Default::default();
+		let mut ret: HashMap<Arc<Decoration>, u8> = Default::default();
 		if let Some(w) = &self.weapon {
 			add_or_insert(&mut ret, &w.decorations);
 		}

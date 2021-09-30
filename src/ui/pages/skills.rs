@@ -79,7 +79,7 @@ impl SkillsPage {
 	pub fn show(&self, application: &Rc<Ui>) {  // TODO: Add skill dependecy
 		let storage = &application.storage;
 		let size_group: gtk::SizeGroup = gtk::SizeGroup::new(SizeGroupMode::Both);
-		for skill in storage.skills.values().sorted_by(|a, b| { a.name.cmp(&b.name) }) {
+		for skill in storage.skills.iter().sorted_by(|a, b| { a.name.cmp(&b.name) }) {
 			let builder = get_builder("res/gui/skill box.glade".to_string());
 			let skill_flowbox: gtk::FlowBoxChild = builder.get_object("flowbox").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();
@@ -107,7 +107,7 @@ impl SkillsPage {
 			self.skill_list.insert(&skill_flowbox, -1);
 		}
 
-		for skill in storage.set_skills.values().sorted_by(|a, b| { a.name.cmp(&b.name) }) {
+		for skill in storage.set_skills.iter().sorted_by(|a, b| { a.name.cmp(&b.name) }) {
 			let builder = get_builder("res/gui/skill box.glade".to_string());
 			let skill_flowbox: gtk::FlowBoxChild = builder.get_object("flowbox").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();

@@ -1,6 +1,7 @@
 use std::{
 	fmt,
 };
+use std::hash::{Hash, Hasher};
 
 use crate::data::db_types::{ID, HasDecoration, MAX_SLOTS};
 
@@ -26,14 +27,20 @@ impl HasDecoration for Tool {
 	}
 }
 
-impl fmt::Display for Tool {
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		write!(f, "{}", self.name)
-	}
-}
-
 impl PartialEq for Tool {
 	fn eq(&self, other: &Self) -> bool {
 		self.id == other.id
+	}
+}
+impl Eq for Tool {}
+
+impl Hash for Tool {
+	fn hash<H: Hasher>(&self, state: &mut H) {
+		self.id.hash(state);
+	}
+}
+impl fmt::Display for Tool {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{}", self.name)
 	}
 }

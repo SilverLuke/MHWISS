@@ -1,7 +1,6 @@
 use std::{
 	collections::HashMap,
 	rc::Rc,
-	sync::Arc,
 };
 use gdk_pixbuf::{Pixbuf, InterpType};
 use gtk::{ImageExt, prelude::BuilderExtManual};
@@ -16,7 +15,6 @@ use crate::ui::pages::{
 };
 use crate::data::{
 	db_types::{ArmorClass, Element},
-	db_storage::Storage,
 };
 use crate::engines::EnginesManager;
 use crate::ui::Ui;
@@ -39,7 +37,7 @@ pub(crate) struct Pages {
 }
 
 impl Pages {
-	pub fn new(builder: &gtk::Builder, storage: &Arc<Storage>, em: &Rc<EnginesManager>) -> Self {
+	pub fn new(builder: &gtk::Builder, em: &Rc<EnginesManager>) -> Self {
 
 		let images = Rc::new(load_images());
 		Pages {
@@ -47,7 +45,7 @@ impl Pages {
 			armors_page: ArmorsPage::new(&builder, Rc::clone(&images)),
 			decos_page: DecorationsPage::new(&builder),
 			charms_page: CharmsPage::new(&builder),
-			found_page: ResultPage::new(Arc::clone(storage), builder, Rc::clone(&images)),
+			found_page: ResultPage::new(builder, Rc::clone(&images)),
 		}
 	}
 

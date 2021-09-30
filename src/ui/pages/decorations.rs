@@ -76,7 +76,7 @@ impl DecorationsPage {
 
 	pub fn show(&self, storage: &Arc<Storage>) {
 		let size_group: gtk::SizeGroup = gtk::SizeGroup::new(SizeGroupMode::Both);
-		for (_, deco) in storage.decorations.iter().sorted_by(|(_, a), (_, b)| { a.name.cmp(&b.name) }) {
+		for deco in storage.decorations.iter().sorted_by(|a, b| { a.name.cmp(&b.name) }) {
 			let builder = get_builder("res/gui/deco box.glade".to_string());
 			let deco_flowbox_child: gtk::FlowBoxChild = builder.get_object("flowbox").unwrap();
 			let name: gtk::Label = builder.get_object("name").unwrap();

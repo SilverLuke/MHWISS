@@ -1,19 +1,15 @@
 use std::{
 	collections::HashMap,
 	rc::Rc,
-	sync::Arc,
 };
 use gdk_pixbuf::Pixbuf;
 use gtk::prelude::*;
 use itertools::Itertools;
 use strum::IntoEnumIterator;
-
 use crate::data::{
-	db_types::{ArmorClass, Element},
+	db_types::{HasSkills, ArmorClass, Element},
 	mutable::equipment::Equipment,
-	db_storage::Storage,
 };
-use crate::data::db_types::HasSkills;
 use crate::ui::{
 	items::{
 		armor::GtkArmour,
@@ -31,7 +27,6 @@ use crate::ui::{
 };
 
 pub struct ResultPage {
-	storage: Arc<Storage>,
 	weapon: GtkWeapon,
 	armors: Vec<GtkArmour>,
 	charm: GtkCharm,
@@ -44,7 +39,7 @@ pub struct ResultPage {
 }
 
 impl ResultPage {
-	pub fn new(storage: Arc<Storage>, builder: &gtk::Builder, images: Rc<HashMap<String, Pixbuf>>) -> Self {
+	pub fn new(builder: &gtk::Builder, images: Rc<HashMap<String, Pixbuf>>) -> Self {
 		let iter = ArmorClass::iter();
 		let mut armors = Vec::with_capacity(iter.len());
 		for piece in iter {
@@ -57,7 +52,6 @@ impl ResultPage {
 			defences_summary.push(builder.get_object(&msg).expect(&msg));
 		}
 		let f = ResultPage {
-			storage,
 			weapon: GtkWeapon::new(builder, Rc::clone(&images)),
 			armors,
 			charm: GtkCharm::new(builder, Rc::clone(&images)),
@@ -139,13 +133,12 @@ impl ResultPage {
 		}
 		// Populate the decorations summary ListBox
 		self.decorations_summary.forall(|i| { self.decorations_summary.remove(i) });
-		for (id, quantity) in best.get_used_decorations().iter().sorted_by(|(_id, quantiy), (_i, q)| { q.cmp(&quantiy) }) {  // Skills Summary
+		for (decoration, quantity) in best.get_used_decorations().iter().sorted_by(|(_, quantiy), (_, q)| { q.cmp(&quantiy) }) {  // Skills Summary
 			let builder = get_builder("res/gui/summary row.glade".to_string());
-			let deco = self.storage.decorations.get(id).unwrap();
 			let image: gtk::Image = builder.get_object("decoration image").unwrap();
-			set_image(&image, format!("slot {} {}", deco.size, deco.size).as_str(), &self.images);
+			set_image(&image, format!("slot {} {}", decoration.size, decoration.size).as_str(), &self.images);
 			let name: gtk::Label = builder.get_object("decoration name").unwrap();
-			name.set_text(deco.name.as_str());
+			name.set_text(decoration.name.as_str());
 			let quantity_label: gtk::Label = builder.get_object("decoration quantity").unwrap();
 			quantity_label.set_text(format!("x{}", quantity).as_str());
 			let row: gtk::ListBoxRow = builder.get_object("decoration row").unwrap();

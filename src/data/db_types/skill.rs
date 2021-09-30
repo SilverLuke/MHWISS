@@ -5,9 +5,9 @@ use std::{
 	},
 	fmt,
 	sync::Arc,
+	cmp::Ordering,
 };
-use std::cmp::Ordering;
-
+use std::hash::{Hash, Hasher};
 use crate::data::db_types::{ID, Level};
 
 pub struct Skill {
@@ -33,11 +33,18 @@ impl PartialEq for Skill {
 
 impl Eq for Skill {}
 
+impl Hash for Skill {
+	fn hash<H: Hasher>(&self, state: &mut H) {
+		self.id.hash(state)
+	}
+}
+
 impl fmt::Display for Skill {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(f, "{} [{}]", self.name, self.id)
 	}
 }
+
 
 
 // ToDo Riguardare che roba è i setskill e poi translate
@@ -76,6 +83,12 @@ impl PartialEq for SetSkill {
 }
 
 impl Eq for SetSkill {}
+
+impl Hash for SetSkill {
+	fn hash<H: Hasher>(&self, state: &mut H) {
+		self.id.hash(state)
+	}
+}
 
 /*
 Skill Level TODO add description
@@ -143,23 +156,29 @@ impl Ord for SkillLevel {
 	}
 }
 
+impl Hash for SkillLevel {
+	fn hash<H: Hasher>(&self, state: &mut H) {
+		self.skill.hash(state)
+	}
+}
+
 pub struct SkillsLevel {
-	hashmap: HashMap<ID, SkillLevel>
+	collection: HashMap<ID, SkillLevel>
 }
 
 impl SkillsLevel {
 	pub fn new() -> Self {
 		SkillsLevel {
-			hashmap: Default::default(),
+			collection: Default::default(),
 		}
 	}
 
 	// Insert in the hashmap the skill if not present, increase the skill level otherwise.
 	pub fn insert(&mut self, add: SkillLevel) -> &Self {
 		if add.get_level() == 0 {
-			self.hashmap.remove(&add.get_id());
+			self.collection.remove(&add.get_id());
 		} else {
-			match self.hashmap.entry(add.get_id()) {
+			match self.collection.entry(add.get_id()) {
 				Entry::Occupied(mut o) => {
 					let skill = o.get_mut();
 					skill.set_level(skill.get_level() + add.level)
@@ -173,8 +192,8 @@ impl SkillsLevel {
 
 	// Insert in the hashmap all the skills calling the insert() for each skill in add
 	pub fn insert_skills(&mut self, add: &SkillsLevel) -> &Self {
-		for (id, skill_to_add) in add.hashmap.iter() {
-			match self.hashmap.entry(*id) {
+		for (id, skill_to_add) in add.collection.iter() {
+			match self.collection.entry(*id) {
 				Entry::Occupied(mut o) => {
 					let skill = o.get_mut();
 					skill.set_level(skill.get_level() + skill_to_add.get_level())
@@ -188,7 +207,7 @@ impl SkillsLevel {
 
 	// Insert in the hashmap the skill if not present, increase the skill level otherwise.
 	pub fn remove(&mut self, remove: SkillLevel) -> Result<&Self, &str> {
-		match self.hashmap.entry(remove.get_id()) {
+		match self.collection.entry(remove.get_id()) {
 			Entry::Occupied(mut o) => {
 				let skill = o.get_mut();
 				if skill.level > remove.level {
@@ -206,8 +225,8 @@ impl SkillsLevel {
 
 	// Insert in the hashmap the skill if not present, increase the skill level otherwise.
 	pub fn remove_skills(&mut self, remove_list: &SkillsLevel) -> &Self {
-		for (id, skill_to_remove) in remove_list.hashmap.iter() {
-			match self.hashmap.entry(*id) {
+		for (id, skill_to_remove) in remove_list.collection.iter() {
+			match self.collection.entry(*id) {
 				Entry::Occupied(mut o) => {
 					let skill = o.get_mut();
 					if skill.level > skill_to_remove.level {
@@ -224,22 +243,22 @@ impl SkillsLevel {
 	}
 
 	pub fn get_level(&self, skill: Arc<Skill>) -> Option<Level> {
-		if let Some(skill_level) = self.hashmap.get(&skill.id) {
+		if let Some(skill_level) = self.collection.get(&skill.id) {
 			Some(skill_level.get_level())
 		} else { None }
 	}
 
 	pub fn contains_skill(&self, skill: Arc<Skill>) -> bool {
-		self.hashmap.contains_key(&skill.id)
+		self.collection.contains_key(&skill.id)
 	}
 
 	pub fn contains_id(&self, id: u16) -> bool {
-		self.hashmap.contains_key(&id)
+		self.collection.contains_key(&id)
 	}
 
 	pub fn contains_list(&self, list: &SkillsLevel) -> bool {
-		for id in list.hashmap.keys() {
-			if self.hashmap.contains_key(id) {
+		for id in list.collection.keys() {
+			if self.collection.contains_key(id) {
 				return true;
 			}
 		}
@@ -247,22 +266,22 @@ impl SkillsLevel {
 	}
 
 	pub fn iter(&self) -> Box<dyn Iterator<Item=&SkillLevel> + '_> {
-		Box::new(self.hashmap.values())
+		Box::new(self.collection.values())
 	}
 
 	pub fn shrink_to_fit(&mut self) {
-		self.hashmap.shrink_to_fit();
+		self.collection.shrink_to_fit();
 	}
 
 	pub fn len(&self) -> usize {
-		self.hashmap.len()
+		self.collection.len()
 	}
 }
 
 impl Clone for SkillsLevel {
 	fn clone(&self) -> Self {
 		SkillsLevel {
-			hashmap: self.hashmap.clone()
+			collection: self.collection.clone()
 		}
 	}
 }
@@ -270,7 +289,7 @@ impl Clone for SkillsLevel {
 impl fmt::Display for SkillsLevel {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let mut str = String::new();
-		for (_, skill) in self.hashmap.iter() {
+		for (_, skill) in self.collection.iter() {
 			str = format!("{} <{}>", str, skill);
 		}
 		write!(f, "{}", str)

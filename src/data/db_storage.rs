@@ -15,6 +15,7 @@ pub struct Storage {
 }
 
 impl Storage {
+
 	pub fn new() -> Self {
 		Storage {
 			skills: Default::default(),
@@ -30,7 +31,7 @@ impl Storage {
 
 	pub fn load_all(&mut self, db: &DB) {
 		db.load_skills(&mut self.skills);
-		db.load_setskills(&mut self.set_skills, &self.skills);
+		db.load_set_skills(&mut self.set_skills, &self.skills);
 		db.load_armors(&mut self.armors, &self.skills, &self.set_skills);
 		db.load_sets(&mut self.sets, &self.armors, &self.set_skills);
 		db.load_charms(&mut self.charms, &self.skills);

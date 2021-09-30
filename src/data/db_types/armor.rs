@@ -2,6 +2,7 @@ use std::{
     fmt,
     sync::Arc,
 };
+use std::hash::{Hash, Hasher};
 use strum::EnumCount;
 
 use crate::data::db_types::{
@@ -52,13 +53,6 @@ impl fmt::Display for Armor {
     }
 }
 
-impl PartialEq for Armor {
-    fn eq(&self, other: &Self) -> bool {
-        self.id == other.id
-    }
-}
-impl Eq for Armor {}
-
 impl HasSkills for Armor {
     fn get_skills(&self) -> SkillsLevel {
         self.skills.clone()
@@ -68,6 +62,19 @@ impl HasSkills for Armor {
 impl HasDecoration for Armor {
     fn get_slots(&self) -> Vec<u8> {
         Vec::from(self.slots)
+    }
+}
+
+impl PartialEq for Armor {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+impl Eq for Armor {}
+
+impl Hash for Armor {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
     }
 }
 
@@ -97,5 +104,18 @@ impl ArmorSet {
 
     pub fn get_armor(&self, id: ArmorClass) -> &Option<Arc<Armor>> {
         self.armors.get(id as usize).unwrap()
+    }
+}
+
+impl PartialEq for ArmorSet {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+impl Eq for ArmorSet {}
+
+impl Hash for ArmorSet {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
     }
 }

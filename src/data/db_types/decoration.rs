@@ -1,5 +1,6 @@
 use std::{
     fmt,
+	hash::{Hash, Hasher},
 };
 
 use crate::data::db_types::{
@@ -27,6 +28,19 @@ impl HasSkills for Decoration {
 	}
 }
 
+impl PartialEq for Decoration {
+	fn eq(&self, other: &Self) -> bool {
+		self.id == other.id
+	}
+}
+impl Eq for Decoration {}
+
+impl Hash for Decoration {
+	fn hash<H: Hasher>(&self, state: &mut H) {
+		self.id.hash(state);
+	}
+}
+
 impl fmt::Display for Decoration {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let mut str = String::new();
@@ -37,8 +51,3 @@ impl fmt::Display for Decoration {
 	}
 }
 
-impl PartialEq for Decoration {
-	fn eq(&self, other: &Self) -> bool {
-		self.id == other.id
-	}
-}

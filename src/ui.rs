@@ -75,7 +75,7 @@ impl Ui {
 
 		let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 		engine_manager.add_callback(sender);
-		let pages = Pages::new(&builder, &storage, &engine_manager);
+		let pages = Pages::new(&builder, &engine_manager);
 
 		for (i, val) in Engines::iter().enumerate() {
 			engines_combo.insert(i as i32, Some(val.to_string().as_str()), val.to_string().as_str());

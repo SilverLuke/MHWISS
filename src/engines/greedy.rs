@@ -1,14 +1,13 @@
 use std::{
 	cmp::Ordering,
-	collections::{HashMap},
 	fmt,
 	sync::Arc,
 };
+use std::collections::HashSet;
 use std::ops::Not;
 use crate::data::{
 	db_storage::Storage,
 	db_types::{
-		ID,
 		HasSkills, HasDecoration, Slots,
 		weapon::Weapon,
 		armor::Armor,
@@ -174,9 +173,9 @@ pub(crate) struct Greedy {
 	wearable: Vec<Wearable>,
 }
 
-fn filter_item<T>(items: &HashMap<ID, Arc<T>>, constraints: &SkillsLevel) -> Vec<Arc<T>> where T: HasSkills {
+fn filter_item<T>(items: &HashSet<Arc<T>>, constraints: &SkillsLevel) -> Vec<Arc<T>> where T: HasSkills {
 	let mut ret = vec![];
-	for (_id, item) in items.iter() {
+	for item in items.iter() {
 		if item.has_skills(constraints) {
 			ret.push(Arc::clone(item));
 		}
@@ -210,7 +209,7 @@ impl Greedy {
 			let container = EvalContainer::new(deco_conta, Some(&decorations), &copy);
 			wearable.push(Wearable::Weapon(container));
 		}
-		for (_, tool) in storage.tools.iter() {
+		for tool in storage.tools.iter() {
 			let deco_conta = AttachedDecorations::new(Arc::clone(tool));
 			let container = EvalContainer::new(deco_conta, Some(&decorations), &copy);
 			wearable.push(Wearable::Tool(container));

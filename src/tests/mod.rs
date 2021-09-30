@@ -23,7 +23,7 @@ struct Shared {
 
 impl Storage {
 	pub fn get_skill_from_name(&self, name: &str) -> Option<Arc<Skill>> {
-		for (_, skill) in self.skills.iter() {
+		for skill in self.skills.iter() {
 			if skill.name == name {
 				return Some(Arc::clone(skill));
 			}

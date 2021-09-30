@@ -2,6 +2,7 @@ use std::{
     fmt,
     sync::Arc,
 };
+use std::hash::{Hash, Hasher};
 
 use crate::data::db_types::{
 	ID,
@@ -36,9 +37,15 @@ impl HasSkills for Charm {
 	}
 }
 
-
 impl PartialEq for Charm {
 	fn eq(&self, other: &Self) -> bool {
 		self.id == other.id
+	}
+}
+impl Eq for Charm {}
+
+impl Hash for Charm {
+	fn hash<H: Hasher>(&self, state: &mut H) {
+		self.id.hash(state);
 	}
 }

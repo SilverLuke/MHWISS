@@ -2,6 +2,7 @@ use std::{
     fmt,
     sync::Arc,
 };
+use std::hash::{Hash, Hasher};
 
 use crate::data::db_types::{
 	ID, MAX_SLOTS, SHARPNESS_LEVELS, HasDecoration, ElderSeal, Element, WeaponClass, HasSkills,
@@ -32,18 +33,6 @@ impl Weapon {
 	}
 }
 
-impl PartialEq for Weapon {
-	fn eq(&self, other: &Self) -> bool {
-		self.id == other.id
-	}
-}
-
-impl fmt::Display for Weapon {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(f, "{}[{}]", self.name, self.id)
-	}
-}
-
 impl HasSkills for Weapon {
 	fn get_skills(&self) -> SkillsLevel {
 		self.skill.clone()
@@ -53,5 +42,24 @@ impl HasSkills for Weapon {
 impl HasDecoration for Weapon {
 	fn get_slots(&self) -> Vec<u8> {
 		Vec::from(self.slots)
+	}
+}
+
+impl PartialEq for Weapon {
+	fn eq(&self, other: &Self) -> bool {
+		self.id == other.id
+	}
+}
+impl Eq for Weapon {}
+
+impl Hash for Weapon {
+	fn hash<H: Hasher>(&self, state: &mut H) {
+		self.id.hash(state);
+	}
+}
+
+impl fmt::Display for Weapon {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		write!(f, "{}[{}]", self.name, self.id)
 	}
 }
