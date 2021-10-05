@@ -49,7 +49,9 @@ impl Pages {
 		}
 	}
 
-	pub fn show(&self, app: Rc<Ui>) {  // Todo move this to the costructor this methods do not show anything they load things
+	// TOOD: This methods do not show anything instead this method create the UI widgets,
+	// TOOD: we should implement some dynamic loading for better performance
+	pub fn insert_widgets_tabs(&self, app: Rc<Ui>) {
 		self.skills_page.show(&app);
 		self.armors_page.show(&app.storage);
 		self.decos_page.show(&app.storage);
@@ -102,7 +104,8 @@ pub(crate) fn set_image(image: &gtk::Image, key: &str, images: &Rc<HashMap<Strin
 	image.set_from_pixbuf(Some(pixbuf));
 }
 
-pub(crate) fn set_image_scaled(image: &gtk::Image, key: &str, size:i32, images: &Rc<HashMap<String, Pixbuf>>) {  // TODO add in the images structure already scaled pixbuf
+// TODO add in the images structure already scaled pixbuff -> refactoring images management
+pub(crate) fn set_image_scaled(image: &gtk::Image, key: &str, size:i32, images: &Rc<HashMap<String, Pixbuf>>) {
 	let pixbuf = images.get(key).expect(&key);
 	let pixbuf = Pixbuf::scale_simple(pixbuf, size, size, InterpType::Nearest);
 	image.set_from_pixbuf(Some(&pixbuf.unwrap()));

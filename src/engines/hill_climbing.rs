@@ -7,8 +7,8 @@ use crate::data::{
 	db_storage::Storage,
 	db_types::skill::SkillsLevel,
 };
-use crate::engines::Engine;
-
+use crate::engines::{Engine, EngineError};
+#[allow(dead_code)]
 pub(crate) struct HillClimbing {
 	storage: Arc<Storage>,
 	constraints: SkillsLevel,
@@ -31,8 +31,8 @@ impl HillClimbing {
 }
 
 impl Engine for HillClimbing {
-	fn run(&mut self) -> Vec<Equipment> {
-		vec![Equipment::new()]
+	fn run(&mut self) -> Result<Vec<Equipment>, EngineError> {
+		unimplemented!()
 	}
 }
 

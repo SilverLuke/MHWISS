@@ -1,25 +1,19 @@
 use std::{
     fmt,
     sync::Arc,
+	hash::{Hash, Hasher},
 };
-use std::hash::{Hash, Hasher};
-
 use crate::data::db_types::{
 	ID,
-	HasSkills,
+	Item,
 	skill::{Skill, SkillLevel, SkillsLevel},
 };
+
 
 pub struct Charm {
 	pub id: ID,
 	pub name: String,
 	pub skills: SkillsLevel,
-}
-
-impl fmt::Display for Charm {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(f, "{}[{}] Skill: {}", self.name, self.id, self.skills)
-	}
 }
 
 impl Charm {
@@ -31,9 +25,13 @@ impl Charm {
 	}
 }
 
-impl HasSkills for Charm {
+impl Item for Charm {
 	fn get_skills(&self) -> SkillsLevel {
 		self.skills.clone()
+	}
+
+	fn get_slots(&self) -> Vec<u8> {
+		vec![]
 	}
 }
 
@@ -47,5 +45,11 @@ impl Eq for Charm {}
 impl Hash for Charm {
 	fn hash<H: Hasher>(&self, state: &mut H) {
 		self.id.hash(state);
+	}
+}
+
+impl fmt::Display for Charm {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		write!(f, "{0: <45}| {1: <45}", format!("{} [{}]", self.name, self.id), self.skills.to_string())
 	}
 }

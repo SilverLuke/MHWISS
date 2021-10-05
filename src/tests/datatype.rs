@@ -5,7 +5,7 @@ use std::{
 use crate::data::{
 	mutable::attached_decorations::AttachedDecorations,
 	db_types::{
-		HasSkills,
+		Item,
 		skill::{SkillLevel, SkillsLevel},
 	},
 	db::{get_armor_by_id, get_decorations_by_id, get_skill_by_id},
@@ -25,10 +25,10 @@ fn attached_decorations() {
 	let deco3 = get_decorations_by_id(decorations, 143).unwrap();  // Skill id 86 size <4>
 	let deco4 = get_decorations_by_id(decorations, 53).unwrap();   // Skill id 47 size <2>
 
-	assert_eq!(armdec.try_add_deco(Arc::clone(deco1)).is_ok(), true);
-	assert_eq!(armdec.try_add_deco(Arc::clone(deco2)).is_ok(), true);
-	assert_eq!(armdec.try_add_deco(Arc::clone(deco3)).is_ok(), false);
-	assert_eq!(armdec.try_add_deco(Arc::clone(deco4)).is_ok(), true);
+	assert_eq!(armdec.try_add_deco(deco1), true);
+	assert_eq!(armdec.try_add_deco(deco2), true);
+	assert_eq!(armdec.try_add_deco(deco3), false);
+	assert_eq!(armdec.try_add_deco(deco4), true);
 
 	let skills = shared.storage.skills.borrow();
 	let mut skill_list = SkillsLevel::new();

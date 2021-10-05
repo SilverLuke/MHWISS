@@ -1,14 +1,17 @@
 use std::{
-	cmp::Ordering,
+	cmp::{
+		Ordering,
+		min,
+	},
 	fmt,
 	sync::Arc,
+	ops::Not,
+	collections::HashSet,
 };
-use std::collections::HashSet;
-use std::ops::Not;
 use crate::data::{
 	db_storage::Storage,
 	db_types::{
-		HasSkills, HasDecoration, Slots,
+		Item, Decorations, Slot,
 		weapon::Weapon,
 		armor::Armor,
 		charm::Charm,
@@ -21,70 +24,39 @@ use crate::data::{
 		attached_decorations::AttachedDecorations,
 	},
 };
-use crate::engines::Engine;
+use crate::engines::{Engine, EngineError};
 
-type MagicValue = i16;
-type Decos = Vec<EvalContainer<Arc<Decoration>>>;
-
-trait Magicable {
-	fn get_slots(&self) -> Slots;
-}
-
-impl Magicable for Arc<Charm> {
-	fn get_slots(&self) -> Slots {
-		vec![]
-	}
-}
-
-impl<T> Magicable for AttachedDecorations<T> where T: HasDecoration {
-	fn get_slots(&self) -> Slots {
-		self.item.get_slots()
-	}
-}
-
-impl Magicable for Arc<Decoration> {
-	fn get_slots(&self) -> Slots {
-		vec![]
-	}
-}
-
-impl HasSkills for Arc<Charm> {  // ToDo is this required??
-	fn get_skills(&self) -> SkillsLevel {
-		Charm::get_skills(self)
-	}
-}
-
-impl HasSkills for Arc<Decoration> {  // ToDo is this required??
-	fn get_skills(&self) -> SkillsLevel {
-		Decoration::get_skills(self)
-	}
-}
-
+type EvalType = i16;
 
 struct EvalContainer<T> {
-	pub item: T,
-	pub value: MagicValue,
+	pub item: AttachedDecorations<T>,
+	pub value: EvalType,
 }
 
-fn eval_skills(item_skills: &SkillsLevel, constraint: &SkillsLevel) -> MagicValue {
+fn eval_skills(item_skills: &SkillsLevel, constraint: &SkillsLevel) -> EvalType {
 	let mut value = 0;
 	for skill in item_skills.iter() {
 		value += match constraint.get_level(skill.get_skill()) {
 			None => 0i16,
-			Some(v) => v as i16,
+			Some(v) => min(v, skill.get_level()) as i16,
 		};
 	}
 	value
 }
-#[allow(unused_variables)]
-fn eval_slots(slots: Slots, decorations: &Decos, constraint: &SkillsLevel) -> MagicValue {  // Sum of the value of best decorations applicable.
+
+fn eval_and_assign_slots<T>(item: &mut AttachedDecorations<T>, decorations: &Decorations, constraints: &mut SkillsLevel) -> EvalType where T: Item {  // Sum of the value of best decorations applicable.
 	let mut val = 0;
-	let mut i = 0;
-	for deco in decorations {
-		if let Some(slot_size) = slots.get(i) {
-			if deco.item.size == *slot_size {
-				i += 1;
-				val += deco.value;
+	let slots = item.get_slots();
+	if slots.len() <= 0 {
+		return 0;  // The item has no slots
+	}
+	for slot in slots {
+		let decoration = get_best_decoration(slot, decorations, constraints);
+		if let Some(deco) = decoration {
+			if item.try_add_deco(&deco) {
+				let deco_skills = &deco.get_skills();
+				val += eval_skills(deco_skills, constraints);
+				constraints.remove_skills(deco_skills);
 			}
 		} else {
 			break;
@@ -93,40 +65,59 @@ fn eval_slots(slots: Slots, decorations: &Decos, constraint: &SkillsLevel) -> Ma
 	val
 }
 
-impl<T> EvalContainer<T> where T: Magicable + HasSkills {
-	fn new(item: T, deco: Option<&Decos>, constraint: &SkillsLevel) -> Self {
-		let mut value = eval_skills(&item.get_skills(), &constraint);
-		if let Some(deco) = deco {
-			value += eval_slots(item.get_slots(), deco, &constraint);
-		}
-		EvalContainer {
-			item,
-			value,
+fn get_best_decoration(slot_size: Slot, decorations: &Decorations, constraints: &SkillsLevel) -> Option<Arc<Decoration>> {
+	let mut best: (EvalType, Option<&Arc<Decoration>>) = (0, None);
+	for deco in decorations {
+		if deco.size <= slot_size {
+			let value = eval_skills(&deco.get_skills(), constraints);
+			if best.1.is_some() {
+				if value > best.0 || (value == best.0 && deco.get_skills().len() > best.1.unwrap().get_skills().len()) {
+					best = (value, Some(deco));
+				}
+			} else {
+				best = (value, Some(deco));
+			}
 		}
 	}
+	if let Some(deco) = best.1 {
+		Some(Arc::clone(deco))
+	} else {
+		None
+	}
+}
 
-	pub fn evaluate(&mut self, deco: Option<&Decos>, constraints: &SkillsLevel) {
+impl<T: Item> EvalContainer<T> {
+	fn new(item: &Arc<T>, deco: &Decorations, constraints: &SkillsLevel) -> Self {
+		let item = AttachedDecorations::new(Arc::clone(item));
+		let mut tmp = EvalContainer {
+			item,
+			value: 0i16,
+		};
+		tmp.evaluate(deco, constraints);
+		tmp
+	}
+
+	pub fn evaluate(&mut self, deco: &Decorations, constraints: &SkillsLevel) {
 		let mut value = eval_skills(&self.item.get_skills(), &constraints);
-		if let Some(deco) = deco {
-			value += eval_slots(self.item.get_slots(), deco, &constraints);
+		if self.item.get_slots().len() > 0 {
+			self.item.clean_decorations();
+			let mut contraints_copy = constraints.clone();
+			contraints_copy.remove_skills(&self.item.get_skills());
+			value += eval_and_assign_slots(&mut self.item, deco, &mut contraints_copy);
 		}
 		self.value = value;
-	}
-
-	fn get(&self) -> T {
-		todo!()
 	}
 }
 
 enum Wearable {
-	Weapon(EvalContainer<AttachedDecorations<Weapon>>),
-	Armor(EvalContainer<AttachedDecorations<Armor>>),
-	Charm(EvalContainer<Arc<Charm>>),
-	Tool(EvalContainer<AttachedDecorations<Tool>>),
+	Weapon(EvalContainer<Weapon>),
+	Armor(EvalContainer<Armor>),
+	Charm(EvalContainer<Charm>),  // FIXME: In this way Charms are encapsulated inside attached_decorations, but charms cannot get decorations.
+	Tool(EvalContainer<Tool>),
 }
 
 impl Wearable {
-	fn get_value(&self) -> MagicValue {
+	fn get_value(&self) -> EvalType {
 		match self {
 			Wearable::Weapon(i) => i.value,
 			Wearable::Armor(i) => i.value,
@@ -139,8 +130,8 @@ impl Wearable {
 		match self {
 			Wearable::Weapon(i) => i.item.item.attack_true,
 			Wearable::Armor(i) => i.item.item.defence[2] as u16,
-			Wearable::Charm(i) => i.item.id,
-			Wearable::Tool(i) => i.item.item.id,
+			Wearable::Charm(i) => i.item.get_skills().len() as u16,
+			Wearable::Tool(i) => i.item.get_slots().len() as u16,
 		}
 	}
 
@@ -153,27 +144,26 @@ impl Wearable {
 		}
 	}
 
-	fn recalculate(&mut self, constraint: &SkillsLevel, deco: &Decos) {
+	fn recalculate(&mut self, constraint: &SkillsLevel, deco: &Decorations) {
 		match self {
-			Wearable::Weapon(item) => item.evaluate(Some(deco), &constraint),
-			Wearable::Armor(item) => item.evaluate(Some(deco), &constraint),
-			Wearable::Charm(item) => item.evaluate(None, &constraint),
-			Wearable::Tool(item) => item.evaluate(Some(deco), &constraint),
+			Wearable::Weapon(item) => item.evaluate(deco, &constraint),
+			Wearable::Armor(item) => item.evaluate(deco, &constraint),
+			Wearable::Charm(item) => item.evaluate(deco,&constraint),
+			Wearable::Tool(item) => item.evaluate(deco, &constraint),
 		}
 	}
 }
 
 pub(crate) struct Greedy {
 	// Engine Related
-	//storage: Arc<Storage>,
 	constraints: SkillsLevel,
 	// Greedy related
 	current_constrains: SkillsLevel,
-	decorations: Decos,
+	decorations: Decorations,
 	wearable: Vec<Wearable>,
 }
 
-fn filter_item<T>(items: &HashSet<Arc<T>>, constraints: &SkillsLevel) -> Vec<Arc<T>> where T: HasSkills {
+fn filter_item<T>(items: &HashSet<Arc<T>>, constraints: &SkillsLevel) -> Vec<Arc<T>> where T: Item {
 	let mut ret = vec![];
 	for item in items.iter() {
 		if item.has_skills(constraints) {
@@ -186,38 +176,49 @@ fn filter_item<T>(items: &HashSet<Arc<T>>, constraints: &SkillsLevel) -> Vec<Arc
 impl Greedy {
 	pub(crate) fn new(storage: Arc<Storage>, constraints: SkillsLevel) -> Self {
 		let copy = constraints.clone();
-		let mut decorations: Vec<EvalContainer<Arc<Decoration>>> = Default::default();
+		let mut decorations: Decorations = Default::default();
 		let mut wearable: Vec<Wearable> = Default::default();
 
 		for decoration in filter_item(&storage.decorations, &constraints).iter() {
-			let container = EvalContainer::new(Arc::clone(decoration), None, &copy);
-			decorations.push(container);
+			decorations.insert(Arc::clone(decoration));
 		}
-		decorations.sort_by(|a, b| { b.cmp(&a) }); // Sorting descending
+		// decorations.sort_by(|a, b| { b.cmp(&a) }); Useless sorting. decorations value will change after first selected wearable
 
+
+
+		for charm in storage.charms.iter() {
+			let container = EvalContainer::new(charm, &decorations, &copy);
+			wearable.push(Wearable::Charm(container));
+		}
+		for armor in storage.armors.iter() {
+			let container = EvalContainer::new(armor, &decorations, &copy);
+			wearable.push(Wearable::Armor(container));
+		}
+		for weapon in storage.weapons.iter() {
+			let container = EvalContainer::new(weapon, &decorations, &copy);
+			wearable.push(Wearable::Weapon(container));
+		}
+
+		/*
 		for charm in filter_item(&storage.charms, &constraints).iter() {
-			let container = EvalContainer::new(Arc::clone(charm), Some(&decorations), &copy);
+			let container = EvalContainer::new(charm, &decorations, &copy);
 			wearable.push(Wearable::Charm(container));
 		}
 		for armor in filter_item(&storage.armors, &constraints).iter() {
-			let deco_conta = AttachedDecorations::new(Arc::clone(armor));
-			let container = EvalContainer::new(deco_conta, Some(&decorations), &copy);  // TODO remove this Arc::new()
+			let container = EvalContainer::new(armor, &decorations, &copy);
 			wearable.push(Wearable::Armor(container));
 		}
 		for weapon in filter_item(&storage.weapons, &constraints).iter() {
-			let deco_conta = AttachedDecorations::new(Arc::clone(weapon));
-			let container = EvalContainer::new(deco_conta, Some(&decorations), &copy);
+			let container = EvalContainer::new(weapon, &decorations, &copy);
 			wearable.push(Wearable::Weapon(container));
-		}
+		}*/
 		for tool in storage.tools.iter() {
-			let deco_conta = AttachedDecorations::new(Arc::clone(tool));
-			let container = EvalContainer::new(deco_conta, Some(&decorations), &copy);
+			let container = EvalContainer::new(tool, &decorations, &copy);
 			wearable.push(Wearable::Tool(container));
 		}
 		wearable.sort_by(|a, b| b.cmp(&a)); // Sorting descending
 
 		Greedy {
-			//storage,
 			constraints,
 			current_constrains: copy,
 			wearable,
@@ -226,11 +227,8 @@ impl Greedy {
 	}
 
 	fn filter(&mut self) {
-		for decoration in self.decorations.iter_mut() {
-			decoration.evaluate(None, &self.current_constrains);
-		}
-		self.decorations.retain(|i| i.value > 0);
-		self.decorations.sort_by(|a, b| { b.cmp(&a) }); // Sorting descending
+		let constrains = &self.current_constrains;
+		self.decorations.retain(|decoration| { eval_skills(&decoration.get_skills(), &constrains) > 0 });
 
 		for w in self.wearable.iter_mut() {
 			w.recalculate(&self.current_constrains, &self.decorations);
@@ -242,10 +240,10 @@ impl Greedy {
 	pub fn satisfy_all_constraints(&self, res: &Equipment) -> bool {
 		let mut satisfied = true;
 		let equipment_skills = res.get_skills();
-		for skill_level in self.constraints.iter() {
-			match equipment_skills.get_level(skill_level.get_skill()) {
+		for constraint_skill in self.constraints.iter() {
+			match equipment_skills.get_level(constraint_skill.get_skill()) {
 				Some(equipment_level) => {
-					if skill_level.get_level() > equipment_level {
+					if constraint_skill.get_level() > equipment_level {
 						satisfied = false;
 					}
 				},
@@ -254,62 +252,47 @@ impl Greedy {
 		}
 		satisfied
 	}
-
-	fn apply_best_decorations<T>(&self, item: &mut AttachedDecorations<T>) where T: HasDecoration {
-		for deco in &self.decorations {
-			let _ = item.try_add_deco(Arc::clone(&deco.item));
-		}
-	}
 }
 
-// TODO add how the engine works.
-// FIXME Maybe the engine do not use charms
-
 impl Engine for Greedy {
-	fn run(&mut self) -> Vec<Equipment> {
+	fn run(&mut self) -> Result<Vec<Equipment>, EngineError> {
 		let mut result = Equipment::new();
-		let mut impossible = false;
-		while self.satisfy_all_constraints(&result).not() && result.is_full().not() && impossible.not() {
+		while self.satisfy_all_constraints(&result).not() && result.is_full().not() {
 			let mut i = 0;
 			let mut insered = false;
-			while insered.not() {  // Loop until a weareable item is suited for placement
+			while insered.not() {  // Loop until a wearable item is suited for placement
 				match self.wearable.get(i) {
 					Some(piece) => {
-						let result = match piece {
+						insered = match piece {
 							Wearable::Weapon(item) => {
-								let mut weapon = item.get().clone();
-								self.apply_best_decorations(&mut weapon);
+								let weapon = item.item.clone();
 								result.try_add_weapon(weapon)
 							},
 							Wearable::Armor(item) => {
-								let mut armor = item.get().clone();
-								self.apply_best_decorations(&mut armor);
+								let armor = item.item.clone();
 								result.try_add_armor(armor)
 							},
+							Wearable::Charm(item) => {
+								let charm = Arc::clone(&item.item.item);
+								result.try_add_charm(charm)
+							},
 							Wearable::Tool(item) => {
-								let mut tool = item.get().clone();
-								self.apply_best_decorations(&mut tool);
+								let tool = item.item.clone();
 								result.try_add_tool(tool)
 							},
-							Wearable::Charm(item) => result.try_add_charm(Arc::clone(&item.get())),
-						}.is_ok();
-						if result {
+						};
+						if insered {  // Go for the next piece
 							self.current_constrains.remove_skills(&piece.get_skills());
-							insered = true;  // Go for the next piece
 						} else {
 							i += 1;
 						}
 					},
-					None => {
-						println!("IMPOSSIBLE");
-						insered = true;  // No more armor to be tested
-						impossible = true;  // So no configuration exist (Maybe???)
-					}
+					None => return Err(EngineError::Impossible),
 				};
 			}
 			self.filter();
 		}
-		vec![result]
+		Ok(vec![result])
 	}
 }
 

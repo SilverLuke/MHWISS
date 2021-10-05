@@ -1,14 +1,18 @@
 use std::{
+	fmt,
+	sync::Arc,
+	cmp::Ordering,
 	collections::{
 		hash_map::Entry,
 		HashMap,
 	},
-	fmt,
-	sync::Arc,
-	cmp::Ordering,
+	hash::{
+		Hash, Hasher
+	},
 };
-use std::hash::{Hash, Hasher};
+use itertools::Itertools;
 use crate::data::db_types::{ID, Level};
+
 
 pub struct Skill {
 	pub id: ID,
@@ -45,10 +49,7 @@ impl fmt::Display for Skill {
 	}
 }
 
-
-
-// ToDo Riguardare che roba è i setskill e poi translate
-// SetSkill sono skill che si abilitano booleanarmente i requisiti sono
+// TODO Struct description
 pub struct SetSkill {
 	pub id: ID,
 	pub name: String,
@@ -91,7 +92,7 @@ impl Hash for SetSkill {
 }
 
 /*
-Skill Level TODO add description
+SkillLevel is used to indicate the level/strength of the skill, generally used only in SkillsLevel
 */
 
 pub struct SkillLevel {
@@ -138,7 +139,6 @@ impl Eq for SkillLevel {}
 impl PartialEq<Self> for SkillLevel {
 	fn eq(&self, other: &Self) -> bool {
 		self.skill.id != other.skill.id && self.level <= other.level
-
 	}
 }
 
@@ -152,7 +152,12 @@ impl PartialOrd<Self> for SkillLevel {
 
 impl Ord for SkillLevel {
 	fn cmp(&self, other: &Self) -> Ordering {
-		self.level.cmp(&other.level)
+		let ord = self.level.cmp(&other.level);
+		if ord == Ordering::Equal {
+			self.skill.name.cmp(&other.skill.name)
+		} else {
+			ord
+		}
 	}
 }
 
@@ -220,11 +225,10 @@ impl SkillsLevel {
 			},
 			Entry::Vacant(_) => Err("Skill not found!")
 		}
-
 	}
 
 	// Insert in the hashmap the skill if not present, increase the skill level otherwise.
-	pub fn remove_skills(&mut self, remove_list: &SkillsLevel) -> &Self {
+	pub fn remove_skills(&mut self, remove_list: &SkillsLevel) {
 		for (id, skill_to_remove) in remove_list.collection.iter() {
 			match self.collection.entry(*id) {
 				Entry::Occupied(mut o) => {
@@ -239,7 +243,16 @@ impl SkillsLevel {
 			};
 		}
 		self.shrink_to_fit();
-		self
+	}
+
+	pub fn set(&mut self, skill_to_add: SkillLevel) {
+		match self.collection.entry(skill_to_add.get_id()) {
+			Entry::Occupied(mut o) => {
+				let skill = o.get_mut();
+				skill.set_level(skill_to_add.get_level())
+			},
+			Entry::Vacant(v) => { v.insert(skill_to_add); }
+		};
 	}
 
 	pub fn get_level(&self, skill: Arc<Skill>) -> Option<Level> {
@@ -288,11 +301,18 @@ impl Clone for SkillsLevel {
 
 impl fmt::Display for SkillsLevel {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		let mut str = String::new();
-		for (_, skill) in self.collection.iter() {
-			str = format!("{} <{}>", str, skill);
+		if self.collection.is_empty() {
+			return write!(f, "");
 		}
-		write!(f, "{}", str)
+		let mut str = String::from("");
+		for skill in self.collection.values().sorted().rev() {
+			if str.len() == 0 {
+				str.push_str(skill.to_string().as_str());
+			} else {
+				str.push_str(format!(", {}", skill).as_str());
+			}
+		}
+		write!(f, "<{}>", str)
 	}
 }
 

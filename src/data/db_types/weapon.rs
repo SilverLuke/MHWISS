@@ -1,12 +1,11 @@
 use std::{
     fmt,
     sync::Arc,
+	hash::{Hash, Hasher},
 };
-use std::hash::{Hash, Hasher};
-
 use crate::data::db_types::{
-	ID, MAX_SLOTS, SHARPNESS_LEVELS, HasDecoration, ElderSeal, Element, WeaponClass, HasSkills,
-	skill::{SetSkill, SkillsLevel}
+	ID, MAX_SLOTS, SHARPNESS_LEVELS, ElderSeal, Element, WeaponClass, Item, Slot,
+	skill::{SetSkill, SkillsLevel},
 };
 
 #[allow(dead_code)]
@@ -23,7 +22,7 @@ pub struct Weapon {
 	element_hidden: bool,
 	elderseal: ElderSeal,
 	pub skill: SkillsLevel,
-	pub slots: [u8; MAX_SLOTS],
+	pub slots: [Slot; MAX_SLOTS],
 	armorset_skill: Option<Arc<SetSkill>>,
 }
 
@@ -33,13 +32,10 @@ impl Weapon {
 	}
 }
 
-impl HasSkills for Weapon {
+impl Item for Weapon {
 	fn get_skills(&self) -> SkillsLevel {
 		self.skill.clone()
 	}
-}
-
-impl HasDecoration for Weapon {
 	fn get_slots(&self) -> Vec<u8> {
 		Vec::from(self.slots)
 	}
@@ -60,6 +56,6 @@ impl Hash for Weapon {
 
 impl fmt::Display for Weapon {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(f, "{}[{}]", self.name, self.id)
+		write!(f, "{0: <45}|{1: <45}", format!("{} [{}]", self.name, self.id), self.skill.to_string())
 	}
 }

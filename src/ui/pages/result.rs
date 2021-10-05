@@ -7,7 +7,7 @@ use gtk::prelude::*;
 use itertools::Itertools;
 use strum::IntoEnumIterator;
 use crate::data::{
-	db_types::{HasSkills, ArmorClass, Element},
+	db_types::{Item, ArmorClass, Element},
 	mutable::equipment::Equipment,
 };
 use crate::ui::{

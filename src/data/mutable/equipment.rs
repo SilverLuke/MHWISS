@@ -4,39 +4,18 @@ use std::{
 	sync::Arc,
 };
 use strum::IntoEnumIterator;
-
-use crate::data::db_types::{
-	ArmorClass, Element, HasSkills,
-	skill::SkillsLevel,
-	charm::Charm,
-	armor::Armor,
-	tool::Tool,
+use crate::data::{
+	db_types::{
+		*,
+		skill::SkillsLevel,
+		weapon::Weapon,
+		armor::Armor,
+		charm::Charm,
+		tool::Tool,
+		decoration::Decoration,
+	},
+	mutable::attached_decorations::AttachedDecorations,
 };
-use crate::data::mutable::attached_decorations::AttachedDecorations;
-use crate::data::db_types::weapon::Weapon;
-use crate::data::db_types::decoration::Decoration;
-
-/*
-trait Wearable {
-	fn get_slots(&self);
-	fn get_skills(&self);
-	fn get_decorations(&self);
-}
-
-impl<T> Wearable for AttachedDecorations<T> {
-	fn get_slots(&self) {
-		self.get_slots()
-	}
-
-	fn get_skills(&self) {
-		self.get_skills()
-	}
-
-	fn get_decorations(&self) {
-		self.get_decorations()
-	}
-}
-*/
 
 pub struct Equipment {
 	pub weapon: Option<AttachedDecorations<Weapon>>,
@@ -65,51 +44,42 @@ impl Equipment {
 		value
 	}
 
-	pub fn try_add_weapon(&mut self, weapon: AttachedDecorations<Weapon>) -> Result<(), &str> {
+	pub fn try_add_weapon(&mut self, weapon: AttachedDecorations<Weapon>) -> bool {
 		if self.weapon.is_some() {
-			Err("Space already taken")
+			false
 		} else {
-			println!("Added:\t{}", &weapon.item);
 			self.weapon = Some(weapon);
-			Ok(())
+			true
 		}
 	}
 
-	pub fn try_add_armor(&mut self, armor: AttachedDecorations<Armor>) -> Result<(), &str> {
+	pub fn try_add_armor(&mut self, armor: AttachedDecorations<Armor>) -> bool {
 		let i = armor.item.class as usize;
 		if self.set[i].is_some() {
-			Err("Space already taken")
+			false
 		} else {
-			println!("Added:\t{}", &armor.item);
 			self.set[i] = Some(armor);
-			Ok(())
+			true
 		}
 	}
 
-	pub fn try_add_charm(&mut self, charm: Arc<Charm>) -> Result<(), &str> {
+	pub fn try_add_charm(&mut self, charm: Arc<Charm>) -> bool {
 		if self.charm.is_some() {
-			Err("Space already taken")
+			false
 		} else {
-			println!("Added:\t{}", &charm);
 			self.charm = Some(charm);
-			Ok(())
+			true
 		}
 	}
 
-	pub fn try_add_tool(&mut self, tool: AttachedDecorations<Tool>) -> Result<(), &str> {
-		let mut index = None;
-		for (i, t) in &mut self.tools.iter().enumerate() {
+	pub fn try_add_tool(&mut self, tool: AttachedDecorations<Tool>) -> bool {
+		for t in self.tools.iter_mut() {
 			if t.is_none() {
-				index = Some(i);
-				println!("Added:\t{}", tool.item);
+				*t = Some(tool);
+				return true;
 			}
 		}
-		if let Some(i) = index {
-			self.tools[i] = Some(tool);
-			return Ok(());
-		} else {
-			Err("Space already taken")
-		}
+		false
 	}
 
 	pub fn is_full(&self) -> bool {
@@ -206,12 +176,11 @@ impl Equipment {
 	}
 }
 
-impl HasSkills for Equipment {
+impl Item for Equipment {
 	fn get_skills(&self) -> SkillsLevel {
 		let mut ret = SkillsLevel::new();
-
 		if let Some(weapon) = &self.weapon {
-			ret.insert_skills(&weapon.get_skills());  // Scelta discutibile
+			ret.insert_skills(&weapon.get_skills());
 		}
 		for i in self.set.iter() {
 			if let Some(armor) = i {
@@ -221,42 +190,32 @@ impl HasSkills for Equipment {
 		if let Some(charm) = &self.charm {
 			ret.insert_skills(&charm.get_skills());
 		}
+		for i in self.tools.iter() {
+			if let Some(tool) = i {
+				ret.insert_skills(&tool.get_skills());
+			}
+		}
 		ret.shrink_to_fit();
 		ret
 	}
-}
 
-
-impl fmt::Display for Equipment {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		let mut str;
-		str = match &self.weapon {
-			Some(w) => format!("\t{0: <6}: {1:}\n", "weapon", w.item),
-			None => format!("\tweapon: None\n")
-		};
-
-		for i in ArmorClass::iter() {
-			str = format!("{0:}\t{1: <6}:", str, i.to_string());
-			str = match self.set.get(i as usize).expect("ERROR: Result print out of bounds") {
-				Some(armor) => format!("{} {}\n", str, armor.item.to_string()),
-				None => format!("{} None\n", str),
+	fn get_slots(&self) -> Slots {
+		let mut ret : Slots = vec![];
+		if let Some(weapon) = &self.weapon {
+			ret.append(weapon.get_slots().as_mut());
+		}
+		for i in self.set.iter() {
+			if let Some(armor) = i {
+				ret.append(armor.get_slots().as_mut());
 			}
 		}
-
-		str = match &self.charm {
-			Some(charm) => format!("{0:}\t{1: <6}: {2:}\n", str, "Charm", charm),
-			None => format!("{0:}\t{1: <6}: None\n", str, "charm"),
-		};
-
-		for (i, tool) in self.tools.iter().enumerate() {
-			str = format!("{0:}\t{1: <6}:", str, format!("tool {}", i + 1));
-			str = match tool {
-				Some(tool) => format!("{} {}\n", str, tool.item),
-				None => format!("{} None\n", str),
+		for i in self.tools.iter() {
+			if let Some(tool) = i {
+				ret.append(tool.get_slots().as_mut());
 			}
 		}
-		str.remove(str.len() - 1);
-		write!(f, "{}", str)
+		ret.shrink_to_fit();
+		ret
 	}
 }
 
@@ -271,5 +230,38 @@ impl PartialEq for Equipment {
 			self.charm == self.charm &&
 			self.tools[0] == self.tools[0] &&
 			self.tools[1] == self.tools[1]
+	}
+}
+
+impl fmt::Display for Equipment {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		let mut str;
+		str = match &self.weapon {
+			Some(w) => format!("\t{0: <6}: {1:}\n", "weapon", w),
+			None => format!("\tweapon: None\n")
+		};
+
+		for i in ArmorClass::iter() {
+			str = format!("{0:}\t{1: <6}:", str, i.to_string());
+			str = match self.set.get(i as usize).expect("ERROR: Result print out of bounds") {
+				Some(armor) => format!("{} {}\n", str, armor),
+				None => format!("{} None\n", str),
+			}
+		}
+
+		str = match &self.charm {
+			Some(charm) => format!("{0:}\t{1: <6}: {2:}\n", str, "Charm", charm),
+			None => format!("{0:}\t{1: <6}: None\n", str, "charm"),
+		};
+
+		for (i, tool) in self.tools.iter().enumerate() {
+			str = format!("{0:}\t{1: <6}:", str, format!("tool {}", i + 1));
+			str = match tool {
+				Some(tool) => format!("{} {}\n", str, tool),
+				None => format!("{} None\n", str),
+			}
+		}
+		str.remove(str.len() - 1);
+		write!(f, "{}", str)
 	}
 }

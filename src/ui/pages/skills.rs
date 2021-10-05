@@ -76,7 +76,7 @@ impl SkillsPage {
 		});
 	}
 
-	pub fn show(&self, application: &Rc<Ui>) {  // TODO: Add skill dependecy
+	pub fn show(&self, application: &Rc<Ui>) {
 		let storage = &application.storage;
 		let size_group: gtk::SizeGroup = gtk::SizeGroup::new(SizeGroupMode::Both);
 		for skill in storage.skills.iter().sorted_by(|a, b| { a.name.cmp(&b.name) }) {

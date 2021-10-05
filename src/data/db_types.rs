@@ -23,7 +23,7 @@ pub mod weapon;
 
 pub type ID = u16;
 pub type Level = u8;
-
+pub type Slot = u8;
 
 pub type Weapons =     HashSet<Arc<Weapon>>;
 pub type Armors =      HashSet<Arc<Armor>>;
@@ -33,20 +33,17 @@ pub type Decorations = HashSet<Arc<Decoration>>;
 pub type Skills =      HashSet<Arc<Skill>>;
 pub type SetSkills =   HashSet<Arc<SetSkill>>;
 pub type Tools =       HashSet<Arc<Tool>>;
+pub type Slots =       Vec<Slot>;
 
 pub const MAX_SLOTS: usize = 3;
 pub const SHARPNESS_LEVELS: usize = 7;
-pub type Slots = Vec<u8>;
 
-pub trait HasSkills {
+pub trait Item {
 	fn get_skills(&self) -> SkillsLevel;
 	fn has_skills(&self, query: &SkillsLevel) -> bool {
 		self.get_skills().contains_list(query)
 	}
-}
-
-pub trait HasDecoration {
-	fn get_slots(&self) -> Vec<u8>;
+	fn get_slots(&self) -> Slots;
 }
 
 pub trait Wearable {

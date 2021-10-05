@@ -1,21 +1,20 @@
 use std::{
     fmt,
     sync::Arc,
+    hash::{Hash, Hasher}
 };
-use std::hash::{Hash, Hasher};
 use strum::EnumCount;
-
 use crate::data::db_types::{
     ID,
     MAX_SLOTS,
     ArmorClass,
     ArmorRank,
-    HasDecoration,
     Gender,
-    HasSkills,
+	Item,
     Element,
     skill::{SetSkill, Skill, SkillLevel, SkillsLevel},
 };
+
 
 pub struct Armor {
     pub id: ID,
@@ -45,21 +44,14 @@ impl Armor {
 
 impl fmt::Display for Armor {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut str = String::new();
-        for skill_level in self.skills.iter() {
-            str = format!("{} <{}, {}>", str, skill_level.get_skill().name, skill_level.get_level());
-        }
-        write!(f, "{0: <45}|{1: <50}", format!("{} [{}] {}", self.name, self.id, self.defence[2]), str)
+        write!(f, "{0: <45}|{1: <45}", format!("{} [{}] {}", self.name, self.id, self.defence[2]), self.skills.to_string())
     }
 }
 
-impl HasSkills for Armor {
+impl Item for Armor {
     fn get_skills(&self) -> SkillsLevel {
         self.skills.clone()
     }
-}
-
-impl HasDecoration for Armor {
     fn get_slots(&self) -> Vec<u8> {
         Vec::from(self.slots)
     }

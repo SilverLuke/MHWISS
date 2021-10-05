@@ -1,34 +1,29 @@
 use std::{
-    env,
-    env::args,
-    rc::Rc,
-    str::FromStr,
-    sync::Arc,
+	env,
+	env::args,
+	rc::Rc,
+	str::FromStr,
+	sync::Arc,
 };
-
 use gio::prelude::*;
 use glib::Receiver;
 use gtk::{Application, ComboBoxText, prelude::*};
 use strum::IntoEnumIterator;
-
 use crate::ui::pages::Pages;
+use crate::engines::{Engines, EnginesManager, EnginesManagerError};
 use crate::settings::Settings;
-
 use crate::data::{
-    mutable::equipment::Equipment,
-    db_storage::Storage,
+	mutable::equipment::Equipment,
+	db_storage::Storage,
 	db::DB,
-};
-use crate::engines::{
-    Engines,
-    EnginesManager,
 };
 
 pub(crate) mod pages;
 pub(crate) mod items;
 
 pub enum Callback {
-	Done(Vec<Equipment>)
+	Done(Vec<Equipment>),
+	Impossible,
 }
 
 pub struct Ui {
@@ -55,7 +50,7 @@ pub fn get_builder(path_from_root: String) -> gtk::Builder {
 		dir
 	};
 	let glade = root_dir.join(path_from_root);
-	gtk::Builder::from_file(glade)  // ToDo: Use new_from_resurces with some cargo tricks
+	gtk::Builder::from_file(glade)  // ToDo: Use new_from_resources with some cargo tricks
 }
 
 impl Ui {
@@ -70,8 +65,8 @@ impl Ui {
 
 		let window = builder.get_object("main window").unwrap();
 		let find_btn = builder.get_object("find btn").unwrap();
-		let lang_combo:ComboBoxText = builder.get_object("languages combo").unwrap();
-		let engines_combo:ComboBoxText = builder.get_object("engines combo").unwrap();
+		let lang_combo: ComboBoxText = builder.get_object("languages combo").unwrap();
+		let engines_combo: ComboBoxText = builder.get_object("engines combo").unwrap();
 
 		let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 		engine_manager.add_callback(sender);
@@ -110,8 +105,13 @@ impl Ui {
 			let app = Rc::clone(self);
 			self.find_btn.connect_clicked(move |_btn| {
 				let engine = Engines::from_str(app.engines_combo.get_active_text().unwrap().as_str()).unwrap();
-				let err = app.engine_manager.run(engine);
-				println!("{:?}", err);
+				let result = app.engine_manager.spawn(engine);
+				if let Err(e) = result {
+					match e {
+						EnginesManagerError::AlreadyRunning => { println!("Engine already running")}
+						EnginesManagerError::NoConstraints => { println!("No constraints") }
+					}
+				}
 			});
 		}
 		{  // Language selector and change the language in the settings
@@ -130,6 +130,10 @@ impl Ui {
 						app.pages.found_page.update(results);
 						app.notebook.set_current_page(Some(app.notebook.get_n_pages() - 1));
 					}
+					Callback::Impossible => {
+						println!("Impossible to find");
+						// TODO add gui message
+					}
 				}
 				glib::Continue(true)
 			});
@@ -143,7 +147,7 @@ impl Ui {
 		}
 		{  // On shutdown -> update config file
 			let app = Rc::clone(self);
-			self.application.connect_shutdown(move|_me| {
+			self.application.connect_shutdown(move |_me| {
 				let err = app.settings.write();
 				if err.is_err() {
 					println!("{:?}", err);
@@ -153,7 +157,7 @@ impl Ui {
 	}
 
 	pub fn start(self: &Rc<Self>) {
-		self.pages.show(Rc::clone(self));
+		self.pages.insert_widgets_tabs(Rc::clone(self));
 		self.window.show_all();
 		let args: Vec<String> = args().collect();
 		self.application.run(&args);

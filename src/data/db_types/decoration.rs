@@ -2,9 +2,8 @@ use std::{
     fmt,
 	hash::{Hash, Hasher},
 };
-
 use crate::data::db_types::{
-	ID, HasSkills,
+	ID, Item,
 	skill::SkillsLevel,
 };
 
@@ -22,9 +21,12 @@ impl Decoration {
 	}
 }
 
-impl HasSkills for Decoration {
+impl Item for Decoration {
 	fn get_skills(&self) -> SkillsLevel {
 		self.skills.clone()
+	}
+	fn get_slots(&self) -> Vec<u8> {
+		vec![]
 	}
 }
 
@@ -43,11 +45,7 @@ impl Hash for Decoration {
 
 impl fmt::Display for Decoration {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		let mut str = String::new();
-		for skill_level in self.skills.iter() {
-			str = format!("{} <{}, {}>", str, *skill_level.get_skill(), skill_level.get_level());
-		}
-		write!(f, "{0: <45}|{1: <50}", format!("{} [{}]", self.name, self.id), str)
+		write!(f, "{0: <45}|{1: <45}", format!("{} [{}]", self.name, self.id), self.skills.to_string())
 	}
 }
 

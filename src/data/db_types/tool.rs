@@ -3,7 +3,8 @@ use std::{
 };
 use std::hash::{Hash, Hasher};
 
-use crate::data::db_types::{ID, HasDecoration, MAX_SLOTS};
+use crate::data::db_types::{ID, Item, MAX_SLOTS};
+use crate::data::db_types::skill::SkillsLevel;
 
 pub struct Tool {
 	pub(crate) id: ID,
@@ -21,7 +22,15 @@ impl Tool {
 	}
 }
 
-impl HasDecoration for Tool {
+impl Item for Tool {
+	fn get_skills(&self) -> SkillsLevel {
+		SkillsLevel::new()
+	}
+
+	fn has_skills(&self, _: &SkillsLevel) -> bool {
+		false
+	}
+
 	fn get_slots(&self) -> Vec<u8> {
 		Vec::from(self.slots)
 	}
@@ -41,6 +50,6 @@ impl Hash for Tool {
 }
 impl fmt::Display for Tool {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		write!(f, "{}", self.name)
+		write!(f, "{0: <45}", self.name)
 	}
 }
