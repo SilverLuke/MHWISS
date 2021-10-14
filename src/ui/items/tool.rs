@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use gdk_pixbuf::Pixbuf;
-use gtk::{Builder, ImageExt, LabelExt};
-use gtk::prelude::BuilderExtManual;
+use gtk::Builder;
+use gtk::prelude::{BuilderExtManual, ImageExt, LabelExt};
 
 use crate::data::db_types::{
 	tool::Tool,
@@ -28,8 +28,8 @@ impl GtkTool {
 			slots.push(GtkSlot::new(&builder, name.as_str(), image.as_str(), Rc::clone(&images)));
 		}
 		GtkTool {
-			name: builder.get_object(format!("tool name {}", id).as_str()).unwrap(),
-			image: builder.get_object(format!("tool image {}", id).as_str()).unwrap(),
+			name: builder.object(format!("tool name {}", id).as_str()).unwrap(),
+			image: builder.object(format!("tool image {}", id).as_str()).unwrap(),
 			slots,
 			images
 		}

@@ -20,6 +20,7 @@ pub struct Armor {
     pub id: ID,
     pub name: String,
     pub class: ArmorClass,
+    pub rank: ArmorRank,
     pub skills: SkillsLevel,
     pub set_skill: Option<Arc<SetSkill>>,  // Set skills go here
     pub gender: Gender,
@@ -29,8 +30,8 @@ pub struct Armor {
 }
 
 impl Armor {
-    pub fn new(id: u16, name: String, class: ArmorClass, gender: Gender, slots: [u8; MAX_SLOTS], defence: [u8; 3], elements: [i8; 5]) -> Self {
-        Armor { id, name, class, skills: SkillsLevel::new(), set_skill: None, gender, slots, defence, elements }
+    pub fn new(id: u16, name: String, class: ArmorClass, rank: ArmorRank, gender: Gender, slots: [u8; MAX_SLOTS], defence: [u8; 3], elements: [i8; 5]) -> Self {
+        Armor { id, name, class, rank, skills: SkillsLevel::new(), set_skill: None, gender, slots, defence, elements }
     }
 
     pub fn add_skill(&mut self, skill: &Arc<Skill>, level: u8) {

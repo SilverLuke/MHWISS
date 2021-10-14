@@ -27,8 +27,8 @@ pub type Slot = u8;
 
 pub type Weapons =     HashSet<Arc<Weapon>>;
 pub type Armors =      HashSet<Arc<Armor>>;
+pub type ArmorSets =   HashSet<Arc<ArmorSet>>;
 pub type Charms =      HashSet<Arc<Charm>>;
-pub type Sets =        HashSet<Arc<ArmorSet>>;
 pub type Decorations = HashSet<Arc<Decoration>>;
 pub type Skills =      HashSet<Arc<Skill>>;
 pub type SetSkills =   HashSet<Arc<SetSkill>>;
@@ -44,10 +44,6 @@ pub trait Item {
 		self.get_skills().contains_list(query)
 	}
 	fn get_slots(&self) -> Slots;
-}
-
-pub trait Wearable {
-	fn get_name(&self) -> String;
 }
 
 // Elements
@@ -111,8 +107,7 @@ pub enum ArmorClass {
 }
 
 // ArmorSet rank level
-#[repr(usize)]
-#[derive(EnumCount, EnumString, EnumIter, Display, Copy, Clone)]
+#[derive(EnumCount, EnumString, EnumIter, Display, Copy, Clone, PartialEq, Eq)]
 pub enum ArmorRank {
 	#[strum(serialize = "LR")]
 	Low,
@@ -179,7 +174,7 @@ pub enum WeaponClass {
 pub enum ElderSeal {
 	Empty,
 	Low,
-	Medium,
+	Average,
 	High,
 }
 
@@ -190,7 +185,7 @@ impl ElderSeal {
 		} else {
 			match lev.unwrap().as_str() {
 				"low" => ElderSeal::Low,
-				"medium" => ElderSeal::Medium,
+				"average" => ElderSeal::Average,
 				"high" => ElderSeal::High,
 				_ => panic!("Elderseal parsing error")
 			}

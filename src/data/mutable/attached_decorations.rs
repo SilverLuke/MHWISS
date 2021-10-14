@@ -63,14 +63,6 @@ impl<T> AttachedDecorations<T> where T: Item {
 		}
 	}
 
-	fn replace_deco(&mut self, index: usize, decoration: Arc<Decoration>) -> Option<Arc<Decoration>> {
-		if index < self.decorations.len() {
-			std::mem::replace(&mut self.decorations[index], Some(decoration))
-		} else {
-			None
-		}
-	}
-
 	pub fn clean_decorations(&mut self) {
 		self.decorations = vec![None; self.item.get_slots().len()];
 	}

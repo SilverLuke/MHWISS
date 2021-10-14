@@ -1,15 +1,13 @@
 use std::{
-	cell::{RefCell, Cell},
-	fmt,
-	sync::Arc,
+	rc::Rc,
+	cell::Cell,
 	thread::Builder,
 };
-use glib::Sender;
 use strum::{Display, EnumIter, EnumString};
+use glib::Sender;
 use crate::data::{
 	mutable::equipment::Equipment,
-	db_storage::Storage,
-	db_types::skill::{SkillsLevel, SkillLevel},
+	dyn_storage::DynamicStorage,
 };
 use crate::engines::{
 	hill_climbing::HillClimbing,
@@ -42,33 +40,23 @@ pub(crate) trait Engine {
 }
 
 pub struct EnginesManager {
-	storage: Arc<Storage>,
-	constraints: RefCell<SkillsLevel>,
-	sender: RefCell<Option<Sender<Callback>>>,
+	sender: Option<Sender<Callback>>,
 	running: Cell<bool>,
 }
 
 impl EnginesManager {
-	pub fn new(storage: Arc<Storage>) -> Self {
+	pub fn new(sender: Sender<Callback>) -> Self {
 		let searcher = EnginesManager {
-			storage,
-			constraints: RefCell::new(SkillsLevel::new()),
-			sender: RefCell::new(None),
+			sender: Some(sender),
 			running: Cell::new(false),
 		};
 		searcher
 	}
 
-	pub fn add_constraint(&self, skill: SkillLevel) {
-		self.constraints.borrow_mut().set(skill);
-	}
-
-	pub fn clean_constrains(&self) {
-		self.constraints.replace(SkillsLevel::new());
-	}
-
-	pub fn spawn(&self, engine_type: Engines) -> Result<(), EnginesManagerError> {
-		if self.constraints.borrow().len() <= 0 {
+	pub fn spawn(&self, engine_type: Engines, dynamic: &Rc<DynamicStorage>) -> Result<(), EnginesManagerError> {
+		let storage = dynamic.generate_storage();
+		let constraints = dynamic.get_constraints();
+		if constraints.len() <= 0 {
 			return Err(NoConstraints);
 		}
 		if self.running.get() {
@@ -76,15 +64,15 @@ impl EnginesManager {
 		}
 
 		self.running.replace(true);
-		let storage = Arc::clone(&self.storage);
-		let constraints = RefCell::clone(&self.constraints);
-		let sender = self.sender.try_borrow().unwrap().clone();
-		println!("Constrains: {}", constraints.borrow());
+
+
+		let sender = self.sender.clone();
+		println!("Constrains: {}", &constraints);
 
 		Builder::new().name(engine_type.to_string().into()).spawn(move || {
 			let mut engine = match engine_type {
-				Engines::Greedy => Box::new(Greedy::new(storage, constraints.into_inner())) as Box<dyn Engine>,
-				Engines::HillClimbing => Box::new(HillClimbing::new(storage, constraints.into_inner())) as Box<dyn Engine>,
+				Engines::Greedy => Box::new(Greedy::new(storage, constraints)) as Box<dyn Engine>,
+				Engines::HillClimbing => Box::new(HillClimbing::new(storage, constraints)) as Box<dyn Engine>,
 			};
 			let best_equipment = engine.run();
 
@@ -107,21 +95,7 @@ impl EnginesManager {
 		Ok(())
 	}
 
-	pub fn add_callback(&self, sender: Sender<Callback>) {
-		self.sender.replace(Some(sender));
-	}
-
 	pub fn ended(&self) {
 		self.running.replace(false);
-	}
-}
-
-impl fmt::Display for EnginesManager {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		let mut str = String::new();
-		for skill_level in self.constraints.borrow().iter() {
-			str = format!("{} <{}, {}>", str, skill_level.get_skill().name, skill_level.get_level());
-		}
-		write!(f, "{}", str)
 	}
 }

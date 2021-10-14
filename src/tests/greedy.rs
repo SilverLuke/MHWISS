@@ -6,6 +6,7 @@ use crate::data::{
 		skill::SkillsLevel,
 	}
 };
+use crate::data::dyn_storage::DynamicStorage;
 use crate::engines::{EngineError::Impossible, Engine, greedy::Greedy};
 use crate::tests::Shared;
 
@@ -35,7 +36,9 @@ fn greedy_random() {
 
 fn run(storage: &Arc<Storage>, constraints: SkillsLevel) {
 	println!("Requirements:\n{}", constraints.to_string());
-	let mut engine = Greedy::new(Arc::clone(storage), constraints);
+		let tmp = DynamicStorage::new(storage);
+		let clone = tmp.generate_storage();
+		let mut engine = Greedy::new(clone, constraints);
 	match engine.run() {
 		Ok(result) => {
 			let best = result.first().unwrap();

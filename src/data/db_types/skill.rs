@@ -180,7 +180,7 @@ impl SkillsLevel {
 
 	// Insert in the hashmap the skill if not present, increase the skill level otherwise.
 	pub fn insert(&mut self, add: SkillLevel) -> &Self {
-		if add.get_level() == 0 {
+		if add.get_level() <= 0 {
 			self.collection.remove(&add.get_id());
 		} else {
 			match self.collection.entry(add.get_id()) {
@@ -246,13 +246,17 @@ impl SkillsLevel {
 	}
 
 	pub fn set(&mut self, skill_to_add: SkillLevel) {
-		match self.collection.entry(skill_to_add.get_id()) {
-			Entry::Occupied(mut o) => {
-				let skill = o.get_mut();
-				skill.set_level(skill_to_add.get_level())
-			},
-			Entry::Vacant(v) => { v.insert(skill_to_add); }
-		};
+		if skill_to_add.get_level() <= 0 {
+			self.collection.remove(&skill_to_add.get_id());
+		} else {
+			match self.collection.entry(skill_to_add.get_id()) {
+				Entry::Occupied(mut o) => {
+					let skill = o.get_mut();
+					skill.set_level(skill_to_add.get_level())
+				},
+				Entry::Vacant(v) => { v.insert(skill_to_add); }
+			};
+		}
 	}
 
 	pub fn get_level(&self, skill: Arc<Skill>) -> Option<Level> {

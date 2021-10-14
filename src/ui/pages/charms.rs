@@ -1,6 +1,7 @@
-use std::sync::Arc;
+use std::rc::Rc;
 
 use crate::data::db_storage::Storage;
+use crate::data::dyn_storage::DynamicStorage;
 
 pub(crate) struct CharmsPage {
 
@@ -12,7 +13,7 @@ impl CharmsPage {
 		}
 	}
 
-	pub fn show(&self, storage: &Arc<Storage>) {
+	pub fn show(&self, storage: &Rc<Storage>, dynamic_storage: &Rc<DynamicStorage>) {
 		()
 	}
 }

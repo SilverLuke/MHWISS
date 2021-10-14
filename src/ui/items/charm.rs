@@ -1,13 +1,14 @@
-use std::collections::HashMap;
-use std::rc::Rc;
-use std::sync::Arc;
-
+use std::{
+	collections::HashMap,
+	rc::Rc,
+	sync::Arc,
+};
 use gdk_pixbuf::Pixbuf;
-use gtk::{Builder, ImageExt, LabelExt, WidgetExt};
-use gtk::prelude::BuilderExtManual;
-
+use gtk::Builder;
+use gtk::prelude::{BuilderExtManual, ImageExt, LabelExt, WidgetExt};
 use crate::data::db_types::charm::Charm;
 use crate::ui::items::UI;
+
 
 pub struct GtkCharm {
 	name: gtk::Label,
@@ -19,10 +20,10 @@ pub struct GtkCharm {
 impl GtkCharm {
 	pub fn new(builder: &Builder, images: Rc<HashMap<String, Pixbuf>>) -> Self {
 		GtkCharm {
-			name: builder.get_object("charm name").unwrap(),
-			image: builder.get_object("charm image").unwrap(),
-			skill: [builder.get_object("charm skill 1").unwrap(),builder.get_object("charm skill 2").unwrap()],
-			images: images,
+			name: builder.object("charm name").unwrap(),
+			image: builder.object("charm image").unwrap(),
+			skill: [builder.object("charm skill 1").unwrap(),builder.object("charm skill 2").unwrap()],
+			images,
 		}
 	}
 }

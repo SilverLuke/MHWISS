@@ -237,7 +237,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkSwitch">
+                      <object class="GtkSwitch" id="lr switch">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="halign">start</property>
@@ -282,7 +282,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkSwitch">
+                      <object class="GtkSwitch" id="hr switch">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="halign">start</property>
@@ -327,7 +327,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkSwitch">
+                      <object class="GtkSwitch" id="mr switch">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="halign">start</property>

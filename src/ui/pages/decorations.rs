@@ -1,10 +1,11 @@
-use std::sync::Arc;
-
+use std::rc::Rc;
 use gtk::{Builder, FlowBoxChild, SizeGroupMode};
 use gtk::prelude::*;
 use itertools::Itertools;
-
-use crate::data::db_storage::Storage;
+use crate::data::{
+	db_storage::Storage,
+	dyn_storage::DynamicStorage,
+};
 use crate::ui::get_builder;
 
 pub(crate) struct DecorationsPage {
@@ -17,16 +18,16 @@ pub(crate) struct DecorationsPage {
 impl DecorationsPage {
 	pub fn new(builder: &Builder) -> Self {
 		let deco_list = [
-			builder.get_object("deco lev1").unwrap(),
-			builder.get_object("deco lev2").unwrap(),
-			builder.get_object("deco lev3").unwrap(),
-			builder.get_object("deco lev4").unwrap(),
+			builder.object("deco lev1").unwrap(),
+			builder.object("deco lev2").unwrap(),
+			builder.object("deco lev3").unwrap(),
+			builder.object("deco lev4").unwrap(),
 		];
 		let page = DecorationsPage {
 			deco_list,
-			search_bar: builder.get_object("decoration search bar").unwrap(),
-			quantity_btn: builder.get_object("quantity deco").unwrap(),
-			set_quantity_btn: builder.get_object("set quantity deco").unwrap(),
+			search_bar: builder.object("decoration search bar").unwrap(),
+			quantity_btn: builder.object("quantity deco").unwrap(),
+			set_quantity_btn: builder.object("set quantity deco").unwrap(),
 		};
 		page.connect_signals();
 		page
@@ -42,11 +43,11 @@ impl DecorationsPage {
 
 		let search_bar = self.search_bar.clone();
 		let filter = move |child: &FlowBoxChild| {
-			let gtkbox: gtk::Box = (child.get_child().unwrap()).downcast_ref::<gtk::Box>().unwrap().clone();
-			for c in gtkbox.get_children() {
+			let gtkbox: gtk::Box = (child.child().unwrap()).downcast_ref::<gtk::Box>().unwrap().clone();
+			for c in gtkbox.children() {
 				if let Some(label) = c.downcast_ref::<gtk::Label>() {
-					let deco_name = label.get_text();
-					return deco_name.to_lowercase().contains(search_bar.get_text().to_lowercase().as_str());
+					let deco_name = label.text();
+					return deco_name.to_lowercase().contains(search_bar.text().to_lowercase().as_str());
 				}
 			}
 			false
@@ -54,34 +55,35 @@ impl DecorationsPage {
 		for flowbox in &self.deco_list {
 			flowbox.set_filter_func(Some(Box::new(filter.clone())));
 		}
+
 		// Set quantity btn
 		let quantity = self.quantity_btn.clone();
-		let flowboxes = self.deco_list.clone();
+		let flow_boxes = self.deco_list.clone();
 		self.set_quantity_btn.connect_clicked(move |_btn| {
-			let quantity = quantity.get_value();
+			let quantity = quantity.value();
 			let setter = |w: &gtk::Widget| {
-				let gtkbox: gtk::Box = ((w.downcast_ref::<gtk::FlowBoxChild>().unwrap()).get_child().unwrap()).downcast_ref::<gtk::Box>().unwrap().clone();
-				for c in gtkbox.get_children() {
+				let gtk_box: gtk::Box = ((w.downcast_ref::<gtk::FlowBoxChild>().unwrap()).child().unwrap()).downcast_ref::<gtk::Box>().unwrap().clone();
+				for c in gtk_box.children() {
 					if let Some(spin) = c.downcast_ref::<gtk::SpinButton>() {
 						spin.set_value(quantity);
 						return;
 					}
 				}
 			};
-			for flowbox in flowboxes.iter() {
+			for flowbox in flow_boxes.iter() {
 				flowbox.foreach(setter.clone());
 			}
 		});
 	}
 
-	pub fn show(&self, storage: &Arc<Storage>) {
+	pub fn show(&self, storage: &Rc<Storage>, dynamic_storage: &Rc<DynamicStorage>) {
 		let size_group: gtk::SizeGroup = gtk::SizeGroup::new(SizeGroupMode::Both);
 		for deco in storage.decorations.iter().sorted_by(|a, b| { a.name.cmp(&b.name) }) {
 			let builder = get_builder("res/gui/deco box.glade".to_string());
-			let deco_flowbox_child: gtk::FlowBoxChild = builder.get_object("flowbox").unwrap();
-			let name: gtk::Label = builder.get_object("name").unwrap();
+			let deco_flowbox_child: gtk::FlowBoxChild = builder.object("flowbox").unwrap();
+			let name: gtk::Label = builder.object("name").unwrap();
 
-			let style = deco_flowbox_child.get_style_context();
+			let style = deco_flowbox_child.style_context();
 			let provider = gtk::CssProvider::new();
 			provider.load_from_path("res/gui/style.css").unwrap();
 			style.add_provider(&provider, gtk::STYLE_PROVIDER_PRIORITY_USER);

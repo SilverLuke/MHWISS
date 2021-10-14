@@ -174,7 +174,7 @@ fn filter_item<T>(items: &HashSet<Arc<T>>, constraints: &SkillsLevel) -> Vec<Arc
 }
 
 impl Greedy {
-	pub(crate) fn new(storage: Arc<Storage>, constraints: SkillsLevel) -> Self {
+	pub(crate) fn new(storage: Storage, constraints: SkillsLevel) -> Self {
 		let copy = constraints.clone();
 		let mut decorations: Decorations = Default::default();
 		let mut wearable: Vec<Wearable> = Default::default();

@@ -1,17 +1,20 @@
 use std::collections::HashMap;
 use std::rc::Rc;
-
 use gdk_pixbuf::Pixbuf;
-use gtk::{Builder, ImageExt, LabelExt, WidgetExt};
-use gtk::prelude::BuilderExtManual;
-
-use crate::data::db_types::{
-	*,
-	armor::Armor,
+use gtk::Builder;
+use gtk::prelude::{BuilderExtManual, ImageExt, LabelExt, WidgetExt};
+use crate::data::{
+	mutable::attached_decorations::AttachedDecorations,
+	db_types::{
+		*,
+		armor::Armor,
+	}
 };
-use crate::ui::items::slots::*;
-use crate::ui::items::UI;
-use crate::data::mutable::attached_decorations::AttachedDecorations;
+use crate::ui::items::{
+	slots::*,
+	UI,
+};
+
 
 pub struct GtkArmour {
 	name: gtk::Label,
@@ -31,7 +34,7 @@ impl GtkArmour {
 		let mut elements = Vec::with_capacity(iter.len());
 		for ele in iter {
 			let msg = format!("{} {}", ele.to_string().to_lowercase(), piece_id);
-			elements.push(builder.get_object(&msg).expect(&msg));
+			elements.push(builder.object(&msg).expect(&msg));
 		}
 
 		let mut slots = Vec::with_capacity(3);
@@ -41,12 +44,15 @@ impl GtkArmour {
 			slots.push(GtkSlot::new(&builder, name.as_str(), image.as_str(), Rc::clone(&images)));
 		}
 		GtkArmour {
-			name: builder.get_object(&format!("name {}", piece_id)).unwrap(),
-			image: builder.get_object(&format!("image {}", piece_id)).unwrap(),
+			name: builder.object(&format!("name {}", piece_id)).expect(&format!("UI do not found \"name {}\"", piece_id)),
+			image: builder.object(&format!("image {}", piece_id)).expect(&format!("UI do not found \"image {}\"", piece_id)),
 			class: piece,
-			defence: builder.get_object(&format!("defence {}", piece_id)).unwrap(),
+			defence: builder.object(&format!("defence {}", piece_id)).expect(&format!("UI do not found \"defence {}\"", piece_id)),
 			elements,
-			skill: [builder.get_object(&format!("skill 0 {}", piece_id)).unwrap(), builder.get_object(&format!("skill 1 {}", piece_id)).unwrap()],
+			skill: [
+				builder.object(&format!("skill 0 {}", piece_id)).expect(&format!("UI do not found \"skill 0 {}\"", piece_id)),
+				builder.object(&format!("skill 1 {}", piece_id)).expect(&format!("UI do not found \"skill 1 {}\"", piece_id))
+			],
 			slots,
 			images,
 		}

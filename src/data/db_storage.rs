@@ -1,13 +1,13 @@
 use crate::data::{
 	db::DB,
-	db_types::{Weapons, Charms, Decorations, Sets, Armors, SetSkills, Skills, Tools},
+	db_types::{Weapons, Charms, Decorations, ArmorSets, Armors, SetSkills, Skills, Tools},
 };
 
 pub struct Storage {
 	pub skills: Skills,  // Len 168
 	pub set_skills: SetSkills,
 	pub armors: Armors,
-	pub sets: Sets,  // Len 343
+	pub sets: ArmorSets,  // Len 343
 	pub decorations: Decorations,
 	pub charms: Charms,
 	pub weapons: Weapons,

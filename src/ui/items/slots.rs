@@ -3,8 +3,8 @@ use std::rc::Rc;
 use std::sync::Arc;
 
 use gdk_pixbuf::Pixbuf;
-use gtk::{Builder, ImageExt, LabelExt};
-use gtk::prelude::BuilderExtManual;
+use gtk::Builder;
+use gtk::prelude::{BuilderExtManual, ImageExt, LabelExt};
 
 use crate::data::db_types::decoration::Decoration;
 
@@ -17,8 +17,8 @@ pub struct GtkSlot {
 impl GtkSlot {
 	pub fn new(builder: &Builder, label: &str, image: &str, images: Rc<HashMap<String, Pixbuf>>) -> Self {
 		GtkSlot {
-			label: builder.get_object(label).expect(label),
-			image: builder.get_object(image).expect(image),
+			label: builder.object(label).expect(label),
+			image: builder.object(image).expect(image),
 			images,
 		}
 	}

@@ -10,44 +10,69 @@ use crate::data::{
 	db_storage::Storage,
 	db_types::ArmorClass,
 };
+use crate::data::db_types::ArmorRank;
 use crate::ui::{
 	*,
 	pages::{set_image_scaled, SMALL_SIZE_ICON},
 };
+use strum::EnumCount;
 
 pub(crate) struct ArmorsPage {
-	rank_set: [gtk::ListBox; 3],
+	rank_tabs: [gtk::ListBox; ArmorRank::COUNT],
+	rank_switches: [gtk::Switch; ArmorRank::COUNT],
 	images: Rc<HashMap<String, Pixbuf>>,
 }
 
 impl ArmorsPage {
 	pub fn new(builder: &Builder, images: Rc<HashMap<String, Pixbuf>>) -> Self {
-		let rank_set = [
-			builder.get_object("lr list").unwrap(),
-			builder.get_object("hr list").unwrap(),
-			builder.get_object("mr list").unwrap(),
+		let rank_tabs = [
+			builder.object("lr list").unwrap(),
+			builder.object("hr list").unwrap(),
+			builder.object("mr list").unwrap(),
+		];
+		let rank_switches = [
+			builder.object("lr switch").unwrap(),
+			builder.object("hr switch").unwrap(),
+			builder.object("mr switch").unwrap(),
 		];
 		ArmorsPage {
-			rank_set,
+			rank_tabs,
+			rank_switches,
 			images,
 		}
 	}
 
-	pub fn show(&self, storage: &Arc<Storage>) {
+	pub fn show(&self, storage: &Rc<Storage>, dynamic_storage: &Rc<DynamicStorage>) {
+		for rank in ArmorRank::iter() {
+			let switch = &self.rank_switches[rank as usize];
+			let dynamic_storage_copy = Rc::clone(&dynamic_storage);
+			switch.connect_changed_active(move |switch| {
+				dynamic_storage_copy.set_armors_by_rank(rank, switch.state());
+				println!("changed all {} to status: {}", rank.to_string(), switch.state());
+			});
+		}
 		for set in storage.sets.iter().sorted_by(|a, b| { a.id.cmp(&b.id) }) {
 			let builder = get_builder("res/gui/set box.glade".to_string());
-			let set_row: gtk::ListBoxRow = builder.get_object("row").unwrap();
-			let name: gtk::Label = builder.get_object("name").unwrap();
+			let set_row: gtk::ListBoxRow = builder.object("row").unwrap();
+			let name: gtk::Label = builder.object("name").unwrap();
 			name.set_text(&set.name);
 			for piece in ArmorClass::iter() {
-				let image: gtk::Image = builder.get_object(piece.to_string().as_str()).unwrap();
+				let image: gtk::Image = builder.object(piece.to_string().as_str()).unwrap();
 				if set.get_armor(piece).is_some() {
 					set_image_scaled(&image, piece.to_string().as_str(), SMALL_SIZE_ICON, &self.images);
 				} else {
 					set_image_scaled(&image, "armor missing", SMALL_SIZE_ICON, &self.images);
 				}
 			}
-			self.rank_set[set.rank as usize].insert(&set_row, -1);
+			self.rank_tabs[set.rank as usize].insert(&set_row, -1);
+
+			let enable_switch : gtk::Switch = builder.object("enable").unwrap();
+			let dynamic_storage_copy = Rc::clone(&dynamic_storage);
+			let set_copy = Arc::clone(set);
+			enable_switch.connect_changed_active(move |switch| {
+				dynamic_storage_copy.set_armors_set(set_copy.clone(), switch.state());
+				println!("{} status: {}", set_copy.name, switch.state());
+			});
 		}
 	}
 }

@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use gdk_pixbuf::Pixbuf;
-use gtk::{Builder, ImageExt, LabelExt, WidgetExt};
-use gtk::prelude::BuilderExtManual;
+use gtk::Builder;
+use gtk::prelude::{BuilderExtManual, ImageExt, LabelExt, WidgetExt};
 
 use crate::data::db_types::weapon::Weapon;
 use crate::data::mutable::attached_decorations::AttachedDecorations;
@@ -30,12 +30,12 @@ impl GtkWeapon {
 			slots.push(GtkSlot::new(&builder, name.as_str(), image.as_str(), Rc::clone(&images)));
 		}
 		GtkWeapon {
-			name: builder.get_object("weapon name").unwrap(),
-			image: builder.get_object("weapon image").unwrap(),
-			attack: builder.get_object("weapon attack").unwrap(),
-			affinity: builder.get_object("weapon affinity").unwrap(),
-			element: [builder.get_object("weapon element 1").unwrap(), builder.get_object("weapon element 2").unwrap()],
-			skill: builder.get_object("weapon skill").unwrap(),
+			name: builder.object("weapon name").unwrap(),
+			image: builder.object("weapon image").unwrap(),
+			attack: builder.object("weapon attack").unwrap(),
+			affinity: builder.object("weapon affinity").unwrap(),
+			element: [builder.object("weapon element 1").unwrap(), builder.object("weapon element 2").unwrap()],
+			skill: builder.object("weapon skill").unwrap(),
 			slots,
 			images,
 		}

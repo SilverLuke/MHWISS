@@ -19,9 +19,9 @@ pub(crate) struct HillClimbing {
 }
 
 impl HillClimbing {
-	pub(crate) fn new(storage: Arc<Storage>, constraints: SkillsLevel) -> Self {
+	pub(crate) fn new(storage: Storage, constraints: SkillsLevel) -> Self {
 		HillClimbing {
-			storage: Arc::clone(&storage),
+			storage: Arc::new(storage),
 			constraints: constraints.clone(),
 			start_points: vec![],
 			iterations: 256,

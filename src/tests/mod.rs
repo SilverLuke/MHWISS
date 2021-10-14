@@ -47,7 +47,7 @@ fn static_constraints(storage: &Storage) -> Vec<SkillsLevel> {
 impl Shared {
 	fn new() -> Arc<Self> {
 		let mut storage = Storage::new();
-		let db = DB::new("it".to_string());
+		let db = DB::with_language(String::from("it"));
 		storage.load_all(&db);
 		storage.print_stat();
 
