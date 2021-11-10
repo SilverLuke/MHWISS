@@ -31,7 +31,7 @@ pub const SMALL_SIZE_ICON: i32 = 25;
 
 pub(crate) struct Pages {
 	skills_page: SkillsPage,
-	armors_page: ArmorsPage,
+	armors_page: Rc<ArmorsPage>,
 	decos_page: DecorationsPage,
 	charms_page: CharmsPage,
 	pub(crate) found_page: ResultPage,
@@ -43,7 +43,7 @@ impl Pages {
 		let images = Rc::new(load_images());
 		Pages {
 			skills_page: SkillsPage::new(&builder, dynamic_storage),
-			armors_page: ArmorsPage::new(&builder, Rc::clone(&images)),
+			armors_page: Rc::new(ArmorsPage::new(&builder, Rc::clone(&images))),
 			decos_page: DecorationsPage::new(&builder),
 			charms_page: CharmsPage::new(&builder),
 			found_page: ResultPage::new(builder, Rc::clone(&images)),

@@ -19,24 +19,25 @@ pub struct Settings {
 
 impl Settings {
 	pub fn new(db: &DB) -> Self {
+		let available_languages = Rc::new(db.get_available_languages());
+		let mut ret = Settings {
+			available_languages: Rc::clone(&available_languages),
+			language: RefCell::new(String::from("en"))
+		};
+
 		if let Some(proj_dirs) = ProjectDirs::from("org", "SilverCorp", "mhwiss") {
 			let conf = proj_dirs.config_dir();
 			let conf = conf.join(CONFIG_FILE);
 			if conf.exists() {  // TODO add atomic file reader
 				let file = File::open(conf).unwrap();
-				match ron::de::from_reader(file) {
-					Ok(x) => return x,
-					Err(e) => {
-						println!("Failed to load config: {}", e);
-					}
-				};
+				let mut settings: Settings = ron::de::from_reader(file).expect("Failed to load config");
+				settings.available_languages = available_languages;
+				return settings;
+			} else {
+				println!("Use default config");
 			}
 		}
-		println!("Use default config");
-		Settings {
-			available_languages: Rc::new(db.get_available_languages()),
-			language: RefCell::new(String::from("en")),
-		}
+		ret
 	}
 
 	pub fn change_language(&self, lang: String) {

@@ -3,7 +3,7 @@ use std::rc::Rc;
 use std::sync::Arc;
 
 use gdk_pixbuf::Pixbuf;
-use gtk::Builder;
+use gtk::{Builder, ListBoxRow};
 use gtk::prelude::*;
 use itertools::Itertools;
 use crate::data::{
@@ -42,13 +42,20 @@ impl ArmorsPage {
 		}
 	}
 
-	pub fn show(&self, storage: &Rc<Storage>, dynamic_storage: &Rc<DynamicStorage>) {
+	pub fn show(self: &Rc<Self>, storage: &Rc<Storage>, dynamic_storage: &Rc<DynamicStorage>) {
 		for rank in ArmorRank::iter() {
 			let switch = &self.rank_switches[rank as usize];
-			let dynamic_storage_copy = Rc::clone(&dynamic_storage);
+			let copy = Rc::clone(self);
 			switch.connect_changed_active(move |switch| {
-				dynamic_storage_copy.set_armors_by_rank(rank, switch.state());
 				println!("changed all {} to status: {}", rank.to_string(), switch.state());
+				copy.rank_tabs[rank as usize].foreach(|w| {
+					let gtkbox: gtk::Box = ((w.downcast_ref::<ListBoxRow>().unwrap()).child().unwrap()).downcast_ref::<gtk::Box>().unwrap().clone();
+					for elem in gtkbox.children() {
+						if let Some(child_switch) = elem.downcast_ref::<gtk::Switch>() {
+							child_switch.set_state(switch.state())
+						}
+					}
+				});
 			});
 		}
 		for set in storage.sets.iter().sorted_by(|a, b| { a.id.cmp(&b.id) }) {
